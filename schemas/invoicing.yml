@@ -1,0 +1,64 @@
+
+interfaces:
+  account:
+    label: string
+    bank_name: string
+    bank_address: string
+    bank_swift: string
+    account_name: string
+    account_iban: string
+    account_address: string
+
+  category:
+    name: string
+    category_id?: string
+    items?: item[]
+
+  company:
+    name: string
+    address: string
+    crn: string
+    trn: string
+    contact: string
+    mobile: string
+    email: string
+
+  currency:
+    name: string
+    symbol: string
+
+  customer:
+    name: string
+    address?: string
+    contact?: string
+    currency_id?: string
+    currency?: currency
+    payment_term?: integer
+    sales?: sale[]
+
+  item:
+    name: string
+    category_id?: string
+    category?: category
+
+  sale:
+    company_id: string
+    account_id: string
+    customer_id: string
+    place: string
+    number: integer
+    date: {type: string, format: date}
+    currency_id: string
+    total: number
+    reference?: string    
+    confirmed: boolean
+
+    reference_date?: {type: string, format: date}
+    due_date?: {type: string, format: date}
+
+    currency?: currency
+    customer?: customer
+    account?: account
+    company?: company
+    items?: saleItem[]
+
