@@ -70,9 +70,12 @@ def parseEntities(file:str):
 def genSchema(entities:dict):
     schemas = {}
     for entityName, properties in entities.items():
-        entityNameView = f"{entityName}View"
+        
         entityNamePartial = f"{entityName}Partial"
+        entityNameView = f"{entityName}View"
+
         schemas[entityName] = {'type': 'object', 'properties': {}}
+        schemas[entityNamePartial] = {'type': 'object', 'properties': {}}
         schemas[entityNameView] = {'type': 'object', 'properties': {}}
         for propertyName, metadata in properties.items():
             prop = {}
@@ -184,7 +187,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
         putPath = {
             'tags': [entityName],
             'summary': f'Update an existing {entityName} entity',
-            'description': f'Update an existing {entityName} entity',
+            'description': f'Update an existing {entityName} entity (all required properties must be supplied)',
             'operationId': f'update{entityName.capitalize()}',
             'requestBody': {
                 'description': f'Update an existing {entityName} entity',
@@ -222,7 +225,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
         patchPath = {
             'tags': [entityName],
             'summary': f'Modify an existing {entityName} entity',
-            'description': f'Modify an existing {entityName} entity',
+            'description': f'Modify an existing {entityName} entity (partial update, only provided properties will be updated)',
             'operationId': f'modify{entityName.capitalize()}',
             'requestBody': {
                 'description': f'Modify an existing {entityName} entity',
