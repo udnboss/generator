@@ -14,9 +14,9 @@ def parseEntities(file:str):
                 propertyType = 'string'
                 propertySubType = None
                 propertyFormat = None
+                isTypeReference = False
                 isSubTypeReference = False
-
-                
+                refEntity = None               
 
                 if property.endswith('?'):
                     propertyName = property.split('?')[0]
@@ -29,20 +29,37 @@ def parseEntities(file:str):
                         if propertySubType.startswith('='):
                             propertySubType = propertySubType[1:]
                             isSubTypeReference = True
+                    else:
+                        if ' > ' in metadata:
+                            propertyType, refEntity = metadata.split(' > ')
+                            refEntity, refEntityProperty = refEntity.split('.')                        
+                        else:
+                            propertyType = metadata
 
-                else:
+                        if propertyType.startswith('='):
+                            propertyType = propertyType[1:]
+                            isTypeReference = True
+
+
+                else: #object
                     propertyType = metadata['type']
                     if 'format' in metadata:
                         propertyFormat = metadata['format']
                 
                 prop = {'type': propertyType}
 
+                prop['typeReference'] = isTypeReference
+
+                if refEntity is not None:
+                    prop['constraintEntity'] = refEntity
+                    prop['constraintEntityProperty'] = refEntityProperty
+
                 if propertyFormat is not None:
                     prop['format'] = propertyFormat
 
                 if propertySubType is not None:
                     prop['subtype'] = propertySubType
-                    prop['reference'] = isSubTypeReference
+                    prop['subtypeReference'] = isSubTypeReference
                                     
                 prop['required'] = isRequired
 
@@ -53,18 +70,29 @@ def parseEntities(file:str):
 def genSchema(entities:dict):
     schemas = {}
     for entityName, properties in entities.items():
+        entityNameView = f"{entityName}View"
         schemas[entityName] = {'type': 'object', 'properties': {}}
+        schemas[entityNameView] = {'type': 'object', 'properties': {}}
         for propertyName, metadata in properties.items():
-            prop = {'type': metadata['type']}
+            prop = {}
             if 'format' in metadata:
                 prop['format'] = metadata['format']
+
+            if metadata['typeReference']:
+                prop['$ref'] = f"#/components/schemas/{metadata['type']}"
+            else:
+                prop['type'] = metadata['type']
+
             if 'subtype' in metadata:
-                if metadata['reference']:
+                if metadata['subtypeReference']:
                     prop['items'] = {'$ref': f"#/components/schemas/{metadata['subtype']}"}
                 else:
                     prop['items'] = {'type': {metadata['subtype']}}
 
-            schemas[entityName]['properties'][propertyName] = prop
+            if not '$ref' in prop and not 'items' in prop:
+                schemas[entityName]['properties'][propertyName] = prop
+            
+            schemas[entityNameView]['properties'][propertyName] = prop.copy()
         
         schemas[entityName]['required'] = [n for n, v in properties.items() if v['required']]
 
@@ -111,7 +139,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
                             'schema': {
                                 'type': 'array',
                                 'items': {
-                                    '$ref': f'#/components/schemas/{entityName}'
+                                    '$ref': f'#/components/schemas/{entityName}View'
                                 }
                             }
                         }
@@ -141,7 +169,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'content': {
                         'application/json': {
                             'schema': {
-                                '$ref': f'#/components/schemas/{entityName}'
+                                '$ref': f'#/components/schemas/{entityName}View'
                             }
                         }
                     }
@@ -173,7 +201,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'content': {
                         'application/json': {
                             'schema': {
-                                '$ref': f'#/components/schemas/{entityName}'
+                                '$ref': f'#/components/schemas/{entityName}View'
                             }
                         }
                     }
@@ -211,7 +239,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'content': {
                         'application/json': {
                             'schema': {
-                                '$ref': f'#/components/schemas/{entityName}'
+                                '$ref': f'#/components/schemas/{entityName}View'
                             }
                         }
                     }
@@ -246,7 +274,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'content': {
                         'application/json': {
                             'schema': {
-                                '$ref': f'#/components/schemas/{entityName}'
+                                '$ref': f'#/components/schemas/{entityName}View'
                             }
                         }
                     }

@@ -13,7 +13,7 @@ interfaces:
   category:
     id: string
     name: string
-    category_id?: string
+    category_id?: string > category.id
 
     items?: =item[]
 
@@ -37,8 +37,8 @@ interfaces:
     name: string
     address?: string
     contact?: string
-    currency_id?: string
-    currency?: currency
+    currency_id?: string > currency.id
+    currency?: =currency
     payment_term?: integer
 
     sales?: =sale[]
@@ -46,19 +46,19 @@ interfaces:
   item:
     id: string
     name: string
-    category_id?: string
+    category_id?: string > category.id
 
     category?: =category
 
   sale:
     id: string
-    company_id: string
-    account_id: string
-    customer_id: string
+    company_id: string > company.id
+    account_id: string > account.id
+    customer_id: string > customer.id
     place: string
     number: integer
     date: {type: string, format: date}
-    currency_id: string
+    currency_id: string > currency.id
     total: number
     reference?: string    
     confirmed: boolean
@@ -74,8 +74,8 @@ interfaces:
 
   saleItem:
     id: string
-    sale_id: string
-    item_id: string
+    sale_id: string > sale.id
+    item_id: string > item.id
     description: string
     quantity: number
     price: number    
