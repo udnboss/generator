@@ -79,13 +79,13 @@ def genSchema(entities:dict):
                 prop['format'] = metadata['format']
 
             if metadata['typeReference']:
-                prop['$ref'] = f"#/components/schemas/{metadata['type']}"
+                prop['$ref'] = f"#/components/schemas/{metadata['type']}View"
             else:
                 prop['type'] = metadata['type']
 
             if 'subtype' in metadata:
                 if metadata['subtypeReference']:
-                    prop['items'] = {'$ref': f"#/components/schemas/{metadata['subtype']}"}
+                    prop['items'] = {'$ref': f"#/components/schemas/{metadata['subtype']}View"}
                 else:
                     prop['items'] = {'type': {metadata['subtype']}}
 

@@ -13,9 +13,9 @@ interfaces:
   category:
     id: string
     name: string
-    category_id?: string > category.id
+    # category_id?: string > category.id
 
-    category: =category
+    # category?: =category
     items?: =item[]
 
   company:
