@@ -20,6 +20,7 @@ if gentype == 'openapi':
     api = {
         'openapi': '3.0.3',
         'info': info,
+        'servers': [{'url': 'http://127.0.0.1:8001'}],
         'tags': tags,
         'paths': paths,
         'components': {

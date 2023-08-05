@@ -10,19 +10,26 @@ def parseEntities(file:str):
             entities[entityName] = {}
             for property, metadata in entity.items():
                 propertyName = property
-                isRequired = False
+                isRequired = True
                 propertyType = 'string'
                 propertySubType = None
                 propertyFormat = None
+                isSubTypeReference = False
+
+                
 
                 if property.endswith('?'):
                     propertyName = property.split('?')[0]
-                    isRequired = True
+                    isRequired = False
                 
-                if isinstance(metadata, str):
+                if isinstance(metadata, str):                  
                     if metadata.endswith('[]'):
                         propertyType = 'array'
                         propertySubType = metadata.split('[]')[0]
+                        if propertySubType.startswith('='):
+                            propertySubType = propertySubType[1:]
+                            isSubTypeReference = True
+
                 else:
                     propertyType = metadata['type']
                     if 'format' in metadata:
@@ -35,9 +42,9 @@ def parseEntities(file:str):
 
                 if propertySubType is not None:
                     prop['subtype'] = propertySubType
-                
-                if isRequired:
-                    prop['required'] = True
+                    prop['reference'] = isSubTypeReference
+                                    
+                prop['required'] = isRequired
 
                 entities[entityName][propertyName] = prop
                 
@@ -51,7 +58,15 @@ def genSchema(entities:dict):
             prop = {'type': metadata['type']}
             if 'format' in metadata:
                 prop['format'] = metadata['format']
+            if 'subtype' in metadata:
+                if metadata['reference']:
+                    prop['items'] = {'$ref': f"#/components/schemas/{metadata['subtype']}"}
+                else:
+                    prop['items'] = {'type': {metadata['subtype']}}
+
             schemas[entityName]['properties'][propertyName] = prop
+        
+        schemas[entityName]['required'] = [n for n, v in properties.items() if v['required']]
 
     return schemas
 
@@ -73,7 +88,7 @@ def genInfo(title, description, version):
 
     return info
 
-def genPaths(prefix:str, entities:dict):
+def genPaths(prefix:str = "", entities:dict = {}):
     def pluralize(s:str):
         if s.endswith('y'):
             s = f'{s[:-1]}ies'
@@ -82,7 +97,7 @@ def genPaths(prefix:str, entities:dict):
         return s
 
     paths = {}
-    for entityName, _ in entities.items():
+    for entityName, properties in entities.items():
         getPath = {
             'tags': [entityName],
             'summary': f'get all {entityName} entities',
@@ -174,11 +189,86 @@ def genPaths(prefix:str, entities:dict):
                 }
             }
         }
+        deletePath = {
+            'tags': [entityName],
+            'summary': f'Delete an existing {entityName} entity',
+            'description': f'Delete an existing {entityName} entity',
+            'operationId': f'delete{entityName.capitalize()}',
+            'parameters': [
+                {
+                    'name': 'id',
+                    'in': 'path',
+                    'description': f'{entityName} id to delete',
+                    'required': True,
+                    'schema': {
+                        'type': properties['id']['type']
+                    }
+                }
+            ],
+            'responses': {
+                '200': {
+                    'description': 'successful operation',
+                    'content': {
+                        'application/json': {
+                            'schema': {
+                                '$ref': f'#/components/schemas/{entityName}'
+                            }
+                        }
+                    }
+                },
+                '400': {
+                    'description': f'Invalid {entityName} id'
+                },
+                '404': {
+                    'description': f'{entityName} not found'
+                }
+            }
+        }
+        getOnePath = {
+            'tags': [entityName],
+            'summary': f'Get an existing {entityName} entity',
+            'description': f'Get an existing {entityName} entity',
+            'operationId': f'get{entityName.capitalize()}',
+            'parameters': [
+                {
+                    'name': 'id',
+                    'in': 'path',
+                    'description': f'{entityName} id to get',
+                    'required': True,
+                    'schema': {
+                        'type': properties['id']['type']
+                    }
+                }
+            ],
+            'responses': {
+                '200': {
+                    'description': 'successful operation',
+                    'content': {
+                        'application/json': {
+                            'schema': {
+                                '$ref': f'#/components/schemas/{entityName}'
+                            }
+                        }
+                    }
+                },
+                '400': {
+                    'description': f'Invalid {entityName} id'
+                },
+                '404': {
+                    'description': f'{entityName} not found'
+                }
+            }
+        }
 
-        paths[f'/{entityName}'] = {
+        paths[f'{prefix}/{pluralize(entityName)}'] = {
             'get': getPath,
             'post': postPath,
             'put': putPath
+        }
+
+        paths[f'{prefix}/{pluralize(entityName)}/{{id}}'] = {
+            'get': getOnePath,
+            'delete': deletePath,
         }
     
     return paths

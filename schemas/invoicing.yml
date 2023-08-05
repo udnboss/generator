@@ -1,6 +1,7 @@
 
 interfaces:
   account:
+    id: string
     label: string
     bank_name: string
     bank_address: string
@@ -10,11 +11,14 @@ interfaces:
     account_address: string
 
   category:
+    id: string
     name: string
     category_id?: string
-    items?: item[]
+
+    items?: =item[]
 
   company:
+    id: string
     name: string
     address: string
     crn: string
@@ -24,24 +28,30 @@ interfaces:
     email: string
 
   currency:
+    id: string
     name: string
     symbol: string
 
   customer:
+    id: string
     name: string
     address?: string
     contact?: string
     currency_id?: string
     currency?: currency
     payment_term?: integer
-    sales?: sale[]
+
+    sales?: =sale[]
 
   item:
+    id: string
     name: string
     category_id?: string
-    category?: category
+
+    category?: =category
 
   sale:
+    id: string
     company_id: string
     account_id: string
     customer_id: string
@@ -56,9 +66,19 @@ interfaces:
     reference_date?: {type: string, format: date}
     due_date?: {type: string, format: date}
 
-    currency?: currency
-    customer?: customer
-    account?: account
-    company?: company
-    items?: saleItem[]
+    currency?: =currency
+    customer?: =customer
+    account?: =account
+    company?: =company
+    items?: =saleItem[]
 
+  saleItem:
+    id: string
+    sale_id: string
+    item_id: string
+    description: string
+    quantity: number
+    price: number    
+    
+    sale?: =sale
+    item?: =item
