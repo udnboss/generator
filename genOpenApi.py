@@ -71,6 +71,7 @@ def genSchema(entities:dict):
     schemas = {}
     for entityName, properties in entities.items():
         entityNameView = f"{entityName}View"
+        entityNamePartial = f"{entityName}Partial"
         schemas[entityName] = {'type': 'object', 'properties': {}}
         schemas[entityNameView] = {'type': 'object', 'properties': {}}
         for propertyName, metadata in properties.items():
@@ -91,6 +92,7 @@ def genSchema(entities:dict):
 
             if not '$ref' in prop and not 'items' in prop:
                 schemas[entityName]['properties'][propertyName] = prop
+                schemas[entityNamePartial]['properties'][propertyName] = prop.copy()
             
             schemas[entityNameView]['properties'][propertyName] = prop.copy()
         
@@ -217,6 +219,45 @@ def genPaths(prefix:str = "", entities:dict = {}):
                 }
             }
         }
+        patchPath = {
+            'tags': [entityName],
+            'summary': f'Modify an existing {entityName} entity',
+            'description': f'Modify an existing {entityName} entity',
+            'operationId': f'modify{entityName.capitalize()}',
+            'requestBody': {
+                'description': f'Modify an existing {entityName} entity',
+                'content': {
+                    'application/json': {
+                        'schema': {
+                            '$ref': f'#/components/schemas/{entityName}Partial'
+                        }
+                    }
+                },
+                'required': True
+            },
+            'responses': {
+                '200': {
+                    'description': 'successful operation',
+                    'content': {
+                        'application/json': {
+                            'schema': {
+                                '$ref': f'#/components/schemas/{entityName}View'
+                            }
+                        }
+                    }
+                },
+                '400': {
+                    'description': 'Invalid ID'
+                },
+                '404': {
+                    'description': f'{entityName} not found'
+                },
+                '405': {
+                    'description': 'Invalid input'
+                }
+            }
+        }
+        
         deletePath = {
             'tags': [entityName],
             'summary': f'Delete an existing {entityName} entity',
@@ -291,7 +332,8 @@ def genPaths(prefix:str = "", entities:dict = {}):
         paths[f'{prefix}/{pluralize(entityName)}'] = {
             'get': getPath,
             'post': postPath,
-            'put': putPath
+            'put': putPath,
+            'patch': patchPath
         }
 
         paths[f'{prefix}/{pluralize(entityName)}/{{id}}'] = {
