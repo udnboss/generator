@@ -15,6 +15,7 @@ interfaces:
     name: string
     category_id?: string > category.id
 
+    category: =category
     items?: =item[]
 
   company:
