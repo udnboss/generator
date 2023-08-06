@@ -1,0 +1,92 @@
+store:
+  id: string
+  company_id: string > company.id
+  account_id: string > account.id
+  customer_id: string > customer.id
+  place?: string
+  number: integer
+  date: {type: string, format: date}
+  currency_id: string > currency.id
+  total: number
+  reference?: string    
+  confirmed: boolean
+  reference_date?: {type: string, format: date}
+  due_date?: {type: string, format: date}
+
+view:
+  id: string
+  company_id: string > company.id
+  account_id: string > account.id
+  customer_id: string > customer.id
+  place?: string
+  number: integer
+  date: {type: string, format: date}
+  currency_id: string > currency.id
+  total: number
+  reference?: string    
+  confirmed: boolean
+  reference_date?: {type: string, format: date}
+  due_date?: {type: string, format: date}
+  currency?: =currency
+  customer?: =customer
+  account?: =account
+  company?: =company
+  items?: =saleItem[]  
+
+create:
+  id: string
+  company_id: string > company.id
+  account_id: string > account.id
+  customer_id: string > customer.id
+  place?: string
+  number: integer
+  date: {type: string, format: date}
+  currency_id: string > currency.id
+  reference?: string    
+  confirmed: boolean
+  reference_date?: {type: string, format: date}
+  due_date?: {type: string, format: date}
+
+update:
+  id?: string
+  company_id?: string > company.id
+  account_id?: string > account.id
+  customer_id?: string > customer.id
+  place?: string
+  date?: {type: string, format: date}
+  currency_id?: string > currency.id
+  reference?: string    
+  confirmed?: boolean
+  reference_date?: {type: string, format: date}
+  due_date?: {type: string, format: date}  
+
+delete:
+  id?: string  
+
+filter:
+  id?: string
+  company_id?: string > company.id
+  account_id?: string > account.id
+  customer_id?: string > customer.id
+  place?: string
+  date?: {type: string, format: date}
+  currency_id?: string > currency.id
+  total?: number
+  reference?: string    
+  confirmed?: boolean
+  reference_date?: {type: string, format: date}
+  due_date?: {type: string, format: date}    
+
+sort:
+  id?: string
+  company_id?: string > company.id
+  account_id?: string > account.id
+  customer_id?: string > customer.id
+  place?: string
+  date?: {type: string, format: date}
+  currency_id?: string > currency.id
+  total?: number
+  reference?: string    
+  confirmed?: boolean
+  reference_date?: {type: string, format: date}
+  due_date?: {type: string, format: date}  

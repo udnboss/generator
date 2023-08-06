@@ -13,9 +13,9 @@ interfaces:
   category:
     id: string
     name: string
-    # category_id?: string > category.id
+    category_id?: string > category.id
 
-    # category?: =category
+    category?: =category
     items?: =item[]
 
   company:
@@ -26,7 +26,7 @@ interfaces:
     trn: string
     contact: string
     mobile: string
-    email: string
+    email: string|email
 
   currency:
     id: string
@@ -56,16 +56,16 @@ interfaces:
     company_id: string > company.id
     account_id: string > account.id
     customer_id: string > customer.id
-    place: string
+    place?: string
     number: integer
-    date: {type: string, format: date}
+    date*: string|date # a * means disallow update
     currency_id: string > currency.id
-    total: number
+    total!*: number # a !* means disallow both create, update
     reference?: string    
     confirmed: boolean
 
-    reference_date?: {type: string, format: date}
-    due_date?: {type: string, format: date}
+    reference_date?: string|date
+    due_date?: string|date
 
     currency?: =currency
     customer?: =customer

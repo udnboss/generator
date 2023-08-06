@@ -6,11 +6,19 @@ def parseEntities(file:str):
     entities = {}
     with open(file, 'r', encoding='utf-8') as f:
         input:dict = yaml.safe_load(f)
+        entityName:str
+        entity:dict
+        property:str
+        metadata:str
+
         for entityName, entity in input['interfaces'].items():
             entities[entityName] = {}
             for property, metadata in entity.items():
                 propertyName = property
                 isRequired = True
+                allowUpdate = True
+                allowCreate = True
+                allowRead = True
                 propertyType = 'string'
                 propertySubType = None
                 propertyFormat = None
@@ -21,6 +29,18 @@ def parseEntities(file:str):
                 if property.endswith('?'):
                     propertyName = property.split('?')[0]
                     isRequired = False
+                    
+                if property.endswith('*'):
+                    propertyName = property.split('*')[0]
+                    allowUpdate = False
+                
+                if property.endswith('!'):
+                    propertyName = property.split('!')[0]
+                    allowCreate = False
+
+                if property.endswith('$'):
+                    propertyName = property.split('$')[0]
+                    allowRead = False
                 
                 if isinstance(metadata, str):                  
                     if metadata.endswith('[]'):
@@ -29,12 +49,19 @@ def parseEntities(file:str):
                         if propertySubType.startswith('='):
                             propertySubType = propertySubType[1:]
                             isSubTypeReference = True
-                    else:
+                        elif '|' in propertySubType:
+                            propertySubType, propertyFormat = metadata.split('|')
+                    else:                        
                         if ' > ' in metadata:
                             propertyType, refEntity = metadata.split(' > ')
+                            if '|' in propertyType:
+                                propertyType, propertyFormat = propertyType.split('|')
                             refEntity, refEntityProperty = refEntity.split('.')                        
                         else:
-                            propertyType = metadata
+                            if '|' in metadata:
+                                propertyType, propertyFormat = metadata.split('|')
+                            else:
+                                propertyType = metadata
 
                         if propertyType.startswith('='):
                             propertyType = propertyType[1:]
@@ -62,8 +89,13 @@ def parseEntities(file:str):
                     prop['subtypeReference'] = isSubTypeReference
                                     
                 prop['required'] = isRequired
+                prop['allowRead'] = allowRead
+                prop['allowCreate'] = allowCreate
+                prop['allowUpdate'] = allowUpdate
 
                 entities[entityName][propertyName] = prop
+                # print(prop)
+                # exit()
                 
         return entities
     
@@ -71,14 +103,19 @@ def genSchema(entities:dict):
     schemas = {}
     for entityName, properties in entities.items():
         
+        entityNameCreate = f"{entityName}Create"
+        entityNameUpdate = f"{entityName}Update"
         entityNamePartial = f"{entityName}Partial"
         entityNameView = f"{entityName}View"
 
         schemas[entityName] = {'type': 'object', 'properties': {}}
+        schemas[entityNameCreate] = {'type': 'object', 'properties': {}}
+        schemas[entityNameUpdate] = {'type': 'object', 'properties': {}}
         schemas[entityNamePartial] = {'type': 'object', 'properties': {}}
         schemas[entityNameView] = {'type': 'object', 'properties': {}}
         for propertyName, metadata in properties.items():
             prop = {}
+
             if 'format' in metadata:
                 prop['format'] = metadata['format']
 
@@ -95,11 +132,19 @@ def genSchema(entities:dict):
 
             if not '$ref' in prop and not 'items' in prop:
                 schemas[entityName]['properties'][propertyName] = prop
-                schemas[entityNamePartial]['properties'][propertyName] = prop.copy()
+                # print(entityName, propertyName, prop)
+                if metadata['allowCreate']:
+                    schemas[entityNameCreate]['properties'][propertyName] = prop.copy()
+                if metadata['allowUpdate']:
+                    schemas[entityNameUpdate]['properties'][propertyName] = prop.copy()
+                    schemas[entityNamePartial]['properties'][propertyName] = prop.copy()
             
-            schemas[entityNameView]['properties'][propertyName] = prop.copy()
+            if metadata['allowRead']:
+                schemas[entityNameView]['properties'][propertyName] = prop.copy()
         
         schemas[entityName]['required'] = [n for n, v in properties.items() if v['required']]
+        schemas[entityNameCreate]['required'] = [n for n, v in properties.items() if v['required'] and v['allowCreate']]
+        schemas[entityNameUpdate]['required'] = [n for n, v in properties.items() if v['required'] and v['allowUpdate']]
 
     return schemas
 
@@ -130,6 +175,8 @@ def genPaths(prefix:str = "", entities:dict = {}):
         return s
 
     paths = {}
+    entityName:str
+    properties:dict
     for entityName, properties in entities.items():
         getPath = {
             'tags': [entityName],
@@ -162,7 +209,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
                 'content': {
                     'application/json': {
                         'schema': {
-                            '$ref': f'#/components/schemas/{entityName}'
+                            '$ref': f'#/components/schemas/{entityName}Create'
                         }
                     }
                 },
@@ -184,17 +231,29 @@ def genPaths(prefix:str = "", entities:dict = {}):
                 }
             }
         }
+        
         putPath = {
             'tags': [entityName],
             'summary': f'Update an existing {entityName} entity',
             'description': f'Update an existing {entityName} entity (all required properties must be supplied)',
             'operationId': f'update{entityName.capitalize()}',
+            'parameters': [
+                {
+                    'name': 'id',
+                    'in': 'path',
+                    'description': f'{entityName} id to update',
+                    'required': True,
+                    'schema': {
+                        'type': properties['id']['type']
+                    }
+                }
+            ],
             'requestBody': {
                 'description': f'Update an existing {entityName} entity',
                 'content': {
                     'application/json': {
                         'schema': {
-                            '$ref': f'#/components/schemas/{entityName}'
+                            '$ref': f'#/components/schemas/{entityName}Update'
                         }
                     }
                 },
@@ -227,6 +286,17 @@ def genPaths(prefix:str = "", entities:dict = {}):
             'summary': f'Modify an existing {entityName} entity',
             'description': f'Modify an existing {entityName} entity (partial update, only provided properties will be updated)',
             'operationId': f'modify{entityName.capitalize()}',
+            'parameters': [
+                {
+                    'name': 'id',
+                    'in': 'path',
+                    'description': f'{entityName} id to partially update',
+                    'required': True,
+                    'schema': {
+                        'type': properties['id']['type']
+                    }
+                }
+            ],
             'requestBody': {
                 'description': f'Modify an existing {entityName} entity',
                 'content': {
@@ -259,8 +329,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'description': 'Invalid input'
                 }
             }
-        }
-        
+        }        
         deletePath = {
             'tags': [entityName],
             'summary': f'Delete an existing {entityName} entity',
@@ -334,13 +403,13 @@ def genPaths(prefix:str = "", entities:dict = {}):
 
         paths[f'{prefix}/{pluralize(entityName)}'] = {
             'get': getPath,
-            'post': postPath,
-            'put': putPath,
-            'patch': patchPath
+            'post': postPath,            
         }
 
         paths[f'{prefix}/{pluralize(entityName)}/{{id}}'] = {
             'get': getOnePath,
+            'put': putPath,
+            'patch': patchPath,
             'delete': deletePath,
         }
     
