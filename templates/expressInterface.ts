@@ -1,9 +1,23 @@
-interface __entityName__Create {
-    __entityCreateInterface__
+__EntityImports__
+
+export interface I__EntityNameCapitalized__ {
+    __EntityInterface__
 }
 
-interface __entityName__Update {
-    __entityUpdateInterface__
+export interface I__EntityNameCapitalized__Create {
+    __EntityCreateInterface__
+}
+
+export interface I__EntityNameCapitalized__Update {
+    __EntityUpdateInterface__
+}
+
+export interface I__EntityNameCapitalized__Partial {
+    __EntityPartialInterface__
+}
+
+export interface I__EntityNameCapitalized__View {
+    __EntityViewInterface__
 }
 
 const implementsInterface = (obj: any, interfaceProperites): boolean => {
@@ -39,14 +53,17 @@ const implementsInterface = (obj: any, interfaceProperites): boolean => {
     return true;
 }
 
-function is__entityName__Create(obj: any): obj is __entityName__Create {
-    let interfaceProperites = __entityCreateTypeProperties__;
+export const is__EntityNameCapitalized__Create = (obj: any): obj is I__EntityNameCapitalized__Create => {
+    let interfaceProperites = __EntityCreateTypeProperties__;
     return implementsInterface(obj, interfaceProperites);
 }
 
-function is__entityName__Update(obj: any): obj is __entityName__Update {
-    let interfaceProperites = __entityUpdateTypeProperties__;
+export const is__EntityNameCapitalized__Update = (obj: any): obj is I__EntityNameCapitalized__Update => {
+    let interfaceProperites = __EntityUpdateTypeProperties__;
     return implementsInterface(obj, interfaceProperites);
 }
 
-//todo patch
+export const is__EntityNameCapitalized__Partial = (obj: any): obj is I__EntityNameCapitalized__Partial => {
+    let interfaceProperites = __EntityPartialTypeProperties__;
+    return implementsInterface(obj, interfaceProperites);
+}

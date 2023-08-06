@@ -4,13 +4,15 @@ import sys
 import yaml
 
 from genOpenApi import genSchema, parseEntities, genInfo, genPaths, genTags
+from genExpressApi import genCode
 
 gentype = sys.argv[1]
 gensource = sys.argv[2]
+genoutput = gensource.split('/')[-1].split('.')[0]
 
 if gentype == 'openapi':
     entities = parseEntities(gensource)
-    print(yaml.dump(entities, indent=2))
+    # print(yaml.dump(entities, indent=2))
     # genSchema(gensource)
     info = genInfo(title='Sales API', description='SALES API REFERENCE', version='1.0')
     paths = genPaths('/v1', entities=entities)
@@ -30,4 +32,17 @@ if gentype == 'openapi':
 
     with open(f'output/{gensource.split("/")[-1]}', 'w', encoding='utf-8') as f:
         f.write(yaml.dump(api))
-        
+
+if gentype == 'expressapi':
+    entities = parseEntities(gensource)
+    schemas = genSchema(entities=entities)
+    routers, interfaces = genCode(entities=entities, openApiSchemas=schemas)
+    for entity, script in interfaces.items():
+        with open(f'output/{genoutput}/{entity}Interfaces.ts', 'w', encoding='utf-8') as f:
+            f.write(script)
+    
+    for entity, script in routers.items():
+        with open(f'output/{genoutput}/{entity}Route.ts', 'w', encoding='utf-8') as f:
+            f.write(script)
+
+

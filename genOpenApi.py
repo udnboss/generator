@@ -26,20 +26,20 @@ def parseEntities(file:str):
                 isSubTypeReference = False
                 refEntity = None               
 
-                if property.endswith('?'):
-                    propertyName = property.split('?')[0]
+                if propertyName.endswith('?'):
+                    propertyName = propertyName.split('?')[0]
                     isRequired = False
                     
-                if property.endswith('*'):
-                    propertyName = property.split('*')[0]
+                if propertyName.endswith('*'):
+                    propertyName = propertyName.split('*')[0]
                     allowUpdate = False
                 
-                if property.endswith('!'):
-                    propertyName = property.split('!')[0]
+                if propertyName.endswith('!'):
+                    propertyName = propertyName.split('!')[0]
                     allowCreate = False
 
-                if property.endswith('$'):
-                    propertyName = property.split('$')[0]
+                if propertyName.endswith('$'):
+                    propertyName = propertyName.split('$')[0]
                     allowRead = False
                 
                 if isinstance(metadata, str):                  
