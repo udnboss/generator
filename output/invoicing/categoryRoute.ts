@@ -1,98 +1,114 @@
-import { express } from "express";
-import { ICategoryCreate, ICategoryUpdate, ICategoryPartial, ICategoryView, isCategoryCreate, isCategoryUpdate, isCategoryPartial } from "./categoryInterfaces"
-const router = express.Router();
+import express from "express";
+import { ICategoryCreate, ICategoryUpdate, ICategoryPartial, ICategoryView } from "./categoryInterfaces";
+import { Environment, Context, MessageResponse, ErrorResponse, IQueryResult, IQuery, IEntity } from "./base";
+import { CategoryBusiness } from "./categoryBusiness";
 
-router.use(express.json()); //ensure only json is accepted in post requests
+export const categoryRouter = express.Router();
 
-router.get("/category", (req, res) => {
-    const data = getCategories();
-    res.json(data);
+categoryRouter.use(express.json()); //ensure only json is accepted in post requests
+
+const env = new Environment();
+const context = new Context(env);
+const business = new CategoryBusiness(context);
+
+categoryRouter.get<{}, MessageResponse | ErrorResponse>("/", async (req, res) => {
+    const results = await business.getAll() as IQueryResult<IQuery, ICategoryView>;
+    const message = {
+        success: true,
+        message: "successful",
+        data: results
+    };
+    res.json(message);
 });
 
-router.post("/category", (req, res) => {
-    if(!isCategoryCreate(req.body)) {
-        res.status(400).json({"message": "Invalid category"})
+categoryRouter.post<{}, MessageResponse | ErrorResponse>("/", async (req, res) => {
+    if (!business.isCreate(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid category" });
         return;
     }
     
-    const data = createCategory(req.body as ICategoryCreate);
-    res.json(data);
-});
-
-router.get("/category/:id", (req, res) => {
-    const data = getCategory(req.params.id);
-    if(data == null) {
-        res.status(404).json({"message": "category entity not found"})
+    const entity = await business.create(req.body as ICategoryCreate);
+    if (entity == null) {
+        res.status(405).json({ success: false, message: "category entity could not be created" });
         return;
     }
-    res.json(data);
+    const viewEntity = await business.getById(entity.id) as ICategoryView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
-router.put("/category/:id", (req, res) => {
-    if(!isCategoryUpdate(req.body)) {
-        res.status(400).json({"message": "Invalid category"})
+categoryRouter.get<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    const id = (req.params as IEntity).id;
+    const viewEntity = await business.getById(id) as ICategoryView;
+    if (viewEntity == null) {
+        res.status(404).json({ success: false, message: "category entity not found" });
         return;
     }
-    const data = updateCategory(req.params.id, req.body as ICategoryUpdate);
-    res.json(data);
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
-router.patch("/category/:id", (req, res) => {
-    if(!isCategoryPartial(req.body)) {
-        res.status(400).json({"message": "Invalid category"})
+categoryRouter.put<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    if (!business.isUpdate(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid category" });
         return;
     }
-    const data = modifyCategory(req.params.id, req.body as ICategoryPartial);
-    res.json(data);
-});
-
-router.delete("/category/:id", (req, res) => {
-    const data = deleteCategory(req.params.id);
-    if(data == null) {
-        res.status(404).json({"message": "category entity not found"})
+    const id = (req.params as IEntity).id;
+    const entity = await business.update(id, req.body as ICategoryUpdate);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "category entity not found" });
         return;
     }
-    res.json(data);
+    const viewEntity = await business.getById(entity.id) as ICategoryView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
+categoryRouter.patch<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    if (!business.isPartial(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid category" });
+        return;
+    }
+    const id = (req.params as IEntity).id;
+    const entity = await business.modify(id, req.body as ICategoryPartial);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "category entity not found" });
+        return;
+    }
+    const viewEntity = await business.getById(entity.id) as ICategoryView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
+});
 
-/* Business */
-
-const getCategories = ():ICategoryView[] => {
-    return [{} as ICategoryView];
-}
-
-const createCategory = (category:ICategoryCreate):ICategoryView => {
-    //CREATE HERE
-
-    const created = getCategory(category.id);
-    return created;
-}
-
-const getCategory = (id:string):ICategoryView => {
-    //GET HERE
-
-    var category = {};
-    return category as ICategoryView;
-}
-
-const updateCategory = (id:string, category:ICategoryUpdate):ICategoryView => {
-    //UPDATE HERE
-
-    const updated = getCategory(category.id);
-    return updated;
-}
-
-const modifyCategory = (id:string, category:ICategoryPartial):ICategoryView => {
-    //MODIFY HERE
-
-    const modified = getCategory(category.id || id);
-    return modified;    
-}
-
-const deleteCategory = (id:string):ICategoryView => {
-    const existing = getCategory(id);
-    //DELETE HERE
+categoryRouter.delete<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    const id = (req.params as IEntity).id;
+    const viewEntity = await business.getById(id) as ICategoryView;
+    const entity = await business.delete(id);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "category entity not found" });
+        return;
+    }
     
-    return existing;
-}
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
+});

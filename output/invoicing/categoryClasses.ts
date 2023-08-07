@@ -1,28 +1,28 @@
-import { IEntity } from "./base";
+import { Entity } from "./base";
 
 import { IItemView } from "./itemInterfaces";
 
-export interface ICategory extends IEntity {
+export class Category extends Entity {
     name:string;
     category_id?:string;
 }
 
-export interface ICategoryCreate extends IEntity {
+export class CategoryCreate extends Entity {
     name:string;
     category_id?:string;
 }
 
-export interface ICategoryUpdate extends IEntity {
+export class CategoryUpdate extends Entity {
     name:string;
     category_id?:string;
 }
 
-export interface ICategoryPartial extends IEntity {
+export class CategoryPartial extends Entity {
     name?:string;
     category_id?:string;
 }
 
-export interface ICategoryView extends IEntity {
+export class CategoryView extends Entity {
     name?:string;
     category_id?:string;
     category?:ICategoryView;

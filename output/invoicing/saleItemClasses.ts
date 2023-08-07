@@ -1,9 +1,9 @@
-import { IEntity } from "./base";
+import { Entity } from "./base";
 
 import { ISaleView } from "./saleInterfaces";
 import { IItemView } from "./itemInterfaces";
 
-export interface ISaleitem extends IEntity {
+export class Saleitem extends Entity {
     sale_id:string;
     item_id:string;
     description:string;
@@ -11,7 +11,7 @@ export interface ISaleitem extends IEntity {
     price:number;
 }
 
-export interface ISaleitemCreate extends IEntity {
+export class SaleitemCreate extends Entity {
     sale_id:string;
     item_id:string;
     description:string;
@@ -19,7 +19,7 @@ export interface ISaleitemCreate extends IEntity {
     price:number;
 }
 
-export interface ISaleitemUpdate extends IEntity {
+export class SaleitemUpdate extends Entity {
     sale_id:string;
     item_id:string;
     description:string;
@@ -27,7 +27,7 @@ export interface ISaleitemUpdate extends IEntity {
     price:number;
 }
 
-export interface ISaleitemPartial extends IEntity {
+export class SaleitemPartial extends Entity {
     sale_id?:string;
     item_id?:string;
     description?:string;
@@ -35,7 +35,7 @@ export interface ISaleitemPartial extends IEntity {
     price?:number;
 }
 
-export interface ISaleitemView extends IEntity {
+export class SaleitemView extends Entity {
     sale_id?:string;
     item_id?:string;
     description?:string;

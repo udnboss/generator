@@ -1,98 +1,114 @@
-import { express } from "express";
-import { ICurrencyCreate, ICurrencyUpdate, ICurrencyPartial, ICurrencyView, isCurrencyCreate, isCurrencyUpdate, isCurrencyPartial } from "./currencyInterfaces"
-const router = express.Router();
+import express from "express";
+import { ICurrencyCreate, ICurrencyUpdate, ICurrencyPartial, ICurrencyView } from "./currencyInterfaces";
+import { Environment, Context, MessageResponse, ErrorResponse, IQueryResult, IQuery, IEntity } from "./base";
+import { CurrencyBusiness } from "./currencyBusiness";
 
-router.use(express.json()); //ensure only json is accepted in post requests
+export const currencyRouter = express.Router();
 
-router.get("/currency", (req, res) => {
-    const data = getCurrencies();
-    res.json(data);
+currencyRouter.use(express.json()); //ensure only json is accepted in post requests
+
+const env = new Environment();
+const context = new Context(env);
+const business = new CurrencyBusiness(context);
+
+currencyRouter.get<{}, MessageResponse | ErrorResponse>("/", async (req, res) => {
+    const results = await business.getAll() as IQueryResult<IQuery, ICurrencyView>;
+    const message = {
+        success: true,
+        message: "successful",
+        data: results
+    };
+    res.json(message);
 });
 
-router.post("/currency", (req, res) => {
-    if(!isCurrencyCreate(req.body)) {
-        res.status(400).json({"message": "Invalid currency"})
+currencyRouter.post<{}, MessageResponse | ErrorResponse>("/", async (req, res) => {
+    if (!business.isCreate(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid currency" });
         return;
     }
     
-    const data = createCurrency(req.body as ICurrencyCreate);
-    res.json(data);
-});
-
-router.get("/currency/:id", (req, res) => {
-    const data = getCurrency(req.params.id);
-    if(data == null) {
-        res.status(404).json({"message": "currency entity not found"})
+    const entity = await business.create(req.body as ICurrencyCreate);
+    if (entity == null) {
+        res.status(405).json({ success: false, message: "currency entity could not be created" });
         return;
     }
-    res.json(data);
+    const viewEntity = await business.getById(entity.id) as ICurrencyView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
-router.put("/currency/:id", (req, res) => {
-    if(!isCurrencyUpdate(req.body)) {
-        res.status(400).json({"message": "Invalid currency"})
+currencyRouter.get<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    const id = (req.params as IEntity).id;
+    const viewEntity = await business.getById(id) as ICurrencyView;
+    if (viewEntity == null) {
+        res.status(404).json({ success: false, message: "currency entity not found" });
         return;
     }
-    const data = updateCurrency(req.params.id, req.body as ICurrencyUpdate);
-    res.json(data);
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
-router.patch("/currency/:id", (req, res) => {
-    if(!isCurrencyPartial(req.body)) {
-        res.status(400).json({"message": "Invalid currency"})
+currencyRouter.put<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    if (!business.isUpdate(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid currency" });
         return;
     }
-    const data = modifyCurrency(req.params.id, req.body as ICurrencyPartial);
-    res.json(data);
-});
-
-router.delete("/currency/:id", (req, res) => {
-    const data = deleteCurrency(req.params.id);
-    if(data == null) {
-        res.status(404).json({"message": "currency entity not found"})
+    const id = (req.params as IEntity).id;
+    const entity = await business.update(id, req.body as ICurrencyUpdate);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "currency entity not found" });
         return;
     }
-    res.json(data);
+    const viewEntity = await business.getById(entity.id) as ICurrencyView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
+currencyRouter.patch<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    if (!business.isPartial(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid currency" });
+        return;
+    }
+    const id = (req.params as IEntity).id;
+    const entity = await business.modify(id, req.body as ICurrencyPartial);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "currency entity not found" });
+        return;
+    }
+    const viewEntity = await business.getById(entity.id) as ICurrencyView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
+});
 
-/* Business */
-
-const getCurrencies = ():ICurrencyView[] => {
-    return [{} as ICurrencyView];
-}
-
-const createCurrency = (currency:ICurrencyCreate):ICurrencyView => {
-    //CREATE HERE
-
-    const created = getCurrency(currency.id);
-    return created;
-}
-
-const getCurrency = (id:string):ICurrencyView => {
-    //GET HERE
-
-    var currency = {};
-    return currency as ICurrencyView;
-}
-
-const updateCurrency = (id:string, currency:ICurrencyUpdate):ICurrencyView => {
-    //UPDATE HERE
-
-    const updated = getCurrency(currency.id);
-    return updated;
-}
-
-const modifyCurrency = (id:string, currency:ICurrencyPartial):ICurrencyView => {
-    //MODIFY HERE
-
-    const modified = getCurrency(currency.id || id);
-    return modified;    
-}
-
-const deleteCurrency = (id:string):ICurrencyView => {
-    const existing = getCurrency(id);
-    //DELETE HERE
+currencyRouter.delete<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    const id = (req.params as IEntity).id;
+    const viewEntity = await business.getById(id) as ICurrencyView;
+    const entity = await business.delete(id);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "currency entity not found" });
+        return;
+    }
     
-    return existing;
-}
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
+});

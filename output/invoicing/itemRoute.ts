@@ -1,98 +1,114 @@
-import { express } from "express";
-import { IItemCreate, IItemUpdate, IItemPartial, IItemView, isItemCreate, isItemUpdate, isItemPartial } from "./itemInterfaces"
-const router = express.Router();
+import express from "express";
+import { IItemCreate, IItemUpdate, IItemPartial, IItemView } from "./itemInterfaces";
+import { Environment, Context, MessageResponse, ErrorResponse, IQueryResult, IQuery, IEntity } from "./base";
+import { ItemBusiness } from "./itemBusiness";
 
-router.use(express.json()); //ensure only json is accepted in post requests
+export const itemRouter = express.Router();
 
-router.get("/item", (req, res) => {
-    const data = getItems();
-    res.json(data);
+itemRouter.use(express.json()); //ensure only json is accepted in post requests
+
+const env = new Environment();
+const context = new Context(env);
+const business = new ItemBusiness(context);
+
+itemRouter.get<{}, MessageResponse | ErrorResponse>("/", async (req, res) => {
+    const results = await business.getAll() as IQueryResult<IQuery, IItemView>;
+    const message = {
+        success: true,
+        message: "successful",
+        data: results
+    };
+    res.json(message);
 });
 
-router.post("/item", (req, res) => {
-    if(!isItemCreate(req.body)) {
-        res.status(400).json({"message": "Invalid item"})
+itemRouter.post<{}, MessageResponse | ErrorResponse>("/", async (req, res) => {
+    if (!business.isCreate(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid item" });
         return;
     }
     
-    const data = createItem(req.body as IItemCreate);
-    res.json(data);
-});
-
-router.get("/item/:id", (req, res) => {
-    const data = getItem(req.params.id);
-    if(data == null) {
-        res.status(404).json({"message": "item entity not found"})
+    const entity = await business.create(req.body as IItemCreate);
+    if (entity == null) {
+        res.status(405).json({ success: false, message: "item entity could not be created" });
         return;
     }
-    res.json(data);
+    const viewEntity = await business.getById(entity.id) as IItemView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
-router.put("/item/:id", (req, res) => {
-    if(!isItemUpdate(req.body)) {
-        res.status(400).json({"message": "Invalid item"})
+itemRouter.get<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    const id = (req.params as IEntity).id;
+    const viewEntity = await business.getById(id) as IItemView;
+    if (viewEntity == null) {
+        res.status(404).json({ success: false, message: "item entity not found" });
         return;
     }
-    const data = updateItem(req.params.id, req.body as IItemUpdate);
-    res.json(data);
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
-router.patch("/item/:id", (req, res) => {
-    if(!isItemPartial(req.body)) {
-        res.status(400).json({"message": "Invalid item"})
+itemRouter.put<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    if (!business.isUpdate(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid item" });
         return;
     }
-    const data = modifyItem(req.params.id, req.body as IItemPartial);
-    res.json(data);
-});
-
-router.delete("/item/:id", (req, res) => {
-    const data = deleteItem(req.params.id);
-    if(data == null) {
-        res.status(404).json({"message": "item entity not found"})
+    const id = (req.params as IEntity).id;
+    const entity = await business.update(id, req.body as IItemUpdate);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "item entity not found" });
         return;
     }
-    res.json(data);
+    const viewEntity = await business.getById(entity.id) as IItemView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
+itemRouter.patch<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    if (!business.isPartial(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid item" });
+        return;
+    }
+    const id = (req.params as IEntity).id;
+    const entity = await business.modify(id, req.body as IItemPartial);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "item entity not found" });
+        return;
+    }
+    const viewEntity = await business.getById(entity.id) as IItemView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
+});
 
-/* Business */
-
-const getItems = ():IItemView[] => {
-    return [{} as IItemView];
-}
-
-const createItem = (item:IItemCreate):IItemView => {
-    //CREATE HERE
-
-    const created = getItem(item.id);
-    return created;
-}
-
-const getItem = (id:string):IItemView => {
-    //GET HERE
-
-    var item = {};
-    return item as IItemView;
-}
-
-const updateItem = (id:string, item:IItemUpdate):IItemView => {
-    //UPDATE HERE
-
-    const updated = getItem(item.id);
-    return updated;
-}
-
-const modifyItem = (id:string, item:IItemPartial):IItemView => {
-    //MODIFY HERE
-
-    const modified = getItem(item.id || id);
-    return modified;    
-}
-
-const deleteItem = (id:string):IItemView => {
-    const existing = getItem(id);
-    //DELETE HERE
+itemRouter.delete<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    const id = (req.params as IEntity).id;
+    const viewEntity = await business.getById(id) as IItemView;
+    const entity = await business.delete(id);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "item entity not found" });
+        return;
+    }
     
-    return existing;
-}
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
+});

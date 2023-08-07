@@ -1,8 +1,8 @@
-import { IEntity } from "./base";
+import { Entity } from "./base";
 
 
 
-export interface ICompany extends IEntity {
+export class Company extends Entity {
     name:string;
     address:string;
     crn:string;
@@ -12,7 +12,7 @@ export interface ICompany extends IEntity {
     email:string;
 }
 
-export interface ICompanyCreate extends IEntity {
+export class CompanyCreate extends Entity {
     name:string;
     address:string;
     crn:string;
@@ -22,7 +22,7 @@ export interface ICompanyCreate extends IEntity {
     email:string;
 }
 
-export interface ICompanyUpdate extends IEntity {
+export class CompanyUpdate extends Entity {
     name:string;
     address:string;
     crn:string;
@@ -32,7 +32,7 @@ export interface ICompanyUpdate extends IEntity {
     email:string;
 }
 
-export interface ICompanyPartial extends IEntity {
+export class CompanyPartial extends Entity {
     name?:string;
     address?:string;
     crn?:string;
@@ -42,7 +42,7 @@ export interface ICompanyPartial extends IEntity {
     email?:string;
 }
 
-export interface ICompanyView extends IEntity {
+export class CompanyView extends Entity {
     name?:string;
     address?:string;
     crn?:string;

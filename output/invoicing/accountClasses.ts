@@ -1,8 +1,8 @@
-import { IEntity } from "./base";
+import { Entity } from "./base";
 
 
 
-export interface IAccount extends IEntity {
+export class Account extends Entity {
     label:string;
     bank_name:string;
     bank_address:string;
@@ -12,7 +12,7 @@ export interface IAccount extends IEntity {
     account_address:string;
 }
 
-export interface IAccountCreate extends IEntity {
+export class AccountCreate extends Entity {
     label:string;
     bank_name:string;
     bank_address:string;
@@ -22,7 +22,7 @@ export interface IAccountCreate extends IEntity {
     account_address:string;
 }
 
-export interface IAccountUpdate extends IEntity {
+export class AccountUpdate extends Entity {
     label:string;
     bank_name:string;
     bank_address:string;
@@ -32,7 +32,7 @@ export interface IAccountUpdate extends IEntity {
     account_address:string;
 }
 
-export interface IAccountPartial extends IEntity {
+export class AccountPartial extends Entity {
     label?:string;
     bank_name?:string;
     bank_address?:string;
@@ -42,7 +42,7 @@ export interface IAccountPartial extends IEntity {
     account_address?:string;
 }
 
-export interface IAccountView extends IEntity {
+export class AccountView extends Entity {
     label?:string;
     bank_name?:string;
     bank_address?:string;

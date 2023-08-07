@@ -1,98 +1,114 @@
-import { express } from "express";
-import { IAccountCreate, IAccountUpdate, IAccountPartial, IAccountView, isAccountCreate, isAccountUpdate, isAccountPartial } from "./accountInterfaces"
-const router = express.Router();
+import express from "express";
+import { IAccountCreate, IAccountUpdate, IAccountPartial, IAccountView } from "./accountInterfaces";
+import { Environment, Context, MessageResponse, ErrorResponse, IQueryResult, IQuery, IEntity } from "./base";
+import { AccountBusiness } from "./accountBusiness";
 
-router.use(express.json()); //ensure only json is accepted in post requests
+export const accountRouter = express.Router();
 
-router.get("/account", (req, res) => {
-    const data = getAccounts();
-    res.json(data);
+accountRouter.use(express.json()); //ensure only json is accepted in post requests
+
+const env = new Environment();
+const context = new Context(env);
+const business = new AccountBusiness(context);
+
+accountRouter.get<{}, MessageResponse | ErrorResponse>("/", async (req, res) => {
+    const results = await business.getAll() as IQueryResult<IQuery, IAccountView>;
+    const message = {
+        success: true,
+        message: "successful",
+        data: results
+    };
+    res.json(message);
 });
 
-router.post("/account", (req, res) => {
-    if(!isAccountCreate(req.body)) {
-        res.status(400).json({"message": "Invalid account"})
+accountRouter.post<{}, MessageResponse | ErrorResponse>("/", async (req, res) => {
+    if (!business.isCreate(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid account" });
         return;
     }
     
-    const data = createAccount(req.body as IAccountCreate);
-    res.json(data);
-});
-
-router.get("/account/:id", (req, res) => {
-    const data = getAccount(req.params.id);
-    if(data == null) {
-        res.status(404).json({"message": "account entity not found"})
+    const entity = await business.create(req.body as IAccountCreate);
+    if (entity == null) {
+        res.status(405).json({ success: false, message: "account entity could not be created" });
         return;
     }
-    res.json(data);
+    const viewEntity = await business.getById(entity.id) as IAccountView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
-router.put("/account/:id", (req, res) => {
-    if(!isAccountUpdate(req.body)) {
-        res.status(400).json({"message": "Invalid account"})
+accountRouter.get<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    const id = (req.params as IEntity).id;
+    const viewEntity = await business.getById(id) as IAccountView;
+    if (viewEntity == null) {
+        res.status(404).json({ success: false, message: "account entity not found" });
         return;
     }
-    const data = updateAccount(req.params.id, req.body as IAccountUpdate);
-    res.json(data);
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
-router.patch("/account/:id", (req, res) => {
-    if(!isAccountPartial(req.body)) {
-        res.status(400).json({"message": "Invalid account"})
+accountRouter.put<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    if (!business.isUpdate(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid account" });
         return;
     }
-    const data = modifyAccount(req.params.id, req.body as IAccountPartial);
-    res.json(data);
-});
-
-router.delete("/account/:id", (req, res) => {
-    const data = deleteAccount(req.params.id);
-    if(data == null) {
-        res.status(404).json({"message": "account entity not found"})
+    const id = (req.params as IEntity).id;
+    const entity = await business.update(id, req.body as IAccountUpdate);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "account entity not found" });
         return;
     }
-    res.json(data);
+    const viewEntity = await business.getById(entity.id) as IAccountView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
+accountRouter.patch<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    if (!business.isPartial(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid account" });
+        return;
+    }
+    const id = (req.params as IEntity).id;
+    const entity = await business.modify(id, req.body as IAccountPartial);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "account entity not found" });
+        return;
+    }
+    const viewEntity = await business.getById(entity.id) as IAccountView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
+});
 
-/* Business */
-
-const getAccounts = ():IAccountView[] => {
-    return [{} as IAccountView];
-}
-
-const createAccount = (account:IAccountCreate):IAccountView => {
-    //CREATE HERE
-
-    const created = getAccount(account.id);
-    return created;
-}
-
-const getAccount = (id:string):IAccountView => {
-    //GET HERE
-
-    var account = {};
-    return account as IAccountView;
-}
-
-const updateAccount = (id:string, account:IAccountUpdate):IAccountView => {
-    //UPDATE HERE
-
-    const updated = getAccount(account.id);
-    return updated;
-}
-
-const modifyAccount = (id:string, account:IAccountPartial):IAccountView => {
-    //MODIFY HERE
-
-    const modified = getAccount(account.id || id);
-    return modified;    
-}
-
-const deleteAccount = (id:string):IAccountView => {
-    const existing = getAccount(id);
-    //DELETE HERE
+accountRouter.delete<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    const id = (req.params as IEntity).id;
+    const viewEntity = await business.getById(id) as IAccountView;
+    const entity = await business.delete(id);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "account entity not found" });
+        return;
+    }
     
-    return existing;
-}
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
+});

@@ -1,4 +1,11 @@
-
+api:
+  title: Invoicing API
+  description: Invoicing API Reference
+  version: '1.0'
+  prefix: /api/v1
+scripts:
+  outputDir: ./output/invoicing
+  framework: express #express|webapi|fastapi
 interfaces:
   account:
     id: string

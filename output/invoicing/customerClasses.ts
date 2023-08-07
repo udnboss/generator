@@ -1,9 +1,9 @@
-import { IEntity } from "./base";
+import { Entity } from "./base";
 
 import { ICurrencyView } from "./currencyInterfaces";
 import { ISaleView } from "./saleInterfaces";
 
-export interface ICustomer extends IEntity {
+export class Customer extends Entity {
     name:string;
     address?:string;
     contact?:string;
@@ -11,7 +11,7 @@ export interface ICustomer extends IEntity {
     payment_term?:number;
 }
 
-export interface ICustomerCreate extends IEntity {
+export class CustomerCreate extends Entity {
     name:string;
     address?:string;
     contact?:string;
@@ -19,7 +19,7 @@ export interface ICustomerCreate extends IEntity {
     payment_term?:number;
 }
 
-export interface ICustomerUpdate extends IEntity {
+export class CustomerUpdate extends Entity {
     name:string;
     address?:string;
     contact?:string;
@@ -27,7 +27,7 @@ export interface ICustomerUpdate extends IEntity {
     payment_term?:number;
 }
 
-export interface ICustomerPartial extends IEntity {
+export class CustomerPartial extends Entity {
     name?:string;
     address?:string;
     contact?:string;
@@ -35,7 +35,7 @@ export interface ICustomerPartial extends IEntity {
     payment_term?:number;
 }
 
-export interface ICustomerView extends IEntity {
+export class CustomerView extends Entity {
     name?:string;
     address?:string;
     contact?:string;

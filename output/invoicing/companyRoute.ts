@@ -1,98 +1,114 @@
-import { express } from "express";
-import { ICompanyCreate, ICompanyUpdate, ICompanyPartial, ICompanyView, isCompanyCreate, isCompanyUpdate, isCompanyPartial } from "./companyInterfaces"
-const router = express.Router();
+import express from "express";
+import { ICompanyCreate, ICompanyUpdate, ICompanyPartial, ICompanyView } from "./companyInterfaces";
+import { Environment, Context, MessageResponse, ErrorResponse, IQueryResult, IQuery, IEntity } from "./base";
+import { CompanyBusiness } from "./companyBusiness";
 
-router.use(express.json()); //ensure only json is accepted in post requests
+export const companyRouter = express.Router();
 
-router.get("/company", (req, res) => {
-    const data = getCompanies();
-    res.json(data);
+companyRouter.use(express.json()); //ensure only json is accepted in post requests
+
+const env = new Environment();
+const context = new Context(env);
+const business = new CompanyBusiness(context);
+
+companyRouter.get<{}, MessageResponse | ErrorResponse>("/", async (req, res) => {
+    const results = await business.getAll() as IQueryResult<IQuery, ICompanyView>;
+    const message = {
+        success: true,
+        message: "successful",
+        data: results
+    };
+    res.json(message);
 });
 
-router.post("/company", (req, res) => {
-    if(!isCompanyCreate(req.body)) {
-        res.status(400).json({"message": "Invalid company"})
+companyRouter.post<{}, MessageResponse | ErrorResponse>("/", async (req, res) => {
+    if (!business.isCreate(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid company" });
         return;
     }
     
-    const data = createCompany(req.body as ICompanyCreate);
-    res.json(data);
-});
-
-router.get("/company/:id", (req, res) => {
-    const data = getCompany(req.params.id);
-    if(data == null) {
-        res.status(404).json({"message": "company entity not found"})
+    const entity = await business.create(req.body as ICompanyCreate);
+    if (entity == null) {
+        res.status(405).json({ success: false, message: "company entity could not be created" });
         return;
     }
-    res.json(data);
+    const viewEntity = await business.getById(entity.id) as ICompanyView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
-router.put("/company/:id", (req, res) => {
-    if(!isCompanyUpdate(req.body)) {
-        res.status(400).json({"message": "Invalid company"})
+companyRouter.get<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    const id = (req.params as IEntity).id;
+    const viewEntity = await business.getById(id) as ICompanyView;
+    if (viewEntity == null) {
+        res.status(404).json({ success: false, message: "company entity not found" });
         return;
     }
-    const data = updateCompany(req.params.id, req.body as ICompanyUpdate);
-    res.json(data);
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
-router.patch("/company/:id", (req, res) => {
-    if(!isCompanyPartial(req.body)) {
-        res.status(400).json({"message": "Invalid company"})
+companyRouter.put<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    if (!business.isUpdate(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid company" });
         return;
     }
-    const data = modifyCompany(req.params.id, req.body as ICompanyPartial);
-    res.json(data);
-});
-
-router.delete("/company/:id", (req, res) => {
-    const data = deleteCompany(req.params.id);
-    if(data == null) {
-        res.status(404).json({"message": "company entity not found"})
+    const id = (req.params as IEntity).id;
+    const entity = await business.update(id, req.body as ICompanyUpdate);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "company entity not found" });
         return;
     }
-    res.json(data);
+    const viewEntity = await business.getById(entity.id) as ICompanyView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
+companyRouter.patch<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    if (!business.isPartial(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid company" });
+        return;
+    }
+    const id = (req.params as IEntity).id;
+    const entity = await business.modify(id, req.body as ICompanyPartial);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "company entity not found" });
+        return;
+    }
+    const viewEntity = await business.getById(entity.id) as ICompanyView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
+});
 
-/* Business */
-
-const getCompanies = ():ICompanyView[] => {
-    return [{} as ICompanyView];
-}
-
-const createCompany = (company:ICompanyCreate):ICompanyView => {
-    //CREATE HERE
-
-    const created = getCompany(company.id);
-    return created;
-}
-
-const getCompany = (id:string):ICompanyView => {
-    //GET HERE
-
-    var company = {};
-    return company as ICompanyView;
-}
-
-const updateCompany = (id:string, company:ICompanyUpdate):ICompanyView => {
-    //UPDATE HERE
-
-    const updated = getCompany(company.id);
-    return updated;
-}
-
-const modifyCompany = (id:string, company:ICompanyPartial):ICompanyView => {
-    //MODIFY HERE
-
-    const modified = getCompany(company.id || id);
-    return modified;    
-}
-
-const deleteCompany = (id:string):ICompanyView => {
-    const existing = getCompany(id);
-    //DELETE HERE
+companyRouter.delete<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    const id = (req.params as IEntity).id;
+    const viewEntity = await business.getById(id) as ICompanyView;
+    const entity = await business.delete(id);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "company entity not found" });
+        return;
+    }
     
-    return existing;
-}
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
+});

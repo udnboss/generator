@@ -1,98 +1,114 @@
-import { express } from "express";
-import { ICustomerCreate, ICustomerUpdate, ICustomerPartial, ICustomerView, isCustomerCreate, isCustomerUpdate, isCustomerPartial } from "./customerInterfaces"
-const router = express.Router();
+import express from "express";
+import { ICustomerCreate, ICustomerUpdate, ICustomerPartial, ICustomerView } from "./customerInterfaces";
+import { Environment, Context, MessageResponse, ErrorResponse, IQueryResult, IQuery, IEntity } from "./base";
+import { CustomerBusiness } from "./customerBusiness";
 
-router.use(express.json()); //ensure only json is accepted in post requests
+export const customerRouter = express.Router();
 
-router.get("/customer", (req, res) => {
-    const data = getCustomers();
-    res.json(data);
+customerRouter.use(express.json()); //ensure only json is accepted in post requests
+
+const env = new Environment();
+const context = new Context(env);
+const business = new CustomerBusiness(context);
+
+customerRouter.get<{}, MessageResponse | ErrorResponse>("/", async (req, res) => {
+    const results = await business.getAll() as IQueryResult<IQuery, ICustomerView>;
+    const message = {
+        success: true,
+        message: "successful",
+        data: results
+    };
+    res.json(message);
 });
 
-router.post("/customer", (req, res) => {
-    if(!isCustomerCreate(req.body)) {
-        res.status(400).json({"message": "Invalid customer"})
+customerRouter.post<{}, MessageResponse | ErrorResponse>("/", async (req, res) => {
+    if (!business.isCreate(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid customer" });
         return;
     }
     
-    const data = createCustomer(req.body as ICustomerCreate);
-    res.json(data);
-});
-
-router.get("/customer/:id", (req, res) => {
-    const data = getCustomer(req.params.id);
-    if(data == null) {
-        res.status(404).json({"message": "customer entity not found"})
+    const entity = await business.create(req.body as ICustomerCreate);
+    if (entity == null) {
+        res.status(405).json({ success: false, message: "customer entity could not be created" });
         return;
     }
-    res.json(data);
+    const viewEntity = await business.getById(entity.id) as ICustomerView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
-router.put("/customer/:id", (req, res) => {
-    if(!isCustomerUpdate(req.body)) {
-        res.status(400).json({"message": "Invalid customer"})
+customerRouter.get<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    const id = (req.params as IEntity).id;
+    const viewEntity = await business.getById(id) as ICustomerView;
+    if (viewEntity == null) {
+        res.status(404).json({ success: false, message: "customer entity not found" });
         return;
     }
-    const data = updateCustomer(req.params.id, req.body as ICustomerUpdate);
-    res.json(data);
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
-router.patch("/customer/:id", (req, res) => {
-    if(!isCustomerPartial(req.body)) {
-        res.status(400).json({"message": "Invalid customer"})
+customerRouter.put<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    if (!business.isUpdate(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid customer" });
         return;
     }
-    const data = modifyCustomer(req.params.id, req.body as ICustomerPartial);
-    res.json(data);
-});
-
-router.delete("/customer/:id", (req, res) => {
-    const data = deleteCustomer(req.params.id);
-    if(data == null) {
-        res.status(404).json({"message": "customer entity not found"})
+    const id = (req.params as IEntity).id;
+    const entity = await business.update(id, req.body as ICustomerUpdate);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "customer entity not found" });
         return;
     }
-    res.json(data);
+    const viewEntity = await business.getById(entity.id) as ICustomerView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
 });
 
+customerRouter.patch<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    if (!business.isPartial(req.body)) {
+        res.status(400).json({ success: false, message: "Invalid customer" });
+        return;
+    }
+    const id = (req.params as IEntity).id;
+    const entity = await business.modify(id, req.body as ICustomerPartial);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "customer entity not found" });
+        return;
+    }
+    const viewEntity = await business.getById(entity.id) as ICustomerView;
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
+});
 
-/* Business */
-
-const getCustomers = ():ICustomerView[] => {
-    return [{} as ICustomerView];
-}
-
-const createCustomer = (customer:ICustomerCreate):ICustomerView => {
-    //CREATE HERE
-
-    const created = getCustomer(customer.id);
-    return created;
-}
-
-const getCustomer = (id:string):ICustomerView => {
-    //GET HERE
-
-    var customer = {};
-    return customer as ICustomerView;
-}
-
-const updateCustomer = (id:string, customer:ICustomerUpdate):ICustomerView => {
-    //UPDATE HERE
-
-    const updated = getCustomer(customer.id);
-    return updated;
-}
-
-const modifyCustomer = (id:string, customer:ICustomerPartial):ICustomerView => {
-    //MODIFY HERE
-
-    const modified = getCustomer(customer.id || id);
-    return modified;    
-}
-
-const deleteCustomer = (id:string):ICustomerView => {
-    const existing = getCustomer(id);
-    //DELETE HERE
+customerRouter.delete<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
+    const id = (req.params as IEntity).id;
+    const viewEntity = await business.getById(id) as ICustomerView;
+    const entity = await business.delete(id);
+    if (entity == null) {
+        res.status(404).json({ success: false, message: "customer entity not found" });
+        return;
+    }
     
-    return existing;
-}
+    const message = {
+        success: true,
+        message: "successful",
+        data: viewEntity
+    };
+    res.json(message);
+});

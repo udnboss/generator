@@ -1,4 +1,4 @@
-import { IEntity } from "./base";
+import { Entity } from "./base";
 
 import { ICurrencyView } from "./currencyInterfaces";
 import { ICustomerView } from "./customerInterfaces";
@@ -6,7 +6,7 @@ import { IAccountView } from "./accountInterfaces";
 import { ICompanyView } from "./companyInterfaces";
 import { ISaleitemView } from "./saleItemInterfaces";
 
-export interface ISale extends IEntity {
+export class Sale extends Entity {
     company_id:string;
     account_id:string;
     customer_id:string;
@@ -21,7 +21,7 @@ export interface ISale extends IEntity {
     due_date?:string;
 }
 
-export interface ISaleCreate extends IEntity {
+export class SaleCreate extends Entity {
     company_id:string;
     account_id:string;
     customer_id:string;
@@ -35,7 +35,7 @@ export interface ISaleCreate extends IEntity {
     due_date?:string;
 }
 
-export interface ISaleUpdate extends IEntity {
+export class SaleUpdate extends Entity {
     company_id:string;
     account_id:string;
     customer_id:string;
@@ -48,7 +48,7 @@ export interface ISaleUpdate extends IEntity {
     due_date?:string;
 }
 
-export interface ISalePartial extends IEntity {
+export class SalePartial extends Entity {
     company_id?:string;
     account_id?:string;
     customer_id?:string;
@@ -61,7 +61,7 @@ export interface ISalePartial extends IEntity {
     due_date?:string;
 }
 
-export interface ISaleView extends IEntity {
+export class SaleView extends Entity {
     company_id?:string;
     account_id?:string;
     customer_id?:string;
