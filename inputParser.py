@@ -1,7 +1,7 @@
 
 import yaml
 
-BASE_DATATYPES = 'str bool int float date datetime time'.split(' ')
+BASE_DATATYPES = 'str uuid bool int float date datetime time'.split(' ')
 STR_TYPE_FORMATS = 'date email'.split(' ')
 REFERENTIAL_ON_DELETE_OPTIONS = 'd-cascade d-setnull d-restrict d-ignore'.split(' ')
 REFERENTIAL_ON_UPDATE_OPTIONS = 'u-cascade u-setnull u-restrict u-ignore'.split(' ')
@@ -26,7 +26,8 @@ def parseEntities(file:str):
 
         for entityName, entity in input['interfaces'].items():
             entities[entityName] = {}
-            for property, metadata in entity.items():
+            properties = entity['properties']
+            for property, metadata in properties.items():
                 propertyName = property
                 isRequired = True
                 allowUpdate = True
@@ -97,7 +98,8 @@ def parseEntities(file:str):
                             isTypeReference = propertyType in VALID_ENTITIY_TYPES
 
                             if not isTypeReference and propertyType not in BASE_DATATYPES:
-                                raise Exception(f"Found unsupported data type: {propertyType} for {property}.{propertyName}")                        
+                                msg = f"Found unsupported data type: {propertyType} for {property}.{propertyName}"
+                                raise Exception(msg)                        
 
                 else: #object #TODO: not implemented
                     raise Exception(f"Object value not supported for entity propery {property}")

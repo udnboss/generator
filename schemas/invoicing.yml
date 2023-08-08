@@ -8,85 +8,110 @@ scripts:
   framework: express #express|webapi|fastapi
 interfaces:
   account:
-    id: 
-    label: 
-    bank_name: 
-    bank_address: 
-    bank_swift: 
-    account_name: 
-    account_iban: 
-    account_address: 
+    key: id
+    unique: [label]
+    properties:
+      id: 
+      label: 
+      bank_name: 
+      bank_address: 
+      bank_swift: 
+      account_name: 
+      account_iban: 
+      account_address: 
 
   category:
-    id: 
-    name: 
-    category_id?: str > category.id
+    key: id
+    unique: [name]
+    properties:
+      id: 
+      name: 
+      category_id?: str > category.id
 
-    category?: category
-    items?: item[]
+      category?: category
+      items?: item[]
 
   company:
-    id: 
-    name: 
-    address: 
-    crn: 
-    trn: 
-    contact: 
-    mobile: 
-    email: str|email
+    key: id
+    unique: [name]
+    properties:
+      id: 
+      name: 
+      address: 
+      crn: 
+      trn: 
+      contact: 
+      mobile: 
+      email: str|email
 
   currency:
-    id: 
-    name: 
-    symbol: 
+    key: id
+    unique: [name]
+    properties:
+      id: 
+      name: 
+      symbol: 
 
   customer:
-    id: 
-    name: 
-    address?: 
-    contact?: 
-    currency_id?: str > currency.id
-    currency?: currency
-    payment_term?: int
+    key: id
+    unique: [name]
+    properties:
+      id: 
+      name: 
+      address?: 
+      contact?: 
+      currency_id?: str > currency.id
+      currency?: currency
+      payment_term?: int
 
-    sales?: sale[]
+      sales?: sale[]
 
   item:
-    id: 
-    name: 
-    category_id?: str > category.id
+    key: id
+    unique: [name]
+    properties:
+      id: 
+      name: 
+      category_id?: str > category.id
 
-    category?: category
+      category?: category
 
   sale:
-    id: 
-    company_id: str > company.id
-    account_id: str > account.id
-    customer_id: str > customer.id
-    place?: 
-    number: int
-    date*: date # a * means disallow update
-    currency_id: str > currency.id
-    total!*: float # a !* means disallow both create, update
-    reference?:     
-    confirmed: bool
+    key: id
+    unique: [number]
+    sort: [number: desc]
+    properties:
+      id: uuid
+      company_id: str > company.id
+      account_id: str > account.id
+      customer_id: str > customer.id
+      place?: 
+      number: int
+      date*: date # a * means disallow update
+      currency_id: str > currency.id
+      total!*: float # a !* means disallow both create, update
+      reference?:     
+      confirmed: bool
 
-    reference_date?: date
-    due_date?: date
+      reference_date?: date
+      due_date?: date
 
-    currency?: currency
-    customer?: customer
-    account?: account
-    company?: company
-    items?: saleItem[]
+      currency?: currency
+      customer?: customer
+      account?: account
+      company?: company
+      items?: saleItem[]
 
   saleItem:
-    id: 
-    sale_id: str > sale.id
-    item_id: str > item.id
-    description: 
-    quantity: int
-    price: float    
-    
-    sale?: sale
-    item?: item
+    key: id
+    unique: [sale_id, item_id]
+    properties:
+      id: 
+      sale_id: str > sale.id
+      item_id: str > item.id
+      description: 
+      quantity: int
+      price: float    
+      
+      sale?: sale
+      item?: item

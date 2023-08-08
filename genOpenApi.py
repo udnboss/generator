@@ -5,6 +5,7 @@ class entity:
 TYPE_MAP = {
     'array': 'array',
     'str': 'string',
+    'uuid': 'string',
     'date': 'string',
     'datetime': 'string',
     'time': 'string',
@@ -14,6 +15,7 @@ TYPE_MAP = {
 }
 
 AUTO_TYPE_FORMATS = {
+    'uuid': 'uuid',
     'date': 'date',
     'datetime': 'date-time',    
     'time': 'time',
@@ -22,7 +24,7 @@ AUTO_TYPE_FORMATS = {
 def genSchema(entities:dict):
     schemas = {}
     for entityName, properties in entities.items():
-        
+        # properties = entity['properties']
         entityNameCreate = f"{entityName}Create"
         entityNameUpdate = f"{entityName}Update"
         entityNamePartial = f"{entityName}Partial"
