@@ -5,6 +5,7 @@ import shlex
 # Create a test string
 test_string = 'category_id -optional-create -ref categories.id -type entity -entity-type account -ref-delete setnull -ref-update cascade -enforce'
 test_string = 'category_id -oc -r categories.id -t entity -et account -rd setnull -ru cascade'
+test_string = 'category.id d-cascade u-cascade su-enforce'
 
 # Split the test string into tokens using shlex
 tokens = shlex.split(test_string)

@@ -12,43 +12,43 @@ export class CategoryBusiness extends Business<ICategoryView> {
     override createProperties: any = {
   "id": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "name": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "category_id": {
     "required": false,
-    "type": "string"
+    "type": "str"
   }
 };
     override updateProperties: any = {
   "id": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "name": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "category_id": {
     "required": false,
-    "type": "string"
+    "type": "str"
   }
 };
     override partialProperties: any = {
   "id": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "name": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "category_id": {
     "required": false,
-    "type": "string"
+    "type": "str"
   }
 };
     

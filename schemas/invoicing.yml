@@ -8,85 +8,85 @@ scripts:
   framework: express #express|webapi|fastapi
 interfaces:
   account:
-    id: string
-    label: string
-    bank_name: string
-    bank_address: string
-    bank_swift: string
-    account_name: string
-    account_iban: string
-    account_address: string
+    id: 
+    label: 
+    bank_name: 
+    bank_address: 
+    bank_swift: 
+    account_name: 
+    account_iban: 
+    account_address: 
 
   category:
-    id: string
-    name: string
-    category_id?: string > category.id
+    id: 
+    name: 
+    category_id?: str > category.id
 
-    category?: =category
-    items?: =item[]
+    category?: category
+    items?: item[]
 
   company:
-    id: string
-    name: string
-    address: string
-    crn: string
-    trn: string
-    contact: string
-    mobile: string
-    email: string|email
+    id: 
+    name: 
+    address: 
+    crn: 
+    trn: 
+    contact: 
+    mobile: 
+    email: str|email
 
   currency:
-    id: string
-    name: string
-    symbol: string
+    id: 
+    name: 
+    symbol: 
 
   customer:
-    id: string
-    name: string
-    address?: string
-    contact?: string
-    currency_id?: string > currency.id
-    currency?: =currency
-    payment_term?: integer
+    id: 
+    name: 
+    address?: 
+    contact?: 
+    currency_id?: str > currency.id
+    currency?: currency
+    payment_term?: int
 
-    sales?: =sale[]
+    sales?: sale[]
 
   item:
-    id: string
-    name: string
-    category_id?: string > category.id
+    id: 
+    name: 
+    category_id?: str > category.id
 
-    category?: =category
+    category?: category
 
   sale:
-    id: string
-    company_id: string > company.id
-    account_id: string > account.id
-    customer_id: string > customer.id
-    place?: string
-    number: integer
-    date*: string|date # a * means disallow update
-    currency_id: string > currency.id
-    total!*: number # a !* means disallow both create, update
-    reference?: string    
-    confirmed: boolean
+    id: 
+    company_id: str > company.id
+    account_id: str > account.id
+    customer_id: str > customer.id
+    place?: 
+    number: int
+    date*: date # a * means disallow update
+    currency_id: str > currency.id
+    total!*: float # a !* means disallow both create, update
+    reference?:     
+    confirmed: bool
 
-    reference_date?: string|date
-    due_date?: string|date
+    reference_date?: date
+    due_date?: date
 
-    currency?: =currency
-    customer?: =customer
-    account?: =account
-    company?: =company
-    items?: =saleItem[]
+    currency?: currency
+    customer?: customer
+    account?: account
+    company?: company
+    items?: saleItem[]
 
   saleItem:
-    id: string
-    sale_id: string > sale.id
-    item_id: string > item.id
-    description: string
-    quantity: number
-    price: number    
+    id: 
+    sale_id: str > sale.id
+    item_id: str > item.id
+    description: 
+    quantity: int
+    price: float    
     
-    sale?: =sale
-    item?: =item
+    sale?: sale
+    item?: item

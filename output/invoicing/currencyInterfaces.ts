@@ -3,26 +3,26 @@ import { IEntity } from "./base";
 
 
 export interface ICurrency extends IEntity {
-    name:string;
-    symbol:string;
+    name:str;
+    symbol:str;
 }
 
 export interface ICurrencyCreate extends IEntity {
-    name:string;
-    symbol:string;
+    name:str;
+    symbol:str;
 }
 
 export interface ICurrencyUpdate extends IEntity {
-    name:string;
-    symbol:string;
+    name:str;
+    symbol:str;
 }
 
 export interface ICurrencyPartial extends IEntity {
-    name?:string;
-    symbol?:string;
+    name?:str;
+    symbol?:str;
 }
 
 export interface ICurrencyView extends IEntity {
-    name?:string;
-    symbol?:string;
+    name?:str;
+    symbol?:str;
 }

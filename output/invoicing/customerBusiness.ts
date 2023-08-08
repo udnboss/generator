@@ -12,79 +12,79 @@ export class CustomerBusiness extends Business<ICustomerView> {
     override createProperties: any = {
   "id": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "name": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "address": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "contact": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "currency_id": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "payment_term": {
     "required": false,
-    "type": "integer"
+    "type": "int"
   }
 };
     override updateProperties: any = {
   "id": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "name": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "address": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "contact": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "currency_id": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "payment_term": {
     "required": false,
-    "type": "integer"
+    "type": "int"
   }
 };
     override partialProperties: any = {
   "id": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "name": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "address": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "contact": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "currency_id": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "payment_term": {
     "required": false,
-    "type": "integer"
+    "type": "int"
   }
 };
     

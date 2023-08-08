@@ -1,7 +1,24 @@
 import yaml
 class entity:
     pass
-   
+
+TYPE_MAP = {
+    'array': 'array',
+    'str': 'string',
+    'date': 'string',
+    'datetime': 'string',
+    'time': 'string',
+    'bool': 'boolean',
+    'float': 'number',
+    'int': 'integer',
+}
+
+AUTO_TYPE_FORMATS = {
+    'date': 'date',
+    'datetime': 'date-time',    
+    'time': 'time',
+}
+
 def genSchema(entities:dict):
     schemas = {}
     for entityName, properties in entities.items():
@@ -25,13 +42,19 @@ def genSchema(entities:dict):
             if metadata['typeReference']:
                 prop['$ref'] = f"#/components/schemas/{metadata['type']}View"
             else:
-                prop['type'] = metadata['type']
+                metadataType = metadata['type']
+                prop['type'] = TYPE_MAP[metadataType]
+                if not 'format' in prop and metadataType in AUTO_TYPE_FORMATS:
+                    prop['format'] = AUTO_TYPE_FORMATS[metadataType]
 
             if 'subtype' in metadata:
                 if metadata['subtypeReference']:
                     prop['items'] = {'$ref': f"#/components/schemas/{metadata['subtype']}View"}
                 else:
-                    prop['items'] = {'type': {metadata['subtype']}}
+                    metadataSubType = metadata['subtype']
+                    prop['items'] = {'type': TYPE_MAP[metadataSubType]}
+                    if metadataSubType in AUTO_TYPE_FORMATS:
+                        prop['items']['format'] = AUTO_TYPE_FORMATS[metadataSubType]
 
             if not '$ref' in prop and not 'items' in prop:
                 schemas[entityName]['properties'][propertyName] = prop
@@ -45,6 +68,8 @@ def genSchema(entities:dict):
             if metadata['allowRead']:
                 schemas[entityNameView]['properties'][propertyName] = prop.copy()
         
+            # print(prop)
+    
         schemas[entityName]['required'] = [n for n, v in properties.items() if v['required']]
         schemas[entityNameCreate]['required'] = [n for n, v in properties.items() if v['required'] and v['allowCreate']]
         schemas[entityNameUpdate]['required'] = [n for n, v in properties.items() if v['required'] and v['allowUpdate']]
@@ -81,11 +106,16 @@ def genPaths(prefix:str = "", entities:dict = {}):
     entityName:str
     properties:dict
     for entityName, properties in entities.items():
+        idType = TYPE_MAP[properties['id']['type']]
+        entityNamePlural = pluralize(entityName)
+        entityNameCapitalized = entityName.capitalize()
+        entityNameCapitalizedPlural = pluralize(entityNameCapitalized)
+        
         getPath = {
             'tags': [entityName],
             'summary': f'get all {entityName} entities',
             'description': f'get all {entityName} entities',
-            'operationId': f'get{pluralize(entityName.capitalize())}',
+            'operationId': f'get{entityNameCapitalizedPlural}',
             'responses': {
                 '200': {
                     'description': 'successful operation',
@@ -106,7 +136,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
             'tags': [entityName],
             'summary': f'Add a new {entityName} entity',
             'description': f'Add a new {entityName} entity',
-            'operationId': f'add{entityName.capitalize()}',
+            'operationId': f'add{entityNameCapitalized}',
             'requestBody': {
                 'description': f'Create a new {entityName} entity',
                 'content': {
@@ -139,7 +169,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
             'tags': [entityName],
             'summary': f'Update an existing {entityName} entity',
             'description': f'Update an existing {entityName} entity (all required properties must be supplied)',
-            'operationId': f'update{entityName.capitalize()}',
+            'operationId': f'update{entityNameCapitalized}',
             'parameters': [
                 {
                     'name': 'id',
@@ -147,7 +177,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'description': f'{entityName} id to update',
                     'required': True,
                     'schema': {
-                        'type': properties['id']['type']
+                        'type': idType
                     }
                 }
             ],
@@ -188,7 +218,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
             'tags': [entityName],
             'summary': f'Modify an existing {entityName} entity',
             'description': f'Modify an existing {entityName} entity (partial update, only provided properties will be updated)',
-            'operationId': f'modify{entityName.capitalize()}',
+            'operationId': f'modify{entityNameCapitalized}',
             'parameters': [
                 {
                     'name': 'id',
@@ -196,7 +226,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'description': f'{entityName} id to partially update',
                     'required': True,
                     'schema': {
-                        'type': properties['id']['type']
+                        'type': idType
                     }
                 }
             ],
@@ -237,7 +267,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
             'tags': [entityName],
             'summary': f'Delete an existing {entityName} entity',
             'description': f'Delete an existing {entityName} entity',
-            'operationId': f'delete{entityName.capitalize()}',
+            'operationId': f'delete{entityNameCapitalized}',
             'parameters': [
                 {
                     'name': 'id',
@@ -245,7 +275,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'description': f'{entityName} id to delete',
                     'required': True,
                     'schema': {
-                        'type': properties['id']['type']
+                        'type': idType
                     }
                 }
             ],
@@ -272,7 +302,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
             'tags': [entityName],
             'summary': f'Get an existing {entityName} entity',
             'description': f'Get an existing {entityName} entity',
-            'operationId': f'get{entityName.capitalize()}',
+            'operationId': f'get{entityNameCapitalized}',
             'parameters': [
                 {
                     'name': 'id',
@@ -280,7 +310,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'description': f'{entityName} id to get',
                     'required': True,
                     'schema': {
-                        'type': properties['id']['type']
+                        'type': idType
                     }
                 }
             ],
@@ -304,12 +334,12 @@ def genPaths(prefix:str = "", entities:dict = {}):
             }
         }
 
-        paths[f'{prefix}/{pluralize(entityName)}'] = {
+        paths[f'{prefix}/{entityNamePlural}'] = {
             'get': getPath,
             'post': postPath,            
         }
 
-        paths[f'{prefix}/{pluralize(entityName)}/{{id}}'] = {
+        paths[f'{prefix}/{entityNamePlural}/{{id}}'] = {
             'get': getOnePath,
             'put': putPath,
             'patch': patchPath,

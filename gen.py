@@ -14,6 +14,10 @@ genoutput = gensource.split('/')[-1].split('.')[0]
 with open(gensource, 'r', encoding='utf-8') as f:
     inputProfile:dict = yaml.safe_load(f)
 
+if gentype == 'test':
+    entities = parseEntities(gensource)
+    print(yaml.dump(entities))
+
 if gentype == 'docs':
     entities = parseEntities(gensource)
     

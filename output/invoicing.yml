@@ -541,7 +541,7 @@ components:
         reference_date:
           format: date
           type: string
-        total!:
+        total:
           type: number
       required:
       - id
@@ -551,7 +551,7 @@ components:
       - number
       - date
       - currency_id
-      - total!
+      - total
       - confirmed
       type: object
     saleCreate:
@@ -583,8 +583,6 @@ components:
         reference_date:
           format: date
           type: string
-        total!:
-          type: number
       required:
       - id
       - company_id
@@ -593,7 +591,6 @@ components:
       - number
       - date
       - currency_id
-      - total!
       - confirmed
       type: object
     saleItem:
@@ -607,7 +604,7 @@ components:
         price:
           type: number
         quantity:
-          type: number
+          type: integer
         sale_id:
           type: string
       required:
@@ -629,7 +626,7 @@ components:
         price:
           type: number
         quantity:
-          type: number
+          type: integer
         sale_id:
           type: string
       required:
@@ -651,7 +648,7 @@ components:
         price:
           type: number
         quantity:
-          type: number
+          type: integer
         sale_id:
           type: string
       type: object
@@ -666,7 +663,7 @@ components:
         price:
           type: number
         quantity:
-          type: number
+          type: integer
         sale_id:
           type: string
       required:
@@ -690,7 +687,7 @@ components:
         price:
           type: number
         quantity:
-          type: number
+          type: integer
         sale:
           $ref: '#/components/schemas/saleView'
         sale_id:
@@ -799,16 +796,16 @@ components:
         reference_date:
           format: date
           type: string
-        total!:
+        total:
           type: number
       type: object
 info:
-  description: SALES API REFERENCE
-  title: Sales API
+  description: Invoicing API Reference
+  title: Invoicing API
   version: '1.0'
 openapi: 3.0.3
 paths:
-  /v1/accounts:
+  /api/v1/accounts:
     get:
       description: get all account entities
       operationId: getAccounts
@@ -846,7 +843,7 @@ paths:
       summary: Add a new account entity
       tags:
       - account
-  /v1/accounts/{id}:
+  /api/v1/accounts/{id}:
     delete:
       description: Delete an existing account entity
       operationId: deleteAccount
@@ -963,7 +960,7 @@ paths:
       summary: Update an existing account entity
       tags:
       - account
-  /v1/categories:
+  /api/v1/categories:
     get:
       description: get all category entities
       operationId: getCategories
@@ -1001,7 +998,7 @@ paths:
       summary: Add a new category entity
       tags:
       - category
-  /v1/categories/{id}:
+  /api/v1/categories/{id}:
     delete:
       description: Delete an existing category entity
       operationId: deleteCategory
@@ -1118,7 +1115,7 @@ paths:
       summary: Update an existing category entity
       tags:
       - category
-  /v1/companies:
+  /api/v1/companies:
     get:
       description: get all company entities
       operationId: getCompanies
@@ -1156,7 +1153,7 @@ paths:
       summary: Add a new company entity
       tags:
       - company
-  /v1/companies/{id}:
+  /api/v1/companies/{id}:
     delete:
       description: Delete an existing company entity
       operationId: deleteCompany
@@ -1273,7 +1270,7 @@ paths:
       summary: Update an existing company entity
       tags:
       - company
-  /v1/currencies:
+  /api/v1/currencies:
     get:
       description: get all currency entities
       operationId: getCurrencies
@@ -1311,7 +1308,7 @@ paths:
       summary: Add a new currency entity
       tags:
       - currency
-  /v1/currencies/{id}:
+  /api/v1/currencies/{id}:
     delete:
       description: Delete an existing currency entity
       operationId: deleteCurrency
@@ -1428,7 +1425,7 @@ paths:
       summary: Update an existing currency entity
       tags:
       - currency
-  /v1/customers:
+  /api/v1/customers:
     get:
       description: get all customer entities
       operationId: getCustomers
@@ -1466,7 +1463,7 @@ paths:
       summary: Add a new customer entity
       tags:
       - customer
-  /v1/customers/{id}:
+  /api/v1/customers/{id}:
     delete:
       description: Delete an existing customer entity
       operationId: deleteCustomer
@@ -1583,7 +1580,7 @@ paths:
       summary: Update an existing customer entity
       tags:
       - customer
-  /v1/items:
+  /api/v1/items:
     get:
       description: get all item entities
       operationId: getItems
@@ -1621,7 +1618,7 @@ paths:
       summary: Add a new item entity
       tags:
       - item
-  /v1/items/{id}:
+  /api/v1/items/{id}:
     delete:
       description: Delete an existing item entity
       operationId: deleteItem
@@ -1738,7 +1735,7 @@ paths:
       summary: Update an existing item entity
       tags:
       - item
-  /v1/saleItems:
+  /api/v1/saleItems:
     get:
       description: get all saleItem entities
       operationId: getSaleitems
@@ -1776,7 +1773,7 @@ paths:
       summary: Add a new saleItem entity
       tags:
       - saleItem
-  /v1/saleItems/{id}:
+  /api/v1/saleItems/{id}:
     delete:
       description: Delete an existing saleItem entity
       operationId: deleteSaleitem
@@ -1893,7 +1890,7 @@ paths:
       summary: Update an existing saleItem entity
       tags:
       - saleItem
-  /v1/sales:
+  /api/v1/sales:
     get:
       description: get all sale entities
       operationId: getSales
@@ -1931,7 +1928,7 @@ paths:
       summary: Add a new sale entity
       tags:
       - sale
-  /v1/sales/{id}:
+  /api/v1/sales/{id}:
     delete:
       description: Delete an existing sale entity
       operationId: deleteSale

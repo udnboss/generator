@@ -12,103 +12,103 @@ export class CompanyBusiness extends Business<ICompanyView> {
     override createProperties: any = {
   "id": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "name": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "address": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "crn": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "trn": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "contact": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "mobile": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "email": {
     "required": true,
-    "type": "string"
+    "type": "str"
   }
 };
     override updateProperties: any = {
   "id": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "name": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "address": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "crn": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "trn": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "contact": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "mobile": {
     "required": true,
-    "type": "string"
+    "type": "str"
   },
   "email": {
     "required": true,
-    "type": "string"
+    "type": "str"
   }
 };
     override partialProperties: any = {
   "id": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "name": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "address": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "crn": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "trn": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "contact": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "mobile": {
     "required": false,
-    "type": "string"
+    "type": "str"
   },
   "email": {
     "required": false,
-    "type": "string"
+    "type": "str"
   }
 };
     
