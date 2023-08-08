@@ -4,43 +4,43 @@ import { ICurrencyView } from "./currencyInterfaces";
 import { ISaleView } from "./saleInterfaces";
 
 export interface ICustomer extends IEntity {
-    name:str;
-    address?:str;
-    contact?:str;
-    currency_id?:str;
-    payment_term?:int;
+    name:string;
+    address?:string;
+    contact?:string;
+    currency_id?:string;
+    payment_term?:number;
 }
 
 export interface ICustomerCreate extends IEntity {
-    name:str;
-    address?:str;
-    contact?:str;
-    currency_id?:str;
-    payment_term?:int;
+    name:string;
+    address?:string;
+    contact?:string;
+    currency_id?:string;
+    payment_term?:number;
 }
 
 export interface ICustomerUpdate extends IEntity {
-    name:str;
-    address?:str;
-    contact?:str;
-    currency_id?:str;
-    payment_term?:int;
+    name:string;
+    address?:string;
+    contact?:string;
+    currency_id?:string;
+    payment_term?:number;
 }
 
 export interface ICustomerPartial extends IEntity {
-    name?:str;
-    address?:str;
-    contact?:str;
-    currency_id?:str;
-    payment_term?:int;
+    name?:string;
+    address?:string;
+    contact?:string;
+    currency_id?:string;
+    payment_term?:number;
 }
 
 export interface ICustomerView extends IEntity {
-    name?:str;
-    address?:str;
-    contact?:str;
-    currency_id?:str;
+    name?:string;
+    address?:string;
+    contact?:string;
+    currency_id?:string;
     currency?:ICurrencyView;
-    payment_term?:int;
+    payment_term?:number;
     sales?:ISaleView[];
 }

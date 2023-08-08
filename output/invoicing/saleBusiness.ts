@@ -12,143 +12,143 @@ export class SaleBusiness extends Business<ISaleView> {
     override createProperties: any = {
   "id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "company_id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "account_id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "customer_id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "place": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "number": {
     "required": true,
-    "type": "int"
+    "type": "integer"
   },
   "date": {
     "required": true,
-    "type": "date"
+    "type": "string"
   },
   "currency_id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "reference": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "confirmed": {
     "required": true,
-    "type": "bool"
+    "type": "boolean"
   },
   "reference_date": {
     "required": false,
-    "type": "date"
+    "type": "string"
   },
   "due_date": {
     "required": false,
-    "type": "date"
+    "type": "string"
   }
 };
     override updateProperties: any = {
   "id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "company_id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "account_id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "customer_id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "place": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "number": {
     "required": true,
-    "type": "int"
+    "type": "integer"
   },
   "currency_id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "reference": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "confirmed": {
     "required": true,
-    "type": "bool"
+    "type": "boolean"
   },
   "reference_date": {
     "required": false,
-    "type": "date"
+    "type": "string"
   },
   "due_date": {
     "required": false,
-    "type": "date"
+    "type": "string"
   }
 };
     override partialProperties: any = {
   "id": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "company_id": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "account_id": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "customer_id": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "place": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "number": {
     "required": false,
-    "type": "int"
+    "type": "integer"
   },
   "currency_id": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "reference": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "confirmed": {
     "required": false,
-    "type": "bool"
+    "type": "boolean"
   },
   "reference_date": {
     "required": false,
-    "type": "date"
+    "type": "string"
   },
   "due_date": {
     "required": false,
-    "type": "date"
+    "type": "string"
   }
 };
     

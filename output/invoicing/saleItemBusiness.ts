@@ -12,79 +12,79 @@ export class SaleitemBusiness extends Business<ISaleitemView> {
     override createProperties: any = {
   "id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "sale_id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "item_id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "description": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "quantity": {
     "required": true,
-    "type": "int"
+    "type": "integer"
   },
   "price": {
     "required": true,
-    "type": "float"
+    "type": "number"
   }
 };
     override updateProperties: any = {
   "id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "sale_id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "item_id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "description": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "quantity": {
     "required": true,
-    "type": "int"
+    "type": "integer"
   },
   "price": {
     "required": true,
-    "type": "float"
+    "type": "number"
   }
 };
     override partialProperties: any = {
   "id": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "sale_id": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "item_id": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "description": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "quantity": {
     "required": false,
-    "type": "int"
+    "type": "integer"
   },
   "price": {
     "required": false,
-    "type": "float"
+    "type": "number"
   }
 };
     

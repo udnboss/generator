@@ -1,5 +1,12 @@
 import json
 
+TYPE_MAP = {
+    'string': 'string',
+    'boolean': 'boolean',
+    'number': 'number',
+    'integer': 'number',
+}
+
 with open('templates/expressInterface.ts', 'r', encoding='utf-8') as f:        
     INTERFACES_TEMPLATE = f.read()
 with open('templates/expressClass.ts', 'r', encoding='utf-8') as f:        
@@ -56,10 +63,9 @@ def genArtifacts(entityName:str, schema:dict) -> tuple[str,str]:
             else:
                 type = attrs["type"]  
             
-            if type == 'integer':
-                type = 'number'
+            tsType = TYPE_MAP[type] if type in TYPE_MAP else type
 
-            interface.append(f'{prop}{optional}:{type};')
+            interface.append(f'{prop}{optional}:{tsType};')
         return '\n    '.join(interface)
 
     storeInterface = getInterface('store')
@@ -153,7 +159,7 @@ def _genCode(entities:dict, openApiSchemas:dict):
 
 def createFiles(scriptsOutputDir:str, entities:dict, openApiSchemas:dict):
     routers, interfaces, businesses, classes, base, index = _genCode(entities=entities, openApiSchemas=openApiSchemas)
-    
+
     for entity, script in interfaces.items():
         with open(f'{scriptsOutputDir}/{entity}Interfaces.ts', 'w', encoding='utf-8') as f:
             f.write(script)

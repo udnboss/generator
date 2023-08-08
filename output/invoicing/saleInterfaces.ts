@@ -7,73 +7,73 @@ import { ICompanyView } from "./companyInterfaces";
 import { ISaleitemView } from "./saleItemInterfaces";
 
 export interface ISale extends IEntity {
-    company_id:str;
-    account_id:str;
-    customer_id:str;
-    place?:str;
-    number:int;
-    date:date;
-    currency_id:str;
-    total:float;
-    reference?:str;
-    confirmed:bool;
-    reference_date?:date;
-    due_date?:date;
+    company_id:string;
+    account_id:string;
+    customer_id:string;
+    place?:string;
+    number:number;
+    date:string;
+    currency_id:string;
+    total:number;
+    reference?:string;
+    confirmed:boolean;
+    reference_date?:string;
+    due_date?:string;
 }
 
 export interface ISaleCreate extends IEntity {
-    company_id:str;
-    account_id:str;
-    customer_id:str;
-    place?:str;
-    number:int;
-    date:date;
-    currency_id:str;
-    reference?:str;
-    confirmed:bool;
-    reference_date?:date;
-    due_date?:date;
+    company_id:string;
+    account_id:string;
+    customer_id:string;
+    place?:string;
+    number:number;
+    date:string;
+    currency_id:string;
+    reference?:string;
+    confirmed:boolean;
+    reference_date?:string;
+    due_date?:string;
 }
 
 export interface ISaleUpdate extends IEntity {
-    company_id:str;
-    account_id:str;
-    customer_id:str;
-    place?:str;
-    number:int;
-    currency_id:str;
-    reference?:str;
-    confirmed:bool;
-    reference_date?:date;
-    due_date?:date;
+    company_id:string;
+    account_id:string;
+    customer_id:string;
+    place?:string;
+    number:number;
+    currency_id:string;
+    reference?:string;
+    confirmed:boolean;
+    reference_date?:string;
+    due_date?:string;
 }
 
 export interface ISalePartial extends IEntity {
-    company_id?:str;
-    account_id?:str;
-    customer_id?:str;
-    place?:str;
-    number?:int;
-    currency_id?:str;
-    reference?:str;
-    confirmed?:bool;
-    reference_date?:date;
-    due_date?:date;
+    company_id?:string;
+    account_id?:string;
+    customer_id?:string;
+    place?:string;
+    number?:number;
+    currency_id?:string;
+    reference?:string;
+    confirmed?:boolean;
+    reference_date?:string;
+    due_date?:string;
 }
 
 export interface ISaleView extends IEntity {
-    company_id?:str;
-    account_id?:str;
-    customer_id?:str;
-    place?:str;
-    number?:int;
-    date?:date;
-    currency_id?:str;
-    total?:float;
-    reference?:str;
-    confirmed?:bool;
-    reference_date?:date;
-    due_date?:date;
+    company_id?:string;
+    account_id?:string;
+    customer_id?:string;
+    place?:string;
+    number?:number;
+    date?:string;
+    currency_id?:string;
+    total?:number;
+    reference?:string;
+    confirmed?:boolean;
+    reference_date?:string;
+    due_date?:string;
     currency?:ICurrencyView;
     customer?:ICustomerView;
     account?:IAccountView;

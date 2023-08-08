@@ -12,103 +12,103 @@ export class AccountBusiness extends Business<IAccountView> {
     override createProperties: any = {
   "id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "label": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "bank_name": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "bank_address": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "bank_swift": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "account_name": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "account_iban": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "account_address": {
     "required": true,
-    "type": "str"
+    "type": "string"
   }
 };
     override updateProperties: any = {
   "id": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "label": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "bank_name": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "bank_address": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "bank_swift": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "account_name": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "account_iban": {
     "required": true,
-    "type": "str"
+    "type": "string"
   },
   "account_address": {
     "required": true,
-    "type": "str"
+    "type": "string"
   }
 };
     override partialProperties: any = {
   "id": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "label": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "bank_name": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "bank_address": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "bank_swift": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "account_name": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "account_iban": {
     "required": false,
-    "type": "str"
+    "type": "string"
   },
   "account_address": {
     "required": false,
-    "type": "str"
+    "type": "string"
   }
 };
     

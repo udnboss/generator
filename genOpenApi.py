@@ -110,7 +110,7 @@ def genPaths(prefix:str = "", entities:dict = {}):
         entityNamePlural = pluralize(entityName)
         entityNameCapitalized = entityName.capitalize()
         entityNameCapitalizedPlural = pluralize(entityNameCapitalized)
-        
+
         getPath = {
             'tags': [entityName],
             'summary': f'get all {entityName} entities',

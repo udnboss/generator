@@ -3,28 +3,28 @@ import { IEntity } from "./base";
 import { IItemView } from "./itemInterfaces";
 
 export interface ICategory extends IEntity {
-    name:str;
-    category_id?:str;
+    name:string;
+    category_id?:string;
 }
 
 export interface ICategoryCreate extends IEntity {
-    name:str;
-    category_id?:str;
+    name:string;
+    category_id?:string;
 }
 
 export interface ICategoryUpdate extends IEntity {
-    name:str;
-    category_id?:str;
+    name:string;
+    category_id?:string;
 }
 
 export interface ICategoryPartial extends IEntity {
-    name?:str;
-    category_id?:str;
+    name?:string;
+    category_id?:string;
 }
 
 export interface ICategoryView extends IEntity {
-    name?:str;
-    category_id?:str;
+    name?:string;
+    category_id?:string;
     category?:ICategoryView;
     items?:IItemView[];
 }

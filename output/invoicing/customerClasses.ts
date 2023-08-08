@@ -4,43 +4,43 @@ import { ICurrencyView } from "./currencyInterfaces";
 import { ISaleView } from "./saleInterfaces";
 
 export class Customer extends Entity {
-    name:str;
-    address?:str;
-    contact?:str;
-    currency_id?:str;
-    payment_term?:int;
+    name:string;
+    address?:string;
+    contact?:string;
+    currency_id?:string;
+    payment_term?:number;
 }
 
 export class CustomerCreate extends Entity {
-    name:str;
-    address?:str;
-    contact?:str;
-    currency_id?:str;
-    payment_term?:int;
+    name:string;
+    address?:string;
+    contact?:string;
+    currency_id?:string;
+    payment_term?:number;
 }
 
 export class CustomerUpdate extends Entity {
-    name:str;
-    address?:str;
-    contact?:str;
-    currency_id?:str;
-    payment_term?:int;
+    name:string;
+    address?:string;
+    contact?:string;
+    currency_id?:string;
+    payment_term?:number;
 }
 
 export class CustomerPartial extends Entity {
-    name?:str;
-    address?:str;
-    contact?:str;
-    currency_id?:str;
-    payment_term?:int;
+    name?:string;
+    address?:string;
+    contact?:string;
+    currency_id?:string;
+    payment_term?:number;
 }
 
 export class CustomerView extends Entity {
-    name?:str;
-    address?:str;
-    contact?:str;
-    currency_id?:str;
+    name?:string;
+    address?:string;
+    contact?:string;
+    currency_id?:string;
     currency?:ICurrencyView;
-    payment_term?:int;
+    payment_term?:number;
     sales?:ISaleView[];
 }

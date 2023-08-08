@@ -3,51 +3,51 @@ import { Entity } from "./base";
 
 
 export class Company extends Entity {
-    name:str;
-    address:str;
-    crn:str;
-    trn:str;
-    contact:str;
-    mobile:str;
-    email:str;
+    name:string;
+    address:string;
+    crn:string;
+    trn:string;
+    contact:string;
+    mobile:string;
+    email:string;
 }
 
 export class CompanyCreate extends Entity {
-    name:str;
-    address:str;
-    crn:str;
-    trn:str;
-    contact:str;
-    mobile:str;
-    email:str;
+    name:string;
+    address:string;
+    crn:string;
+    trn:string;
+    contact:string;
+    mobile:string;
+    email:string;
 }
 
 export class CompanyUpdate extends Entity {
-    name:str;
-    address:str;
-    crn:str;
-    trn:str;
-    contact:str;
-    mobile:str;
-    email:str;
+    name:string;
+    address:string;
+    crn:string;
+    trn:string;
+    contact:string;
+    mobile:string;
+    email:string;
 }
 
 export class CompanyPartial extends Entity {
-    name?:str;
-    address?:str;
-    crn?:str;
-    trn?:str;
-    contact?:str;
-    mobile?:str;
-    email?:str;
+    name?:string;
+    address?:string;
+    crn?:string;
+    trn?:string;
+    contact?:string;
+    mobile?:string;
+    email?:string;
 }
 
 export class CompanyView extends Entity {
-    name?:str;
-    address?:str;
-    crn?:str;
-    trn?:str;
-    contact?:str;
-    mobile?:str;
-    email?:str;
+    name?:string;
+    address?:string;
+    crn?:string;
+    trn?:string;
+    contact?:string;
+    mobile?:string;
+    email?:string;
 }

@@ -3,51 +3,51 @@ import { IEntity } from "./base";
 
 
 export interface ICompany extends IEntity {
-    name:str;
-    address:str;
-    crn:str;
-    trn:str;
-    contact:str;
-    mobile:str;
-    email:str;
+    name:string;
+    address:string;
+    crn:string;
+    trn:string;
+    contact:string;
+    mobile:string;
+    email:string;
 }
 
 export interface ICompanyCreate extends IEntity {
-    name:str;
-    address:str;
-    crn:str;
-    trn:str;
-    contact:str;
-    mobile:str;
-    email:str;
+    name:string;
+    address:string;
+    crn:string;
+    trn:string;
+    contact:string;
+    mobile:string;
+    email:string;
 }
 
 export interface ICompanyUpdate extends IEntity {
-    name:str;
-    address:str;
-    crn:str;
-    trn:str;
-    contact:str;
-    mobile:str;
-    email:str;
+    name:string;
+    address:string;
+    crn:string;
+    trn:string;
+    contact:string;
+    mobile:string;
+    email:string;
 }
 
 export interface ICompanyPartial extends IEntity {
-    name?:str;
-    address?:str;
-    crn?:str;
-    trn?:str;
-    contact?:str;
-    mobile?:str;
-    email?:str;
+    name?:string;
+    address?:string;
+    crn?:string;
+    trn?:string;
+    contact?:string;
+    mobile?:string;
+    email?:string;
 }
 
 export interface ICompanyView extends IEntity {
-    name?:str;
-    address?:str;
-    crn?:str;
-    trn?:str;
-    contact?:str;
-    mobile?:str;
-    email?:str;
+    name?:string;
+    address?:string;
+    crn?:string;
+    trn?:string;
+    contact?:string;
+    mobile?:string;
+    email?:string;
 }

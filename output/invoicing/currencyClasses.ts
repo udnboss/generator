@@ -3,26 +3,26 @@ import { Entity } from "./base";
 
 
 export class Currency extends Entity {
-    name:str;
-    symbol:str;
+    name:string;
+    symbol:string;
 }
 
 export class CurrencyCreate extends Entity {
-    name:str;
-    symbol:str;
+    name:string;
+    symbol:string;
 }
 
 export class CurrencyUpdate extends Entity {
-    name:str;
-    symbol:str;
+    name:string;
+    symbol:string;
 }
 
 export class CurrencyPartial extends Entity {
-    name?:str;
-    symbol?:str;
+    name?:string;
+    symbol?:string;
 }
 
 export class CurrencyView extends Entity {
-    name?:str;
-    symbol?:str;
+    name?:string;
+    symbol?:string;
 }
