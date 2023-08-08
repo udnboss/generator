@@ -3,7 +3,8 @@
 import sys
 import yaml
 
-from genOpenApi import genSchema, parseEntities, genInfo, genPaths, genTags
+from inputParser import parseEntities
+from genOpenApi import genSchema, genInfo, genPaths, genTags
 from genExpressApi import createFiles as createExpressFiles
 
 gentype = sys.argv[1]

@@ -56,3 +56,5 @@ To generate express api typescript code, run:
 The output will be written in the specified outputDir in supplied `.yml` file.
 
 The generated api will have the basic business, interfaces, classes, and routes. Backend can be JSON or Sqlite3 (default) for now.
+
+Upcoming is to generate sql for :sqlite, postgres, sql server, etc.
