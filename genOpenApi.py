@@ -23,8 +23,9 @@ AUTO_TYPE_FORMATS = {
 
 def genSchema(entities:dict):
     schemas = {}
-    for entityName, properties in entities.items():
-        # properties = entity['properties']
+    for entityName, entity in entities.items():
+        properties = entity['properties']
+
         entityNameCreate = f"{entityName}Create"
         entityNameUpdate = f"{entityName}Update"
         entityNamePartial = f"{entityName}Partial"
@@ -107,7 +108,8 @@ def genPaths(prefix:str = "", entities:dict = {}):
     paths = {}
     entityName:str
     properties:dict
-    for entityName, properties in entities.items():
+    for entityName, entity in entities.items():
+        properties = entity['properties']
         idType = TYPE_MAP[properties['id']['type']]
         entityNamePlural = pluralize(entityName)
         entityNameCapitalized = entityName.capitalize()

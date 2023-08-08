@@ -10,10 +10,6 @@ export class SaleBusiness extends Business<ISaleView> {
     }
 
     override createProperties: any = {
-  "id": {
-    "required": true,
-    "type": "string"
-  },
   "company_id": {
     "required": true,
     "type": "string"
@@ -29,10 +25,6 @@ export class SaleBusiness extends Business<ISaleView> {
   "place": {
     "required": false,
     "type": "string"
-  },
-  "number": {
-    "required": true,
-    "type": "integer"
   },
   "date": {
     "required": true,
@@ -60,10 +52,6 @@ export class SaleBusiness extends Business<ISaleView> {
   }
 };
     override updateProperties: any = {
-  "id": {
-    "required": true,
-    "type": "string"
-  },
   "company_id": {
     "required": true,
     "type": "string"
@@ -79,10 +67,6 @@ export class SaleBusiness extends Business<ISaleView> {
   "place": {
     "required": false,
     "type": "string"
-  },
-  "number": {
-    "required": true,
-    "type": "integer"
   },
   "currency_id": {
     "required": true,
@@ -106,10 +90,6 @@ export class SaleBusiness extends Business<ISaleView> {
   }
 };
     override partialProperties: any = {
-  "id": {
-    "required": false,
-    "type": "string"
-  },
   "company_id": {
     "required": false,
     "type": "string"
@@ -125,10 +105,6 @@ export class SaleBusiness extends Business<ISaleView> {
   "place": {
     "required": false,
     "type": "string"
-  },
-  "number": {
-    "required": false,
-    "type": "integer"
   },
   "currency_id": {
     "required": false,

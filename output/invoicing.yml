@@ -15,11 +15,11 @@ components:
         bank_swift:
           type: string
         id:
+          format: uuid
           type: string
         label:
           type: string
       required:
-      - id
       - label
       - bank_name
       - bank_address
@@ -42,12 +42,9 @@ components:
           type: string
         bank_swift:
           type: string
-        id:
-          type: string
         label:
           type: string
       required:
-      - id
       - label
       - bank_name
       - bank_address
@@ -70,8 +67,6 @@ components:
           type: string
         bank_swift:
           type: string
-        id:
-          type: string
         label:
           type: string
       type: object
@@ -89,12 +84,9 @@ components:
           type: string
         bank_swift:
           type: string
-        id:
-          type: string
         label:
           type: string
       required:
-      - id
       - label
       - bank_name
       - bank_address
@@ -118,6 +110,7 @@ components:
         bank_swift:
           type: string
         id:
+          format: uuid
           type: string
         label:
           type: string
@@ -127,30 +120,25 @@ components:
         category_id:
           type: string
         id:
+          format: uuid
           type: string
         name:
           type: string
       required:
-      - id
       - name
       type: object
     categoryCreate:
       properties:
         category_id:
           type: string
-        id:
-          type: string
         name:
           type: string
       required:
-      - id
       - name
       type: object
     categoryPartial:
       properties:
         category_id:
-          type: string
-        id:
           type: string
         name:
           type: string
@@ -159,12 +147,9 @@ components:
       properties:
         category_id:
           type: string
-        id:
-          type: string
         name:
           type: string
       required:
-      - id
       - name
       type: object
     categoryView:
@@ -174,6 +159,7 @@ components:
         category_id:
           type: string
         id:
+          format: uuid
           type: string
         items:
           items:
@@ -194,6 +180,7 @@ components:
           format: email
           type: string
         id:
+          format: uuid
           type: string
         mobile:
           type: string
@@ -202,7 +189,6 @@ components:
         trn:
           type: string
       required:
-      - id
       - name
       - address
       - crn
@@ -222,8 +208,6 @@ components:
         email:
           format: email
           type: string
-        id:
-          type: string
         mobile:
           type: string
         name:
@@ -231,7 +215,6 @@ components:
         trn:
           type: string
       required:
-      - id
       - name
       - address
       - crn
@@ -251,8 +234,6 @@ components:
         email:
           format: email
           type: string
-        id:
-          type: string
         mobile:
           type: string
         name:
@@ -271,8 +252,6 @@ components:
         email:
           format: email
           type: string
-        id:
-          type: string
         mobile:
           type: string
         name:
@@ -280,7 +259,6 @@ components:
         trn:
           type: string
       required:
-      - id
       - name
       - address
       - crn
@@ -301,6 +279,7 @@ components:
           format: email
           type: string
         id:
+          format: uuid
           type: string
         mobile:
           type: string
@@ -375,13 +354,13 @@ components:
         currency_id:
           type: string
         id:
+          format: uuid
           type: string
         name:
           type: string
         payment_term:
           type: integer
       required:
-      - id
       - name
       type: object
     customerCreate:
@@ -392,14 +371,11 @@ components:
           type: string
         currency_id:
           type: string
-        id:
-          type: string
         name:
           type: string
         payment_term:
           type: integer
       required:
-      - id
       - name
       type: object
     customerPartial:
@@ -409,8 +385,6 @@ components:
         contact:
           type: string
         currency_id:
-          type: string
-        id:
           type: string
         name:
           type: string
@@ -425,14 +399,11 @@ components:
           type: string
         currency_id:
           type: string
-        id:
-          type: string
         name:
           type: string
         payment_term:
           type: integer
       required:
-      - id
       - name
       type: object
     customerView:
@@ -446,6 +417,7 @@ components:
         currency_id:
           type: string
         id:
+          format: uuid
           type: string
         name:
           type: string
@@ -461,30 +433,25 @@ components:
         category_id:
           type: string
         id:
+          format: uuid
           type: string
         name:
           type: string
       required:
-      - id
       - name
       type: object
     itemCreate:
       properties:
         category_id:
           type: string
-        id:
-          type: string
         name:
           type: string
       required:
-      - id
       - name
       type: object
     itemPartial:
       properties:
         category_id:
-          type: string
-        id:
           type: string
         name:
           type: string
@@ -493,12 +460,9 @@ components:
       properties:
         category_id:
           type: string
-        id:
-          type: string
         name:
           type: string
       required:
-      - id
       - name
       type: object
     itemView:
@@ -508,6 +472,7 @@ components:
         category_id:
           type: string
         id:
+          format: uuid
           type: string
         name:
           type: string
@@ -545,11 +510,9 @@ components:
         total:
           type: number
       required:
-      - id
       - company_id
       - account_id
       - customer_id
-      - number
       - date
       - currency_id
       - total
@@ -573,11 +536,6 @@ components:
         due_date:
           format: date
           type: string
-        id:
-          format: uuid
-          type: string
-        number:
-          type: integer
         place:
           type: string
         reference:
@@ -586,11 +544,9 @@ components:
           format: date
           type: string
       required:
-      - id
       - company_id
       - account_id
       - customer_id
-      - number
       - date
       - currency_id
       - confirmed
@@ -600,6 +556,7 @@ components:
         description:
           type: string
         id:
+          format: uuid
           type: string
         item_id:
           type: string
@@ -610,7 +567,6 @@ components:
         sale_id:
           type: string
       required:
-      - id
       - sale_id
       - item_id
       - description
@@ -621,8 +577,6 @@ components:
       properties:
         description:
           type: string
-        id:
-          type: string
         item_id:
           type: string
         price:
@@ -632,7 +586,6 @@ components:
         sale_id:
           type: string
       required:
-      - id
       - sale_id
       - item_id
       - description
@@ -642,8 +595,6 @@ components:
     saleItemPartial:
       properties:
         description:
-          type: string
-        id:
           type: string
         item_id:
           type: string
@@ -658,8 +609,6 @@ components:
       properties:
         description:
           type: string
-        id:
-          type: string
         item_id:
           type: string
         price:
@@ -669,7 +618,6 @@ components:
         sale_id:
           type: string
       required:
-      - id
       - sale_id
       - item_id
       - description
@@ -681,6 +629,7 @@ components:
         description:
           type: string
         id:
+          format: uuid
           type: string
         item:
           $ref: '#/components/schemas/itemView'
@@ -710,11 +659,6 @@ components:
         due_date:
           format: date
           type: string
-        id:
-          format: uuid
-          type: string
-        number:
-          type: integer
         place:
           type: string
         reference:
@@ -738,11 +682,6 @@ components:
         due_date:
           format: date
           type: string
-        id:
-          format: uuid
-          type: string
-        number:
-          type: integer
         place:
           type: string
         reference:
@@ -751,11 +690,9 @@ components:
           format: date
           type: string
       required:
-      - id
       - company_id
       - account_id
       - customer_id
-      - number
       - currency_id
       - confirmed
       type: object

@@ -11,7 +11,7 @@ export class Sale extends Entity {
     account_id:string;
     customer_id:string;
     place?:string;
-    number:number;
+    number?:number;
     date:string;
     currency_id:string;
     total:number;
@@ -26,7 +26,6 @@ export class SaleCreate extends Entity {
     account_id:string;
     customer_id:string;
     place?:string;
-    number:number;
     date:string;
     currency_id:string;
     reference?:string;
@@ -40,7 +39,6 @@ export class SaleUpdate extends Entity {
     account_id:string;
     customer_id:string;
     place?:string;
-    number:number;
     currency_id:string;
     reference?:string;
     confirmed:boolean;
@@ -53,7 +51,6 @@ export class SalePartial extends Entity {
     account_id?:string;
     customer_id?:string;
     place?:string;
-    number?:number;
     currency_id?:string;
     reference?:string;
     confirmed?:boolean;

@@ -42,10 +42,11 @@ def genArtifacts(entityName:str, schema:dict) -> tuple[str,str]:
 
         return json.dumps(typeProps, ensure_ascii=False, indent=2)
     
+    #for validating entities received from client
     createTypeProps = getTypeProps('create')
     updateTypeProps = getTypeProps('update')
     partialTypeProps = getTypeProps('partial')
-    viewTypeProps = getTypeProps('view')
+    # viewTypeProps = getTypeProps('view')
     
     def getInterface(schemaName:str):
         interface = []

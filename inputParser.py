@@ -25,7 +25,8 @@ def parseEntities(file:str):
         VALID_ENTITIY_TYPES = input['interfaces'].keys()
 
         for entityName, entity in input['interfaces'].items():
-            entities[entityName] = {}
+            entities[entityName] = entity.copy()
+            entities[entityName]['properties'] = {}
             properties = entity['properties']
             for property, metadata in properties.items():
                 propertyName = property
@@ -115,7 +116,7 @@ def parseEntities(file:str):
                     prop['constraintEntity'] = refEntity
                     prop['constraintEntityProperty'] = refEntityProperty
                     prop['constraintEntityOnDelete'] = refOnDelete
-                    prop['constraintEntityOnUpdate'] = refOnUpdate
+                    prop['constraintEntityOnUpdate'] = refOnUpdate                    
 
                 if propertyFormat is not None:
                     prop['format'] = propertyFormat
@@ -123,13 +124,28 @@ def parseEntities(file:str):
                 if propertySubType is not None:
                     prop['subtype'] = propertySubType
                     prop['subtypeReference'] = isSubTypeReference
-                                    
+
+                if 'key' in entity and propertyName == entity['key'] and 'autokey' in entity and entity['autokey']:
+                    isRequired = False
+                    allowCreate = False
+                    allowUpdate = False
+                
+                if 'autonumber' in entity and propertyName == entity['autonumber']:
+                    isRequired = False
+                    allowCreate = False
+                    allowUpdate = False
+
+                if isTypeReference:
+                    isRequired = False
+                    allowCreate = False
+                    allowUpdate = False
+
                 prop['required'] = isRequired
                 prop['allowRead'] = allowRead
                 prop['allowCreate'] = allowCreate
                 prop['allowUpdate'] = allowUpdate
 
-                entities[entityName][propertyName] = prop
+                entities[entityName]['properties'][propertyName] = prop
                 # print(prop)
                 # exit()
                 

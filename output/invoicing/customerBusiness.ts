@@ -10,10 +10,6 @@ export class CustomerBusiness extends Business<ICustomerView> {
     }
 
     override createProperties: any = {
-  "id": {
-    "required": true,
-    "type": "string"
-  },
   "name": {
     "required": true,
     "type": "string"
@@ -36,10 +32,6 @@ export class CustomerBusiness extends Business<ICustomerView> {
   }
 };
     override updateProperties: any = {
-  "id": {
-    "required": true,
-    "type": "string"
-  },
   "name": {
     "required": true,
     "type": "string"
@@ -62,10 +54,6 @@ export class CustomerBusiness extends Business<ICustomerView> {
   }
 };
     override partialProperties: any = {
-  "id": {
-    "required": false,
-    "type": "string"
-  },
   "name": {
     "required": false,
     "type": "string"

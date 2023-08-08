@@ -10,10 +10,6 @@ export class AccountBusiness extends Business<IAccountView> {
     }
 
     override createProperties: any = {
-  "id": {
-    "required": true,
-    "type": "string"
-  },
   "label": {
     "required": true,
     "type": "string"
@@ -44,10 +40,6 @@ export class AccountBusiness extends Business<IAccountView> {
   }
 };
     override updateProperties: any = {
-  "id": {
-    "required": true,
-    "type": "string"
-  },
   "label": {
     "required": true,
     "type": "string"
@@ -78,10 +70,6 @@ export class AccountBusiness extends Business<IAccountView> {
   }
 };
     override partialProperties: any = {
-  "id": {
-    "required": false,
-    "type": "string"
-  },
   "label": {
     "required": false,
     "type": "string"

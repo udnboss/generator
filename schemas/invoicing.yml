@@ -1,7 +1,7 @@
 api:
   title: Invoicing API
   description: Invoicing API Reference
-  version: '1.0'
+  version: "1.0"
   prefix: /api/v1
 scripts:
   outputDir: ./output/invoicing
@@ -9,23 +9,29 @@ scripts:
 interfaces:
   account:
     key: id
+    autokey: true
     unique: [label]
+    sort: [label: asc]
+    sortable: [label]
     properties:
-      id: 
-      label: 
-      bank_name: 
-      bank_address: 
-      bank_swift: 
-      account_name: 
-      account_iban: 
-      account_address: 
+      id: uuid
+      label:
+      bank_name:
+      bank_address:
+      bank_swift:
+      account_name:
+      account_iban:
+      account_address:
 
   category:
     key: id
+    autokey: true
+    sort: [name: asc]
+    sortable: [name, category.name]
     unique: [name]
     properties:
-      id: 
-      name: 
+      id: uuid
+      name:
       category_id?: str > category.id
 
       category?: category
@@ -33,33 +39,41 @@ interfaces:
 
   company:
     key: id
+    autokey: true
+    sort: [name: asc]
+    sortable: [name]
     unique: [name]
     properties:
-      id: 
-      name: 
-      address: 
-      crn: 
-      trn: 
-      contact: 
-      mobile: 
+      id: uuid
+      name:
+      address:
+      crn:
+      trn:
+      contact:
+      mobile:
       email: str|email
 
   currency:
     key: id
+    sort: [name: asc]
+    sortable: [name]
     unique: [name]
     properties:
-      id: 
-      name: 
-      symbol: 
+      id:
+      name:
+      symbol:
 
   customer:
     key: id
+    autokey: true
+    sort: [name: asc]
+    sortable: [name]
     unique: [name]
     properties:
-      id: 
-      name: 
-      address?: 
-      contact?: 
+      id: uuid
+      name:
+      address?:
+      contact?:
       currency_id?: str > currency.id
       currency?: currency
       payment_term?: int
@@ -68,29 +82,35 @@ interfaces:
 
   item:
     key: id
+    autokey: true
+    sort: [name: asc]
+    sortable: [name, category.name]
     unique: [name]
     properties:
-      id: 
-      name: 
+      id: uuid
+      name:
       category_id?: str > category.id
 
       category?: category
 
   sale:
     key: id
-    unique: [number]
-    sort: [number: desc]
+    autokey: true #key column to be auto generated depending on its type
+    autonumber: number #the column to auto increment
+    sort: [number: desc] #default sort order
+    sortable: [number, date, customer.name] #allowed sort by
+    unique: [number] #unique constraint
     properties:
       id: uuid
       company_id: str > company.id
       account_id: str > account.id
       customer_id: str > customer.id
-      place?: 
+      place?:
       number: int
       date*: date # a * means disallow update
       currency_id: str > currency.id
       total!*: float # a !* means disallow both create, update
-      reference?:     
+      reference?:
       confirmed: bool
 
       reference_date?: date
@@ -104,14 +124,17 @@ interfaces:
 
   saleItem:
     key: id
+    autokey: true
+    sort: [item.name]
+    sortable: [item.name]
     unique: [sale_id, item_id]
     properties:
-      id: 
+      id: uuid
       sale_id: str > sale.id
       item_id: str > item.id
-      description: 
+      description:
       quantity: int
-      price: float    
-      
+      price: float
+
       sale?: sale
       item?: item
