@@ -11,7 +11,7 @@ interfaces:
     key: id
     autokey: true
     unique: [label]
-    sort: [label: asc]
+    sort: [label asc]
     sortable: [label]
     properties:
       id: uuid
@@ -26,7 +26,7 @@ interfaces:
   category:
     key: id
     autokey: true
-    sort: [name: asc]
+    sort: [name asc]
     sortable: [name, category.name]
     unique: [name]
     properties:
@@ -40,7 +40,7 @@ interfaces:
   company:
     key: id
     autokey: true
-    sort: [name: asc]
+    sort: [name asc]
     sortable: [name]
     unique: [name]
     properties:
@@ -55,7 +55,7 @@ interfaces:
 
   currency:
     key: id
-    sort: [name: asc]
+    sort: [name asc]
     sortable: [name]
     unique: [name]
     properties:
@@ -66,7 +66,7 @@ interfaces:
   customer:
     key: id
     autokey: true
-    sort: [name: asc]
+    sort: [name asc]
     sortable: [name]
     unique: [name]
     properties:
@@ -83,7 +83,7 @@ interfaces:
   item:
     key: id
     autokey: true
-    sort: [name: asc]
+    sort: [name asc]
     sortable: [name, category.name]
     unique: [name]
     properties:
@@ -97,9 +97,9 @@ interfaces:
     key: id
     autokey: true #key column to be auto generated depending on its type
     autonumber: number #the column to auto increment
-    sort: [number: desc] #default sort order
+    sort: [number desc] #default sort order
     sortable: [number, date, customer.name] #allowed sort by
-    unique: [number] #unique constraint
+    unique: [number] #unique constraint    
     properties:
       id: uuid
       company_id: str > company.id
