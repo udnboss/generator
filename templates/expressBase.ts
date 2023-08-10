@@ -55,6 +55,7 @@ export abstract class Entity {
 }
 
 export interface IBusiness<TOutput extends IEntity> {
+    idProperty:string;
     createProperties: any;
     updateProperties: any;
     partialProperties: any;
@@ -69,6 +70,7 @@ export interface IBusiness<TOutput extends IEntity> {
 }
 
 export abstract class Business<TOutput extends IEntity> implements IBusiness<TOutput> {
+    idProperty:string = 'id';
     createProperties: { id: { type: "string", required: true } };
     updateProperties: { id: { type: "string", required: true } };
     partialProperties: { id: { type: "string", required: false } };
@@ -91,22 +93,29 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
         for (let key in expectedKeys) {
             let isRequired = expectedKeys[key].required;
             if (isRequired && !(key in obj)) {
+                throw new Error(`missing required property ${key}`);
                 return false; //missing required property
             }
             let value = obj[key];
             let expectedType = expectedKeys[key].type;
-            if (expectedType != 'array' && typeof value !== expectedType) {
-                return false; //primitive type not matching           
+            if (expectedType != 'array') {
+                let incomingType = typeof value;
+                if (incomingType !== expectedType) {
+                    throw new Error(`property ${key}: expected type ${expectedType} does not match provided type ${incomingType}`);
+                    return false; //primitive type not matching           
+                }
             } else {
                 let expectedSubType = expectedKeys[key].subtype;
                 if (!Array.isArray(value) || !value.every(item => typeof item === expectedSubType)) {
+                    throw new Error(`property ${key}: expected array subtype ${expectedSubType} does not match provided subtype`);
                     return false; //array type not matching or items not of expected subtype
                 }
             }
         }
 
         for (let key in obj) {
-            if (!expectedKeys.include(key)) {
+            if (!(key in expectedKeys)) {
+                throw new Error(`received unexpected property ${key}`);
                 return false; //extra properties found
             }
         }
@@ -132,31 +141,31 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
 
     async getById(id: string): Promise<TOutput> {
         const dbResult = await this.db.dbSelect(this.entityName,
-            [{ column: 'id', operator: Operator.Equals, value: id } as ICondition]);
+            [{ column: this.idProperty, operator: Operator.Equals, value: id } as ICondition]);
         if (dbResult.count == 0) {
-            throw new Error("Not Found");
+            throw new Error("ENTITY_NOT_FOUND: Entity Not Found");
         }
         return dbResult.result[0] as TOutput;
     }
 
-    async create(entity: IEntity): Promise<TOutput> {
-        const dbResult = await this.db.dbInsert(this.entityName, entity as IEntity) as TOutput;
+    async create(entity: IEntity): Promise<TOutput> {        
+        const dbResult = await this.db.dbInsert(this.entityName, this.idProperty, entity as IEntity) as TOutput;
         return dbResult;
     }
 
     async update(id: string, entity: IEntity): Promise<TOutput> {
-        const dbResult = await this.db.dbUpdate(id, this.entityName, entity as IEntity) as TOutput;
+        const dbResult = await this.db.dbUpdate(this.entityName, this.idProperty, id, entity as IEntity) as TOutput;
         return dbResult;
     }
 
     async modify(id: string, entity: IEntity): Promise<TOutput> {
-        const dbResult = await this.db.dbUpdate(id, this.entityName, entity as IEntity) as TOutput;
+        const dbResult = await this.db.dbUpdate(this.entityName, this.idProperty, id, entity as IEntity) as TOutput;
         return dbResult;
     }
 
     async delete(id: string): Promise<TOutput> {
         const entity = await this.getById(id) as TOutput;
-        const deleted = await this.db.dbDelete(this.entityName, id);
+        const deleted = await this.db.dbDelete(this.entityName, this.idProperty, id);
         if (!deleted) {
             throw new Error("Could not Delete");
         }
@@ -182,9 +191,9 @@ interface IDBProvider {
     clearCache: () => void;
     dbCount: (table: string, where?: ICondition[]) => Promise<Number>;
     dbSelect: (table: string, where?: ICondition[], sort?: ISort[]) => Promise<IQueryResult<IQuery, IEntity>>;
-    dbInsert: (table: string, record: IEntity) => Promise<IEntity>;
-    dbUpdate: (table: string, id: string, record: IEntity) => Promise<IEntity>;
-    dbDelete: (table: string, id: string) => Promise<boolean>;
+    dbInsert: (table: string, idCol:string, record: IEntity) => Promise<IEntity>;
+    dbUpdate: (table: string, idCol:string, id: string, record: IEntity) => Promise<IEntity>;
+    dbDelete: (table: string, idCol:string, id: string) => Promise<boolean>;
     dbCommit: () => Promise<any>;
     dbBegin: () => Promise<any>;
     dbRollback: () => Promise<any>;
@@ -348,15 +357,15 @@ class DBJSONProvider implements IDBProvider {
         return { result: results, count: results.length, total: results.length } as IQueryResult<IQuery, IEntity>;
     };
 
-    dbInsert = async (table: string, record: IEntity) => {
+    dbInsert = async (table: string, idCol:string, record: IEntity) => {
         const db = await this.dbConnect();
         db[table].push(record);
         return record;
     };
 
-    dbDelete = async (table: string, id: string) => {
+    dbDelete = async (table: string, idCol:string, id: string) => {
         const db = await this.dbConnect();
-        const index = db[table].findIndex((x: IEntity) => x.id == id);
+        const index = db[table].findIndex((x: IEntity) => x.id== id);
         if (index > -1) {
             (db[table] as []).splice(index, 1);
             return true;
@@ -364,7 +373,7 @@ class DBJSONProvider implements IDBProvider {
         return false;
     };
 
-    dbUpdate = async (table: string, id: string, record: IEntity) => {
+    dbUpdate = async (table: string, idCol:string, id: string, record: IEntity) => {
         const db = await this.dbConnect();
         const index = db[table].findIndex((x: IEntity) => x.id == id);
         if (index > -1) {
@@ -438,52 +447,53 @@ class DBSqliteProvider implements IDBProvider {
         const conditions: string[] = ['1 = 1'];
 
         for (const cond of where) {
+            const condColSql = `[${cond.column}]`;
             if (cond.value == null) {
-                conditions.push(`${cond.column} is null`);
+                conditions.push(`${condColSql} is null`);
                 continue;
             }
 
             switch (cond.operator) {
                 case Operator.Equals:
                     if (cond.value == null) {
-                        conditions.push(`${cond.column} is null`);
+                        conditions.push(`${condColSql} is null`);
                     } else {
-                        conditions.push(`${cond.column} = ${this.prepareValue(cond.value)}`);
+                        conditions.push(`${condColSql} = ${this.prepareValue(cond.value)}`);
                     }
                     break;
                 case Operator.Contains:
-                    conditions.push(`${cond.column} like '%' || ${this.prepareValue(cond.value)} || '%'`);
+                    conditions.push(`${condColSql} like '%' || ${this.prepareValue(cond.value)} || '%'`);
                     break;
                 case Operator.StartsWith:
-                    conditions.push(`${cond.column} like '%' || ${this.prepareValue(cond.value)}`);
+                    conditions.push(`${condColSql} like '%' || ${this.prepareValue(cond.value)}`);
                     break;
                 case Operator.EndsWith:
-                    conditions.push(`${cond.column} like ${this.prepareValue(cond.value)} || '%'`);
+                    conditions.push(`${condColSql} like ${this.prepareValue(cond.value)} || '%'`);
                     break;
                 case Operator.NotEquals:
                     if (cond.value == null) {
-                        conditions.push(`${cond.column} is not null`);
+                        conditions.push(`${condColSql} is not null`);
                     } else {
-                        conditions.push(`${cond.column} <> ${this.prepareValue(cond.value)}`);
+                        conditions.push(`${condColSql} <> ${this.prepareValue(cond.value)}`);
                     }
                     break;
                 case Operator.GreaterThan:
-                    conditions.push(`${cond.column} > ${this.prepareValue(cond.value)}`);
+                    conditions.push(`${condColSql} > ${this.prepareValue(cond.value)}`);
                     break;
                 case Operator.LessThan:
-                    conditions.push(`${cond.column} < ${this.prepareValue(cond.value)}`);
+                    conditions.push(`${condColSql} < ${this.prepareValue(cond.value)}`);
                     break;
                 case Operator.IsIn:
-                    conditions.push(`${cond.column} in (${this.prepareValue(cond.value)})`);
+                    conditions.push(`${condColSql} in (${this.prepareValue(cond.value)})`);
                     break;
                 case Operator.IsNotIn:
-                    conditions.push(`${cond.column} not in (${this.prepareValue(cond.value)})`);
+                    conditions.push(`${condColSql} not in (${this.prepareValue(cond.value)})`);
                     break;
                 case Operator.IsNull:
-                    conditions.push(`${cond.column} is null`);
+                    conditions.push(`${condColSql} is null`);
                     break;
                 case Operator.IsNotNull:
-                    conditions.push(`${cond.column} is not null`);
+                    conditions.push(`${condColSql} is not null`);
                     break;
             }
         }
@@ -525,7 +535,7 @@ class DBSqliteProvider implements IDBProvider {
 
         const fetchData = async (): Promise<IEntity[]> => {
             return new Promise((resolve, reject) => {
-                var sql = `select * from ${table} where ${conditions}`;
+                var sql = `select * from [${table}] where ${conditions}`;
                 console.log(table);
                 console.log(sql);
                 if (orders.length) {
@@ -534,7 +544,7 @@ class DBSqliteProvider implements IDBProvider {
                 if (limit > 0) {
                     sql += ` limit ${limit}`;
                 }
-                db.all(sql, (err, data) => {
+                db.all(sql, async (err, data) => {
                     if (err) {
                         return reject(err.message + ' ' + sql);
                     }
@@ -592,47 +602,76 @@ class DBSqliteProvider implements IDBProvider {
         });
     };
 
-    dbInsert = async (table: string, record: IEntity): Promise<IEntity> => {
+    dbInsert = async (table: string, idCol:string, record: IEntity): Promise<IEntity> => {
         const db = await this.dbConnect();
         const dbTableCols = await this.dbTableColumns(table);
-        const columns = Object.entries(record).map(x => x[0]).filter(c => dbTableCols.indexOf(c) > -1).join(', ');
-        const values = Object.entries(record).filter(x => dbTableCols.indexOf(x[0]) > -1).map(x => this.prepareValue(x[1])).join(', ');
+        const columns = Object.entries(record)
+            .map(x => x[0])
+            .filter(c => dbTableCols.indexOf(c) > -1)
+            .join(', ');
+        const values = Object.entries(record)
+            .filter(x => dbTableCols.indexOf(x[0]) > -1)
+            .map(x => this.prepareValue(x[1]))
+            .join(', ');
         return new Promise((resolve, reject) => {
-            db.run(`insert into ${table}(${columns}) select ${values}`, (err: Error) => {
+            db.run(`insert into [${table}](${columns}) values (${values})`, async (err: Error) => {
                 if (err) {
                     return reject(err.message);
                 }
+                if(!(db as any).changes) {
+                    return reject("Nothing inserted");
+                }
 
-                return resolve(record);
+                const newid = record.id as string;
+                const updatedResult = await this.dbSelect(table, [{column: idCol, operator: Operator.Equals, value: newid} as ICondition], [], 1)
+                let insertedRecord = updatedResult.count > 0 ? updatedResult.result[0] : null;
+                if(!insertedRecord){
+                    return reject("could not retrieve inserted record");
+                }
+                return resolve(insertedRecord);
             });
         });
     };
 
-    dbDelete = async (table: string, id: string): Promise<boolean> => {
+    dbDelete = async (table: string, idCol:string, id: string): Promise<boolean> => {
         const db = await this.dbConnect();
         return new Promise((resolve, reject) => {
-            db.run(`delete from ${table} where id = ${this.prepareValue(id)}`, (err: Error) => {
+            db.run(`delete from [${table}] where [${idCol}] = ${this.prepareValue(id)}`, (err: Error) => {
                 if (err) {
                     return reject(err.message);
+                }
+                if(!(db as any).changes) {
+                    return reject("Nothing deleted");
                 }
                 return resolve(true);
             });
         });
     };
 
-    dbUpdate = async (table: string, id: string, record: IEntity): Promise<IEntity> => {
+    dbUpdate = async (table: string, idCol:string, id: string, record: IEntity): Promise<IEntity> => {
         const db = await this.dbConnect();
         const dbTableCols = await this.dbTableColumns(table);
         const values = Object.entries(record)
             .filter(x => dbTableCols.indexOf(x[0]) > -1)
-            .map(x => `${x[0]} = ${this.prepareValue(x[1])}`).join(', ');
+            .map(x => `[${x[0]}] = ${this.prepareValue(x[1])}`).join(', ');
         return new Promise((resolve, reject) => {
-            db.run(`update ${table} set ${values} where id = ${this.prepareValue(id)}`, (err) => {
+            db.run(`update [${table}] set ${values} where [${idCol}] = ${this.prepareValue(id)}`, async (err) => {
                 if (err) {
                     db.run('ROLLBACK');
                     return reject(err.message);
                 }
-                return resolve(record);
+
+                if(!(db as any).changes) {
+                    return reject("Nothing Updated");
+                }
+
+                const newid = record.id || id as string;
+                const updatedResult = await this.dbSelect(table, [{column: idCol, operator: Operator.Equals, value: newid} as ICondition], [], 1)
+                let updatedRecord = updatedResult.count > 0 ? updatedResult.result[0] : null;
+                if(!updatedRecord){
+                    return reject("could not retrieve updated record");
+                }
+                return resolve(updatedRecord);
             });
         });
     };
