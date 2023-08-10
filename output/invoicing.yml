@@ -569,7 +569,6 @@ components:
       required:
       - sale_id
       - item_id
-      - description
       - quantity
       - price
       type: object
@@ -588,7 +587,6 @@ components:
       required:
       - sale_id
       - item_id
-      - description
       - quantity
       - price
       type: object
@@ -620,7 +618,6 @@ components:
       required:
       - sale_id
       - item_id
-      - description
       - quantity
       - price
       type: object

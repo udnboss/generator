@@ -3,9 +3,21 @@ api:
   description: Invoicing API Reference
   version: "1.0"
   prefix: /api/v1
+  servers: 
+    - url: http://localhost:8001
+  # outputFile: ./output/invoicing/spec.yml
+  outputFile: I:/dev/express/sales-api/openapi/spec.yml
+
 scripts:
-  outputDir: ./output/invoicing
+  # outputDir: ./output/invoicing
+  outputDir: I:/dev/express/sales-api/src/api
   framework: express #express|webapi|fastapi
+
+sql:
+  schemaOutputFile: I:/dev/express/sales-api/db/schema.sql
+  dataOutputFile: I:/dev/express/sales-api/db/data.sql
+  syntax: sqlite
+
 interfaces:
   account:
     key: id
@@ -132,9 +144,76 @@ interfaces:
       id: uuid
       sale_id: str > sale.id
       item_id: str > item.id
-      description:
+      description?:
       quantity: int
       price: float
 
       sale?: sale
       item?: item
+
+data:
+  account:
+    id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+    label: [fransi, ncb, sab, albilad]
+    bank_name: [Bank of America, Chase, Wells Fargo, Citibank, HSBC, Barclays, Deutsche Bank, BNP Paribas, Bank of China, ICICI Bank]
+    bank_address:
+      - Riyad Bank, King Abdulaziz Road, Al Adama, Eastern Province 31952 
+      - Banque Saudi Fransi, Prince Faisal Bin Fahd Road, Al Khobar, Eastern Province 34429 
+      - Al Rajhi Bank, King Fahd Road, Riyadh, Riyadh Province 11432 
+      - Bank AlJazira, King Abdullah Road, Jeddah, Makkah Province 23441 
+    bank_swift: [RIBLSARI, BSFRSARI, RJHISARI, BJAZSAJE]
+    account_name: [Ahmed Ali, Fatima Hassan, Omar Khan, Sara Mohammed]
+    account_iban: [SA44 2000 0001 2345 6789 1234, SA03 5500 0000 5678 9012 3456, SA32 8000 0000 6080 1016 7519, SA29 6000 0000 0068 1000 0014]
+    account_address: [P.O. Box 22622 Riyadh 11416 Saudi Arabia, P.O. Box 56006 Riyadh 11554 Saudi Arabia, P.O. Box 28 Riyadh 11411 Saudi Arabia, P.O. Box 6277 Jeddah 21442 Saudi Arabia]
+
+  category:
+    id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+    name: [books, electronics, clothing, toys]
+  
+  company:
+    id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+    name: ['Microsoft', 'Google', 'Apple', 'Amazon']
+    address: ['One Microsoft Way, Redmond, WA 98052', '1600 Amphitheatre Parkway, Mountain View, CA 94043', '1 Apple Park Way, Cupertino, CA 95014', '410 Terry Ave N, Seattle, WA 98109']
+    crn: ['600413485', '358269703', '942404361', '916284817']
+    trn: ['12-3456789', '94-3203695', '91-1144442', '91-1643330']
+    contact: ['(425) 882-8080', '(650) 253-0000', '(408) 996-1010', '(206) 266-1000']
+    mobile: ['+1 (425) 882-8080', '+1 (650) 253-0000', '+1 (408) 996-1010', '+1 (206) 266-1000']
+    email: ['info@microsoft.com', 'press@google.com', 'media.help@apple.com', 'ecr-replies@amazon.com']
+
+  currency:
+    id: ['USD', 'EUR', 'JPY', 'GBP']
+    name: ['United States Dollar', 'Euro', 'Japanese Yen', 'British Pound']
+    symbol: ['$', '€', '¥', '£']
+
+  customer:
+    id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+    name: ['John Doe', 'Jane Smith', 'Bob Johnson', 'Alice Williams']
+    address: ['123 Main St, Anytown USA', '456 Elm St, Anytown USA', '789 Oak St, Anytown USA', '321 Pine St, Anytown USA']
+    contact: ['+1 (555) 555-5555', '+1 (555) 555-5556', '+1 (555) 555-5557', '+1 (555) 555-5558']
+    currency_id: ['USD', 'EUR', 'JPY', 'GBP']
+    payment_term: [30, 60, 90, 120]
+
+  item:
+    id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+    name: ['Microsoft Office', 'Adobe Creative Cloud', 'Salesforce CRM', 'Slack']
+
+  sale:
+    id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+    account_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+    company_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+    customer_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+    place: ['New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX']
+    number: [1, 2, 3, 4]
+    date: ['2023-01-01', '2023-02-01', '2023-03-01', '2023-04-01']
+    currency_id: ['USD', 'EUR', 'JPY', 'GBP']
+    total: [0,0,0,0]
+    due_date: ['2023-02-01', '2023-03-01', '2023-04-01', '2023-05-01']
+    reference_date: ['2023-01-01', '2023-02-01', '2023-03-01', '2023-04-01']
+    confirmed: [true,true,false,false]
+
+  saleItem:
+   id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+   sale_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+   item_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+   quantity: [1,2,3,2]
+   price: [15.99, 534.95, 42.0, 67.8]

@@ -3,10 +3,10 @@
 import sys
 import yaml
 
-from inputParser import parseEntities
+from inputParser import parseEntities, parseData
 from genOpenApi import genSchema, genInfo, genPaths, genTags
 from genExpressApi import createFiles as createExpressFiles
-from genSqliteSql import genSchema as genSqlSchema
+from genSqliteSql import genSchema as genSqlSchema, genData as genSqlData
 
 gentype = sys.argv[1]
 gensource = sys.argv[2]
@@ -26,6 +26,7 @@ if gentype == 'docs':
     apiDescription = inputProfile['api']['description']
     apiVersion = inputProfile['api']['version']
     apiPrefix = inputProfile['api']['prefix']
+    servers = inputProfile['api']['servers']
 
     info = genInfo(title=apiTitle, description=apiDescription, version=apiVersion)
     paths = genPaths(apiPrefix, entities=entities)
@@ -35,7 +36,7 @@ if gentype == 'docs':
     api = {
         'openapi': '3.0.3',
         'info': info,
-        'servers': [{'url': 'http://127.0.0.1:8001'}],
+        'servers': servers,
         'tags': tags,
         'paths': paths,
         'components': {
@@ -43,7 +44,9 @@ if gentype == 'docs':
         }
     }
 
-    with open(f'output/{gensource.split("/")[-1]}', 'w', encoding='utf-8') as f:
+    outputFile = inputProfile['api']['outputFile']
+
+    with open(outputFile, 'w', encoding='utf-8') as f:
         f.write(yaml.dump(api))
 
 if gentype == 'api':
@@ -66,5 +69,13 @@ if gentype == 'api':
 if gentype == 'sql':
     entities = parseEntities(gensource)
     sql = genSqlSchema(entities)
-    with open(f'output/{gensource.split("/")[-1].split(".")[0]}.sql', 'w', encoding='utf-8') as f:
+    schemaOutputDir = inputProfile['sql']['schemaOutputDir']
+    with open(f'{schemaOutputDir}', 'w', encoding='utf-8') as f:
+        f.write(sql)
+
+if gentype == 'data':
+    data = parseData(gensource)
+    sql = genSqlData(data)
+    dataOutputFile = inputProfile['sql']['dataOutputFile']
+    with open(f'{dataOutputFile}', 'w', encoding='utf-8') as f:
         f.write(sql)

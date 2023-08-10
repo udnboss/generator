@@ -135,11 +135,6 @@ def parseEntities(file:str):
                     allowCreate = False
                     allowUpdate = False
 
-                if isTypeReference:
-                    isRequired = False
-                    allowCreate = False
-                    allowUpdate = False
-
                 prop['required'] = isRequired
                 prop['allowRead'] = allowRead
                 prop['allowCreate'] = allowCreate
@@ -150,3 +145,9 @@ def parseEntities(file:str):
                 # exit()
                 
         return entities
+
+def parseData(file:str):
+    data = {}
+    with open(file, 'r', encoding='utf-8') as f:
+        data:dict = yaml.safe_load(f)["data"]
+    return data

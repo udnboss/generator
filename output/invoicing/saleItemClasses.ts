@@ -6,7 +6,7 @@ import { IItemView } from "./itemInterfaces";
 export class Saleitem extends Entity {
     sale_id:string;
     item_id:string;
-    description:string;
+    description?:string;
     quantity:number;
     price:number;
 }
@@ -14,7 +14,7 @@ export class Saleitem extends Entity {
 export class SaleitemCreate extends Entity {
     sale_id:string;
     item_id:string;
-    description:string;
+    description?:string;
     quantity:number;
     price:number;
 }
@@ -22,7 +22,7 @@ export class SaleitemCreate extends Entity {
 export class SaleitemUpdate extends Entity {
     sale_id:string;
     item_id:string;
-    description:string;
+    description?:string;
     quantity:number;
     price:number;
 }

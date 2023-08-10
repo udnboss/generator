@@ -29,13 +29,15 @@ def pluralize(s:str) -> str:
             s += 's'
         return s
 
-def genArtifacts(entityName:str, schema:dict) -> tuple[str,str]:
+def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
 
     def getTypeProps(schemaName:str) -> str:
         typeProps = {}
         for prop, attrs in schema[schemaName]['properties'].items():
+            isRequired = 'required' in schema[schemaName] and prop in schema[schemaName]['required']
+            isAutoKey = 'autokey' in entity and entity['autokey'] and 'key' in entity and entity['key'] == prop
             typeProp = {
-                'required': 'required' in schema[schemaName] and prop in schema[schemaName]['required'],
+                'required': isRequired and not isAutoKey,
                 'type': attrs["type"] if 'type' in attrs else attrs["$ref"].split('/')[-1].replace('View', '')
             }
             typeProps[prop] = typeProp
@@ -138,7 +140,7 @@ def _genCode(entities:dict, openApiSchemas:dict):
     classes = {}
     routeImports = []
     routeUses = []
-    for entityName in entities:
+    for entityName, entity in entities.items():
         schema = {
             'store': openApiSchemas[entityName],
             'create': openApiSchemas[f'{entityName}Create'],
@@ -147,7 +149,7 @@ def _genCode(entities:dict, openApiSchemas:dict):
             'view': openApiSchemas[f'{entityName}View'],
         }
 
-        routers[entityName], interfaces[entityName], businesses[entityName], classes[entityName] = genArtifacts(entityName, schema)
+        routers[entityName], interfaces[entityName], businesses[entityName], classes[entityName] = genArtifacts(entityName, entity, schema)
 
         routeImports.append(f"import {{ {entityName}Router }} from './{entityName}Route';")
         routeUses.append(f"indexRouter.use('/{pluralize(entityName)}', {entityName}Router);")

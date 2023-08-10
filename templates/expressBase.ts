@@ -82,7 +82,7 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
         this.entityName = entityName;
     }
 
-    private implementsInterface = (obj: { [key: string]: any }, interfaceProperites: { [key: string]: any }): boolean => {
+    private implementsInterface(obj: { [key: string]: any }, interfaceProperites: { [key: string]: any }): boolean {
         if (obj == null) {
             return false; //empty or null object
         }
@@ -112,56 +112,56 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
         }
 
         return true;
-    };
+    }
 
-    isCreate = (obj: { [key: string]: any }): boolean => {
+    isCreate(obj: { [key: string]: any }): boolean {
         return this.implementsInterface(obj, this.createProperties);
-    };
+    }
 
-    isUpdate = (obj: { [key: string]: any }): boolean => {
+    isUpdate(obj: { [key: string]: any }): boolean {
         return this.implementsInterface(obj, this.updateProperties);
-    };
+    }
 
-    isPartial = (obj: { [key: string]: any }): boolean => {
+    isPartial(obj: { [key: string]: any }): boolean {
         return this.implementsInterface(obj, this.partialProperties);
-    };
+    }
 
-    getAll = async (): Promise<IQueryResult<IQuery, TOutput>> => {
+    async getAll(): Promise<IQueryResult<IQuery, TOutput>> {
         return this.db.dbSelect(this.entityName) as Promise<IQueryResult<IQuery, TOutput>>;
-    };
+    }
 
-    getById = async (id: string): Promise<TOutput> => {
+    async getById(id: string): Promise<TOutput> {
         const dbResult = await this.db.dbSelect(this.entityName,
             [{ column: 'id', operator: Operator.Equals, value: id } as ICondition]);
         if (dbResult.count == 0) {
             throw new Error("Not Found");
         }
         return dbResult.result[0] as TOutput;
-    };
+    }
 
-    create = async (entity: IEntity): Promise<TOutput> => {
+    async create(entity: IEntity): Promise<TOutput> {
         const dbResult = await this.db.dbInsert(this.entityName, entity as IEntity) as TOutput;
         return dbResult;
-    };
+    }
 
-    update = async (id: string, entity: IEntity): Promise<TOutput> => {
+    async update(id: string, entity: IEntity): Promise<TOutput> {
         const dbResult = await this.db.dbUpdate(id, this.entityName, entity as IEntity) as TOutput;
         return dbResult;
-    };
+    }
 
-    modify = async (id: string, entity: IEntity): Promise<TOutput> => {
+    async modify(id: string, entity: IEntity): Promise<TOutput> {
         const dbResult = await this.db.dbUpdate(id, this.entityName, entity as IEntity) as TOutput;
         return dbResult;
-    };
+    }
 
-    delete = async (id: string): Promise<TOutput> => {
+    async delete(id: string): Promise<TOutput> {
         const entity = await this.getById(id) as TOutput;
         const deleted = await this.db.dbDelete(this.entityName, id);
         if (!deleted) {
             throw new Error("Could not Delete");
         }
         return entity;
-    };
+    }
 
 
 }
@@ -526,6 +526,8 @@ class DBSqliteProvider implements IDBProvider {
         const fetchData = async (): Promise<IEntity[]> => {
             return new Promise((resolve, reject) => {
                 var sql = `select * from ${table} where ${conditions}`;
+                console.log(table);
+                console.log(sql);
                 if (orders.length) {
                     sql += ` order by ${orders.join(', ')}`;
                 }
@@ -667,4 +669,5 @@ export interface MessageResponse {
 export interface ErrorResponse {
     success: boolean;
     message: string;
+    stack?: any;
 }

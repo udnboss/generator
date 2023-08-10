@@ -6,7 +6,7 @@ import { IItemView } from "./itemInterfaces";
 export interface ISaleitem extends IEntity {
     sale_id:string;
     item_id:string;
-    description:string;
+    description?:string;
     quantity:number;
     price:number;
 }
@@ -14,7 +14,7 @@ export interface ISaleitem extends IEntity {
 export interface ISaleitemCreate extends IEntity {
     sale_id:string;
     item_id:string;
-    description:string;
+    description?:string;
     quantity:number;
     price:number;
 }
@@ -22,7 +22,7 @@ export interface ISaleitemCreate extends IEntity {
 export interface ISaleitemUpdate extends IEntity {
     sale_id:string;
     item_id:string;
-    description:string;
+    description?:string;
     quantity:number;
     price:number;
 }

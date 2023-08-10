@@ -11,14 +11,14 @@ TYPE_MAP = {
 }
 
 FK_ACTIONS = {
-    'd-cascade': 'ON DELETE CASCADE',
-    'd-setnull': 'ON DELETE SET NULL',
-    'd-restrict': 'ON DELETE RESTRICT',
-    'd-ignore': 'ON DELETE NO ACTION',
-    'u-cascade': 'ON UPDATE CASCADE',
-    'u-setnull': 'ON UPDATE SET NULL',
-    'u-restrict': 'ON UPDATE RESTRICT',
-    'u-ignore': 'ON UPDATE NO ACTION',
+    'd-cascade': 'on delete cascade',
+    'd-setnull': 'on delete set null',
+    'd-restrict': 'on delete restrict',
+    'd-ignore': 'on delete no action',
+    'u-cascade': 'on update cascade',
+    'u-setnull': 'on update set null',
+    'u-restrict': 'on update restrict',
+    'u-ignore': 'on update no action',
 }
 
 def genFk(propertyName:str, property:str):    
@@ -34,10 +34,11 @@ def getCreateIndices(entityName:str, entity:dict) -> str:
     alreadyCreated = []
 
     if 'sort' in entity:
-        sortcols = entity['sort']
-        ixsort = genCreateIndex(entityName, sortcols)
-        indices.append(ixsort)
-        alreadyCreated.append(",".join(sortcols))
+        sortcols = [k.split(' ')[0] for k in entity['sort'] if '.' not in k]
+        if len(sortcols) > 0:
+            ixsort = genCreateIndex(entityName, sortcols)
+            indices.append(ixsort)
+            alreadyCreated.append(",".join(sortcols))
     
     if 'sortable' in entity:
         sortablecols = [k for k in entity['sortable'] if '.' not in k]
@@ -78,7 +79,7 @@ def genCreateTable(entityName:str, entity:dict) -> str:
     fks = []
     cols = []
     for propertyName, property in entity["properties"].items():
-        if not property["typeReference"]:
+        if not property["typeReference"] and property['type'] != 'array':
             col = genCreateCol(propertyName, property)
             cols.append(col)
         if "constraintEntity" in property:
@@ -91,7 +92,8 @@ def genCreateTable(entityName:str, entity:dict) -> str:
     pk = entity["key"]
     pkStr = f"primary key ({pk})"
 
-    sql = f"create table [{entityName}] ("
+    sql = f"drop table if exists [{entityName}];"
+    sql += f"\ncreate table [{entityName}] ("
     sql += f"\n  {colsStr}"
     sql += f"{newLineIndent}{pkStr}"
 
@@ -122,3 +124,35 @@ def genSchema(entities:dict) -> str:
     sql += "\n\n".join(indices)
     
     return sql
+
+def genInsert(entityName:str, entity:dict):
+
+    def enclose(val):
+        if isinstance(val, str):
+            v = val.replace("'", "''")
+            return f"'{v}'"
+        if isinstance(val, bool):
+            return str(1 if val else 0)
+        return str(val)
+    
+    colsStr = ', '.join([f"[{k}]" for k in entity.keys()])
+    rowcount = len(list(entity.values())[0])
+    
+    sqls = []
+    for ri in range(rowcount):
+        rowCols = []
+        for vals in entity.values():
+            rowCols.append(enclose(vals[ri]))
+        valsStr = ", ".join(rowCols)
+        sql = f'insert into [{entityName}] ({colsStr}) values ({valsStr});'    
+        sqls.append(sql)
+    
+    sql = "\n".join(sqls)
+    return sql
+
+def genData(sampleData:dict) -> str:
+    inserts = []
+    for entityName, entity in sampleData.items():
+        inserts.append(genInsert(entityName, entity))
+    
+    return "\n\n".join(inserts)

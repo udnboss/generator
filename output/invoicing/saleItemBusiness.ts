@@ -19,7 +19,7 @@ export class SaleitemBusiness extends Business<ISaleitemView> {
     "type": "string"
   },
   "description": {
-    "required": true,
+    "required": false,
     "type": "string"
   },
   "quantity": {
@@ -41,7 +41,7 @@ export class SaleitemBusiness extends Business<ISaleitemView> {
     "type": "string"
   },
   "description": {
-    "required": true,
+    "required": false,
     "type": "string"
   },
   "quantity": {
