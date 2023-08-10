@@ -536,8 +536,8 @@ class DBSqliteProvider implements IDBProvider {
         const fetchData = async (): Promise<IEntity[]> => {
             return new Promise((resolve, reject) => {
                 var sql = `select * from [${table}] where ${conditions}`;
-                console.log(table);
-                console.log(sql);
+                // console.log(table);
+                // console.log(sql);
                 if (orders.length) {
                     sql += ` order by ${orders.join(', ')}`;
                 }
