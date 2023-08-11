@@ -68,13 +68,64 @@ def getCreateIndices(entityName:str, entity:dict) -> str:
                 continue
             ix = genCreateIndex(entityName, [propertyName])
             indices.append(ix)
-        
+
+    if len(indices) == 0:
+        return "";
+    
     return "\n".join(indices)
 
 def genCreateIndex(entityName:str, properties:list[str]):
     indexNameSuffix = "_".join(properties)
     cols = ", ".join(properties)
     sql = f"create index ix_{entityName}_{indexNameSuffix} on {entityName} ({cols});"
+    return sql
+
+def genCreateCheckConstraints(entityName:str, entity:dict) -> str:
+    if 'constraints' not in entity:
+        return ""
+    if len(entity['constraints']) == 0:
+        return ""
+    # entityNameSql = entityName.replace("'", "''")
+    constraints = []
+    for constraint in entity['constraints']:
+        constraintSql = genCreateCheckConstraint(entity, constraint)
+        constraints.append(constraintSql)
+    constraintsSql = ",\n  ".join(constraints)    
+    return constraintsSql
+
+
+CHECK_OP_MAP = {
+    'e': '=',
+    'ne': '<>',
+    'gt': '>',
+    'gte': '>=',
+    'lt': '<',
+    'lte': '<=',
+    'in': 'in',
+    'nin': 'not in',
+    'bt': 'between',
+    'nbt': 'not between',
+}
+
+def genCreateCheckConstraint(entity:dict, constraint:dict) -> str:
+    
+    propertyName = constraint['property']
+    # type = entity['properties'][propertyName]['type']
+    colNameSql = propertyName.replace("'", "''")
+
+    op = constraint['op']
+    opSql = CHECK_OP_MAP[op]
+    value = constraint['value']
+    if not isinstance(value, list):
+        valueSql = enclose(value)
+    elif op in ['bt', 'nbt']:
+        valueASql, valueBSql = [enclose(v) for v in value]
+        valueSql = f'{valueASql} and {valueBSql}'
+    else:
+        valueSql = ', '.join([enclose(v) for v in value]) 
+        valueSql = f'({valueSql})'
+
+    sql = f"check ([{colNameSql}] {opSql} {valueSql})"
     return sql
 
 def genCreateCol(propertyName:str, property:dict) -> str:
@@ -120,6 +171,10 @@ def genCreateTable(entityName:str, entity:dict) -> str:
     if len(fks) > 0:
         fksStr = f"{newLineIndent}".join(fks)
         sql += f"{newLineIndent}{fksStr}"
+
+    constraintsSql = genCreateCheckConstraints(entityName, entity)
+    if constraintsSql != "":
+        sql += f"{newLineIndent}{constraintsSql}"
         
     sql += f"\n);"
 
@@ -128,28 +183,32 @@ def genCreateTable(entityName:str, entity:dict) -> str:
 def genSchema(entities:dict) -> str:
     tables = []
     indices = []
+    constraints = []
     for entityName, entity in entities.items():
         tableSql = genCreateTable(entityName, entity)
-        tables.append(tableSql)
-        
+        tables.append(tableSql)        
+               
         indicesSql = getCreateIndices(entityName, entity)
-        indices.append(indicesSql)
+        if indicesSql != "":
+            indices.append(indicesSql)
 
     sql = "\n\n".join(tables)
-    sql += "\n\n"
+    sql += "\n\n/* INDEXES */\n"
     sql += "\n\n".join(indices)
     
     return sql
 
-def genInsert(entityName:str, entity:dict):
-
-    def enclose(val):
+def enclose(val):
         if isinstance(val, str):
             v = val.replace("'", "''")
             return f"'{v}'"
         if isinstance(val, bool):
             return str(1 if val else 0)
         return str(val)
+
+def genInsert(entityName:str, entity:dict):
+
+    
     
     colsStr = ', '.join([f"[{k}]" for k in entity.keys()])
     rowcount = len(list(entity.values())[0])
@@ -182,7 +241,7 @@ def genSecurityData(entities:dict) -> str:
     targetEntities = {k: v for k, v in entities.items() if k not in noPermissionEntities}
 
     # print(entities['permission'])
-    DEFAULT_PERMISSION_ACTIONS = [a.replace("'","''") for a in entities['permission']['constraints']['action']]
+    DEFAULT_PERMISSION_ACTIONS = ['READ', 'CREATE', 'UPDATE', 'DELETE', 'EXECUTE']
 
     stmts = []
     entityName:str
@@ -190,7 +249,7 @@ def genSecurityData(entities:dict) -> str:
     for entityName, entity in targetEntities.items():        
         entityNameSql = entityName.replace("'", "''")
         entityNameCapital = entityNameSql.upper()
-        entityStmts = [f"insert into [permissions] select 'ENTITY:{entityNameCapital}:{p}', 'Entity {entityNameSql} {p}', '{entityNameSql}', '{p}';" for p in DEFAULT_PERMISSION_ACTIONS]
+        entityStmts = [f"insert into [permission] select 'ENTITY:{entityNameCapital}:{p}', 'Entity {entityNameSql} {p}', '{entityNameSql}', '{p}';" for p in DEFAULT_PERMISSION_ACTIONS]
         stmts += entityStmts
     
     return "\n".join(stmts)

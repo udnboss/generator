@@ -58,7 +58,7 @@ interfaces:
     sortable: [name]
     constraints:
       - property: action
-        type: in
+        op: in
         value: [READ, CREATE, UPDATE, DELETE, EXECUTE]
     properties:
       id:
@@ -142,7 +142,7 @@ interfaces:
     unique: [name]
     constraints:
       - property: payment_term
-        type: bt
+        op: bt
         value: [0, 90]
     properties:
       id: uuid
@@ -177,7 +177,7 @@ interfaces:
     unique: [number] #unique constraint    
     constraints: #check constraints
       - property: due_date
-        type: gte #operators: e, ne, gt, gte, lt, lte, in, nin, bt, nbt
+        op: gte #operators: e, ne, gt, gte, lt, lte, in, nin, bt, nbt
         value: $date # $ means reference to another property in the same entity, $entity.prop can be used for referncing a different entity
     properties:
       id: uuid
@@ -209,10 +209,10 @@ interfaces:
     unique: [sale_id, item_id]
     constraints:
       - property: quantity
-        type: gt
+        op: gt
         value: 0
       - property: price
-        type: gte
+        op: gte
         value: 0
     properties:
       id: uuid
@@ -280,7 +280,7 @@ data:
     address: ['123 Main St, Anytown USA', '456 Elm St, Anytown USA', '789 Oak St, Anytown USA', '321 Pine St, Anytown USA']
     contact: ['+1 (555) 555-5555', '+1 (555) 555-5556', '+1 (555) 555-5557', '+1 (555) 555-5558']
     currency_id: ['USD', 'EUR', 'JPY', 'GBP']
-    payment_term: [30, 60, 90, 120]
+    payment_term: [30, 60, 90, 45]
 
   item:
     id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
