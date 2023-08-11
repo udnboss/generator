@@ -19,6 +19,65 @@ sql:
   syntax: sqlite
 
 interfaces:
+  login:
+    key: id
+    autokey: true
+    unique: [email]
+    sort: [email asc]
+    sortable: [email]
+    properties:
+      id: uuid
+      email: str|email
+      password: str|password
+
+  user:
+    key: id
+    autokey: true
+    sort: [name asc]
+    sortable: [name, email]
+    properties:
+      id: uuid
+      name: 
+      email: str|email
+      login_id: uuid > login.id
+      login?: login
+
+  role:
+    key: id
+    unique: [name]
+    sort: [name asc]
+    sortable: [name]
+    properties:
+      id: 
+      name:
+
+  permission:
+    key: id
+    unique: [name]
+    sort: [name asc]
+    sortable: [name]
+    constraints:
+      - property: action
+        type: in
+        value: [READ, CREATE, UPDATE, DELETE, EXECUTE]
+    properties:
+      id:
+      name:
+      entity:
+      action:
+
+  rolePermission:
+    key: id
+    unique: [role_id, permission_id]
+    sort: [role.name asc, permission.name asc]
+    sortable: [role.name, permission.name]
+    properties:
+      id: uuid
+      role_id: str > role.id
+      permission_id: str > permission.id
+      role?: role
+      permission?: permission 
+
   account:
     key: id
     autokey: true
@@ -44,7 +103,7 @@ interfaces:
     properties:
       id: uuid
       name:
-      category_id?: str > category.id
+      category_id?: uuid > category.id
 
       category?: category
       items?: item[]
@@ -81,6 +140,10 @@ interfaces:
     sort: [name asc]
     sortable: [name]
     unique: [name]
+    constraints:
+      - property: payment_term
+        type: bt
+        value: [0, 90]
     properties:
       id: uuid
       name:
@@ -101,7 +164,7 @@ interfaces:
     properties:
       id: uuid
       name:
-      category_id?: str > category.id
+      category_id?: uuid > category.id
 
       category?: category
 
@@ -112,11 +175,15 @@ interfaces:
     sort: [number desc] #default sort order
     sortable: [number, date, customer.name] #allowed sort by
     unique: [number] #unique constraint    
+    constraints: #check constraints
+      - property: due_date
+        type: gte #operators: e, ne, gt, gte, lt, lte, in, nin, bt, nbt
+        value: $date # $ means reference to another property in the same entity, $entity.prop can be used for referncing a different entity
     properties:
       id: uuid
-      company_id: str > company.id
-      account_id: str > account.id
-      customer_id: str > customer.id
+      company_id: uuid > company.id
+      account_id: uuid > account.id
+      customer_id: uuid > customer.id
       place?:
       number: int
       date*: date # a * means disallow update
@@ -140,10 +207,17 @@ interfaces:
     sort: [item.name]
     sortable: [item.name]
     unique: [sale_id, item_id]
+    constraints:
+      - property: quantity
+        type: gt
+        value: 0
+      - property: price
+        type: gte
+        value: 0
     properties:
       id: uuid
-      sale_id: str > sale.id
-      item_id: str > item.id
+      sale_id: uuid > sale.id
+      item_id: uuid > item.id
       description?:
       quantity: int
       price: float
@@ -152,6 +226,21 @@ interfaces:
       item?: item
 
 data:
+  login:
+    id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+    email: ['john@example.com','jane@example.com','mike@example.com','amy@example.com']
+    password: ['f515c100dc23c786bcc6ff791fb1c813b38ddcacd0f9546f1e1db0705f4f56e1','f515c100dc23c786bcc6ff791fb1c813b38ddcacd0f9546f1e1db0705f4f56e1','f515c100dc23c786bcc6ff791fb1c813b38ddcacd0f9546f1e1db0705f4f56e1','f515c100dc23c786bcc6ff791fb1c813b38ddcacd0f9546f1e1db0705f4f56e1'] #kjshgslkg
+
+  user:
+    id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+    name: ['John', 'Jane', 'Mike', 'Amy']
+    email: ['john@example.com','jane@example.com','mike@example.com','amy@example.com']
+    login_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+
+  role:
+    id: ['VIEW', 'CONTRIBUTE', 'ADMIN']
+    name: ['Viewer', 'Contributor', 'Administrator']
+    
   account:
     id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
     label: [fransi, ncb, sab, albilad]

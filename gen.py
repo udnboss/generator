@@ -6,7 +6,7 @@ import yaml
 from inputParser import parseEntities, parseData
 from genOpenApi import genSchema, genInfo, genPaths, genTags
 from genExpressApi import createFiles as createExpressFiles
-from genSqliteSql import genSchema as genSqlSchema, genData as genSqlData
+from genSqliteSql import genSchema as genSqlSchema, genData as genSqlData, genSecurityData
 
 gentype = sys.argv[1]
 gensource = sys.argv[2]
@@ -69,13 +69,15 @@ if gentype == 'api':
 if gentype == 'sql':
     entities = parseEntities(gensource)
     sql = genSqlSchema(entities)
-    schemaOutputDir = inputProfile['sql']['schemaOutputDir']
-    with open(f'{schemaOutputDir}', 'w', encoding='utf-8') as f:
+    schemaOutputFile = inputProfile['sql']['schemaOutputFile']
+    with open(f'{schemaOutputFile}', 'w', encoding='utf-8') as f:
         f.write(sql)
 
 if gentype == 'data':
+    entities = parseEntities(gensource)
     data = parseData(gensource)
     sql = genSqlData(data)
+    sql += "\n\n\n" + genSecurityData(entities)
     dataOutputFile = inputProfile['sql']['dataOutputFile']
     with open(f'{dataOutputFile}', 'w', encoding='utf-8') as f:
         f.write(sql)

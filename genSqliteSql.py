@@ -33,9 +33,17 @@ def getCreateIndices(entityName:str, entity:dict) -> str:
     indices = []
     alreadyCreated = []
 
+    validColNames = set(entity['properties'].keys())
+
     if 'sort' in entity:
         sortcols = [k.split(' ')[0] for k in entity['sort'] if '.' not in k]
-        if len(sortcols) > 0:
+        if len(sortcols) > 0:            
+            sortColNames = set([c.split(' ')[0] for c in sortcols])
+            invalid = sortColNames - validColNames
+            if len(invalid):
+                err = f"entity {entityName}: found invalid sort columns: {', '.join(invalid)}"
+                raise Exception(err)
+
             ixsort = genCreateIndex(entityName, sortcols)
             indices.append(ixsort)
             alreadyCreated.append(",".join(sortcols))
@@ -43,6 +51,10 @@ def getCreateIndices(entityName:str, entity:dict) -> str:
     if 'sortable' in entity:
         sortablecols = [k for k in entity['sortable'] if '.' not in k]
         for col in sortablecols:
+            if col not in validColNames:
+                err = f"entity {entityName}: found invalid sortable column: {col}"
+                raise Exception(err)
+            
             if col in alreadyCreated:
                 continue
             ixsortable = genCreateIndex(entityName, [col])
@@ -98,6 +110,10 @@ def genCreateTable(entityName:str, entity:dict) -> str:
     sql += f"{newLineIndent}{pkStr}"
 
     if "unique" in entity:
+        invalid = set(entity["unique"]) - set(entity["properties"].keys())
+        if len(invalid):
+            err = f'found invalid unique properties: {", ".join(invalid)}'
+            raise Exception(err)
         unique = ", ".join(entity["unique"])
         sql += f"{newLineIndent}unique ({unique})"
 
@@ -156,3 +172,30 @@ def genData(sampleData:dict) -> str:
         inserts.append(genInsert(entityName, entity))
     
     return "\n\n".join(inserts)
+
+def genSecurityData(entities:dict) -> str:
+    entityNames:set = set(entities.keys())
+    requiredEntityNames:set = set(['role', 'permission', 'rolePermission'])    
+    if not entityNames.issuperset(requiredEntityNames):
+        return ""
+    noPermissionEntities:list = set('login user role permission rolePermission'.split(' '))
+    targetEntities = {k: v for k, v in entities.items() if k not in noPermissionEntities}
+
+    # print(entities['permission'])
+    DEFAULT_PERMISSION_ACTIONS = [a.replace("'","''") for a in entities['permission']['constraints']['action']]
+
+    stmts = []
+    entityName:str
+    entity:dict
+    for entityName, entity in targetEntities.items():        
+        entityNameSql = entityName.replace("'", "''")
+        entityNameCapital = entityNameSql.upper()
+        entityStmts = [f"insert into [permissions] select 'ENTITY:{entityNameCapital}:{p}', 'Entity {entityNameSql} {p}', '{entityNameSql}', '{p}';" for p in DEFAULT_PERMISSION_ACTIONS]
+        stmts += entityStmts
+    
+    return "\n".join(stmts)
+
+
+    
+
+
