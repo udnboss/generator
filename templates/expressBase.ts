@@ -97,16 +97,22 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
                 return false; //missing required property
             }
             let value = obj[key];
+            let nullOrUndefined = value === null || value === undefined;
+            if (isRequired && (nullOrUndefined || value === "")) {
+                throw new Error(`no value provided for required property ${key}`);
+                return false; //no value provided for required property
+            }
+            
             let expectedType = expectedKeys[key].type;
             if (expectedType != 'array') {
                 let incomingType = typeof value;
-                if (incomingType !== expectedType) {
+                if (!nullOrUndefined && incomingType !== expectedType) {
                     throw new Error(`property ${key}: expected type ${expectedType} does not match provided type ${incomingType}`);
                     return false; //primitive type not matching           
                 }
             } else {
                 let expectedSubType = expectedKeys[key].subtype;
-                if (!Array.isArray(value) || !value.every(item => typeof item === expectedSubType)) {
+                if (!Array.isArray(value) || !value.every(v => v === null || v === undefined || typeof v === expectedSubType)) {
                     throw new Error(`property ${key}: expected array subtype ${expectedSubType} does not match provided subtype`);
                     return false; //array type not matching or items not of expected subtype
                 }
