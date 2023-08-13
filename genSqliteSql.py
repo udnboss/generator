@@ -251,6 +251,8 @@ def genSecurityData(entities:dict) -> str:
         entityNameCapital = entityNameSql.upper()
         entityStmts = [f"insert into [permission] select 'ENTITY:{entityNameCapital}:{p}', 'Entity {entityNameSql} {p}', '{entityNameSql}', '{p}';" for p in DEFAULT_PERMISSION_ACTIONS]
         stmts += entityStmts
+
+    stmts.append(f"insert into [rolePermission] select uuid(), r.id, p.id from role r, permission p;")
     
     return "\n".join(stmts)
 

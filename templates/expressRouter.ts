@@ -36,7 +36,7 @@ __EntityName__Router.post<{}, MessageResponse | ErrorResponse>("/", async (req, 
     
     var entity = {} as IEntity;
     try {
-        entity = await business.create(req.body as I__EntityNameCapitalized__Create)
+        entity = await business.create(req.body as I__EntityNameCapitalized__Create);
     } catch (err) {
         if (err.includes('UNIQUE constraint failed')) {
             res.status(405).json({ success: false, message: `__EntityName__ entity could not be created: ${err}` });

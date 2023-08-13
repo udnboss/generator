@@ -50,19 +50,20 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
     partialTypeProps = getTypeProps('partial')
     # viewTypeProps = getTypeProps('view')
     
-    def getInterface(schemaName:str):
+    def getInterface(schemaName:str, asClass:bool = False):
         interface = []
         for prop, attrs in schema[schemaName]['properties'].items():
             if prop == "id":
                 continue
             optional = '?' if 'required' not in schema[schemaName] or prop not in schema[schemaName]['required'] else ''
             print(schemaName, prop, attrs)
-            if '$ref' in attrs:
+            root:str
+            if '$ref' in attrs:                
                 root = attrs["$ref"].split('/')[-1].replace('View', '')
-                type = f"I{root.capitalize()}View"
+                type = f"I{root.capitalize()}View" if not asClass else f"{root.capitalize()}View"
             elif attrs['type'] == 'array':
                 root = attrs['items']["$ref"].split('/')[-1].replace('View', '')
-                type = f"I{root.capitalize()}View[]"
+                type = f"I{root.capitalize()}View[]" if not asClass else f"{root.capitalize()}View[]"
             else:
                 type = attrs["type"]  
             
@@ -77,46 +78,112 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
     partialInterface = getInterface('partial')
     viewInterface = getInterface('view')
 
-    def getImports(schemaName = 'view'):
-        imports = []
-        refInterfaces = {}
-        for _, attrs in schema[schemaName]['properties'].items():
+    def getClass(schemaName:str):
+        return getInterface(schemaName, True)
+
+    storeClass = getClass('store')
+    createClass = getClass('create')
+    updateClass = getClass('update')
+    partialClass = getClass('partial')
+    viewClass = getClass('view')
+
+    def getRefEntities(schemaName:str):
+        refEntities = {}
+        refListEntities = {}
+        for propertyName, attrs in schema[schemaName]['properties'].items():
             if '$ref' in attrs or 'items' in attrs:
                 if '$ref' in attrs:
                     root = attrs["$ref"].split('/')[-1].replace('View', '')
+                    refEntities[propertyName] = root
                 elif 'items' in attrs:
                     root = attrs['items']["$ref"].split('/')[-1].replace('View', '')
-                if root == entityName:
-                    continue
-                ref = root.capitalize()
-                refInterface = f'I{ref}View'
-                refInterfaceFile = f"./{root}Interfaces"
-                if refInterfaceFile not in refInterfaces:
-                    refInterfaces[refInterfaceFile] = []
-                refInterfaces[refInterfaceFile].append(refInterface)
+                    refListEntities[propertyName] = root
+        return refEntities, refListEntities
 
-        for refInterfaceFile, interfaceImports in refInterfaces.items():
+    def getImports(schemaName:str, namePrefix:str = "I", nameSuffix:str = "", sourceSuffix:str = "Interfaces"):
+        refEntities, refListEntities = getRefEntities(schemaName)
+        refs = {**refEntities, **refListEntities}
+
+        imports = []
+        refFiles = {}
+        for prop, root in refs.items():
+            if root == entityName:
+                continue
+            ref = root.capitalize()
+            refEntity = f'{namePrefix}{ref}{nameSuffix}'
+            refEntityFile = f"./{root}{sourceSuffix}"
+            if refEntityFile not in refFiles:
+                refFiles[refEntityFile] = []
+            refFiles[refEntityFile].append(refEntity)
+
+        for refEntityFile, interfaceImports in refFiles.items():
             interfaceImportsStr = ', '.join(list(set(interfaceImports)))
-            importStmt = f'import {{ {interfaceImportsStr} }} from "{refInterfaceFile}";'
+            importStmt = f'import {{ {interfaceImportsStr} }} from "{refEntityFile}";'
             imports.append(importStmt)
 
-        return '\n'.join(imports)
+        return '\n'.join(set(imports))
     
-    entityImports = getImports('view')      
+    entityInterfaceImports = getImports('view', "I", "", "Interfaces")      
+    entityClassImports = getImports('view', "", "", "Classes")    
+    entityBusinessImports = getImports('view', "", "Business", "Business")
+
+    def getEntityReferencedEntitiesGets(schemaName:str):
+        refProps = {pn: attrs for pn, attrs in entity['properties'].items() if 'typeReferenceViaProperty' in attrs}
+        
+        entityReferencedEntitiesGets = []
+
+        refEntityName:str
+        for propertyName, property in refProps.items():
+            refEntityNameCapitalized = property['type'].capitalize()
+            typeReferenceViaProperty = property['typeReferenceViaProperty']
+            
+            getter = f"if ({entityName}.{propertyName}) {{ {entityName}.{propertyName} = await new {refEntityNameCapitalized}Business(this.context).getById({entityName}.{typeReferenceViaProperty}); }}"
+            entityReferencedEntitiesGets.append(getter)
+        
+        #TODO:collections having subTypeReferenceViaProperty
+        refCollectionProps = {pn: attrs for pn, attrs in entity['properties'].items() if 'subTypeReferenceViaProperty' in attrs}
+        
+        entityReferencedEntitiesCollectionGets = []
+
+        for propertyName, property in refCollectionProps.items():
+            refEntityNameCapitalized = property['subtype'].capitalize()
+            subTypeReferenceViaProperty = property['subTypeReferenceViaProperty']
+            getter = f"{entityName}.{propertyName} = (await new {refEntityNameCapitalized}Business(this.context).getAll([ {{ column: '{subTypeReferenceViaProperty}', operator: Operator.Equals, value: {entityName}.id }} as ICondition])).result;"
+            entityReferencedEntitiesCollectionGets.append(getter)
+
+
+        return "\n\n        ".join(entityReferencedEntitiesGets) + "\n\n        " + "\n\n        ".join(entityReferencedEntitiesCollectionGets)
+
+    entityReferencedEntitiesGets = getEntityReferencedEntitiesGets('view')
+
+    
 
     replacements = {
-        "__EntityImports__": entityImports,
+        "__EntityInterfaceImports__": entityInterfaceImports,
+        "__EntityClassImports__": entityClassImports,
+        "__EntityBusinessImports__": entityBusinessImports,
+
         "__EntityName__": entityName,
         "__EntityNameCapitalized__": entityName.capitalize(),
         "__EntityNameCapitalizedPlural__": pluralize(entityName.capitalize()),
+
         "__EntityCreateTypeProperties__": createTypeProps,
         "__EntityUpdateTypeProperties__": updateTypeProps,
         "__EntityPartialTypeProperties__": partialTypeProps,
+
         "__EntityInterface__": storeInterface,
         "__EntityCreateInterface__": createInterface,
         "__EntityUpdateInterface__": updateInterface,
         "__EntityPartialInterface__": partialInterface,
         "__EntityViewInterface__": viewInterface,
+
+        "__EntityClass__": storeClass,
+        "__EntityCreateClass__": createClass,
+        "__EntityUpdateClass__": updateClass,
+        "__EntityPartialClass__": partialClass,
+        "__EntityViewClass__": viewClass,
+
+        "__GetReferencedEntitiesById__": entityReferencedEntitiesGets
     }
     
     interfacesScript = INTERFACES_TEMPLATE

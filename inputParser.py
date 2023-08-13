@@ -38,7 +38,9 @@ def parseEntities(file:str):
                 propertySubType = None
                 propertyFormat = None
                 isTypeReference = False
+                typeReferenceViaProperty = None
                 isSubTypeReference = False
+                subTypeReferenceViaProperty = None
                 refEntity = None        
 
                 propertyNameFlag = propertyName[-1]
@@ -62,7 +64,7 @@ def parseEntities(file:str):
                     propertyType = DEFAULT_DATATYPE
                     print(property, propertyName, metadata)
                 elif isinstance(metadata, str):                  
-                    if metadata.endswith('[]'):
+                    if metadata.split('@')[0].strip().endswith('[]'):
                         propertyType = 'array'
                         propertySubType = metadata.split('[]')[0]
                         isSubTypeReference = propertySubType in VALID_ENTITIY_TYPES
@@ -72,6 +74,9 @@ def parseEntities(file:str):
 
                         if not isSubTypeReference and propertySubType not in BASE_DATATYPES:
                             raise Exception(f"Found unsupported data type: {propertySubType} for {property}.{propertyName}")
+                        
+                        if isSubTypeReference:
+                            subTypeReferenceViaProperty = metadata.split('@')[1]
                     else:                        
                         if ' > ' in metadata:
                             propertyType, refArgumentsStr = metadata.split(' > ')
@@ -94,13 +99,16 @@ def parseEntities(file:str):
                             if '|' in metadata:
                                 propertyType, propertyFormat = metadata.split('|')
                             else:
-                                propertyType = metadata
+                                propertyType = metadata.split('@')[0].strip()
                             
                             isTypeReference = propertyType in VALID_ENTITIY_TYPES
 
                             if not isTypeReference and propertyType not in BASE_DATATYPES:
                                 msg = f"Found unsupported data type: {propertyType} for {property}.{propertyName}"
-                                raise Exception(msg)                        
+                                raise Exception(msg)        
+
+                            if isTypeReference:
+                                typeReferenceViaProperty = metadata.split('@')[1]                
 
                 else: #object #TODO: not implemented
                     raise Exception(f"Object value not supported for entity propery {property}")
@@ -111,6 +119,12 @@ def parseEntities(file:str):
                 prop = {'type': propertyType}
 
                 prop['typeReference'] = isTypeReference
+
+                if isTypeReference:
+                    prop['typeReferenceViaProperty'] = typeReferenceViaProperty
+
+                if isSubTypeReference:
+                    prop['subTypeReferenceViaProperty'] = subTypeReferenceViaProperty
 
                 if refEntity is not None:
                     prop['constraintEntity'] = refEntity

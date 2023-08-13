@@ -1,23 +1,23 @@
 import { Entity } from "./base";
 
-__EntityImports__
+__EntityClassImports__
 
 export class __EntityNameCapitalized__ extends Entity {
-    __EntityInterface__
+    __EntityClass__
 }
 
 export class __EntityNameCapitalized__Create extends Entity {
-    __EntityCreateInterface__
+    __EntityCreateClass__
 }
 
 export class __EntityNameCapitalized__Update extends Entity {
-    __EntityUpdateInterface__
+    __EntityUpdateClass__
 }
 
 export class __EntityNameCapitalized__Partial extends Entity {
-    __EntityPartialInterface__
+    __EntityPartialClass__
 }
 
 export class __EntityNameCapitalized__View extends Entity {
-    __EntityViewInterface__
+    __EntityViewClass__
 }

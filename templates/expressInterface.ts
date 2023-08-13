@@ -1,6 +1,6 @@
 import { IEntity } from "./base";
 
-__EntityImports__
+__EntityInterfaceImports__
 
 export interface I__EntityNameCapitalized__ extends IEntity {
     __EntityInterface__

@@ -75,7 +75,7 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
     updateProperties: { id: { type: "string", required: true } };
     partialProperties: { id: { type: "string", required: false } };
     private db: IDBProvider;
-    private context: Context;
+    context: Context;
     entityName: string;
 
     constructor(context: Context, entityName: string) {
@@ -84,6 +84,12 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
         this.entityName = entityName;
     }
 
+    /**
+     * Check if an object implments an interface based on its properties and values types
+     * @param obj incoming object
+     * @param interfaceProperites interface to check against
+     * @returns true if it implements it, throws an error if not
+     */
     private implementsInterface(obj: { [key: string]: any }, interfaceProperites: { [key: string]: any }): boolean {
         if (obj == null) {
             return false; //empty or null object
@@ -141,8 +147,8 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
         return this.implementsInterface(obj, this.partialProperties);
     }
 
-    async getAll(): Promise<IQueryResult<IQuery, TOutput>> {
-        return this.db.dbSelect(this.entityName) as Promise<IQueryResult<IQuery, TOutput>>;
+    async getAll(where:ICondition[] = [], sort:ISort[] = []): Promise<IQueryResult<IQuery, TOutput>> {
+        return this.db.dbSelect(this.entityName, where, sort) as Promise<IQueryResult<IQuery, TOutput>>;
     }
 
     async getById(id: string): Promise<TOutput> {
@@ -371,7 +377,7 @@ class DBJSONProvider implements IDBProvider {
 
     dbDelete = async (table: string, idCol:string, id: string) => {
         const db = await this.dbConnect();
-        const index = db[table].findIndex((x: IEntity) => x.id== id);
+        const index = db[table].findIndex((x: IEntity) => x.id == id);
         if (index > -1) {
             (db[table] as []).splice(index, 1);
             return true;
@@ -624,14 +630,14 @@ class DBSqliteProvider implements IDBProvider {
                 if (err) {
                     return reject(err.message);
                 }
-                if(!(db as any).changes) {
+                if (!(db as any).changes) {
                     return reject("Nothing inserted");
                 }
 
                 const newid = record.id as string;
-                const updatedResult = await this.dbSelect(table, [{column: idCol, operator: Operator.Equals, value: newid} as ICondition], [], 1)
+                const updatedResult = await this.dbSelect(table, [{ column: idCol, operator: Operator.Equals, value: newid } as ICondition], [], 1);
                 let insertedRecord = updatedResult.count > 0 ? updatedResult.result[0] : null;
-                if(!insertedRecord){
+                if (!insertedRecord) {
                     return reject("could not retrieve inserted record");
                 }
                 return resolve(insertedRecord);
@@ -646,7 +652,7 @@ class DBSqliteProvider implements IDBProvider {
                 if (err) {
                     return reject(err.message);
                 }
-                if(!(db as any).changes) {
+                if (!(db as any).changes) {
                     return reject("Nothing deleted");
                 }
                 return resolve(true);
@@ -667,14 +673,14 @@ class DBSqliteProvider implements IDBProvider {
                     return reject(err.message);
                 }
 
-                if(!(db as any).changes) {
+                if (!(db as any).changes) {
                     return reject("Nothing Updated");
                 }
 
                 const newid = record.id || id as string;
-                const updatedResult = await this.dbSelect(table, [{column: idCol, operator: Operator.Equals, value: newid} as ICondition], [], 1)
+                const updatedResult = await this.dbSelect(table, [{ column: idCol, operator: Operator.Equals, value: newid } as ICondition], [], 1);
                 let updatedRecord = updatedResult.count > 0 ? updatedResult.result[0] : null;
-                if(!updatedRecord){
+                if (!updatedRecord) {
                     return reject("could not retrieve updated record");
                 }
                 return resolve(updatedRecord);

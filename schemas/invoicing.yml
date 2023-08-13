@@ -3,6 +3,7 @@ api:
   description: Invoicing API Reference
   version: "1.0"
   prefix: /api/v1
+  security: [bearer, key, oauth] #default security schemes
   servers: 
     - url: http://localhost:8001
   # outputFile: ./output/invoicing/spec.yml
@@ -25,6 +26,7 @@ interfaces:
     unique: [email]
     sort: [email asc]
     sortable: [email]
+    # security: [default] #default, bearer, key, oauth, or empty array
     properties:
       id: uuid
       email: str|email
@@ -40,7 +42,7 @@ interfaces:
       name: 
       email: str|email
       login_id: uuid > login.id
-      login?: login
+      login?: login @login_id
 
   role:
     key: id
@@ -50,6 +52,8 @@ interfaces:
     properties:
       id: 
       name:
+
+      rolePermissions?: rolePermission[] @role_id
 
   permission:
     key: id
@@ -66,6 +70,8 @@ interfaces:
       entity:
       action:
 
+      roles?: rolePermission[] @permission_id
+
   rolePermission:
     key: id
     unique: [role_id, permission_id]
@@ -75,15 +81,16 @@ interfaces:
       id: uuid
       role_id: str > role.id
       permission_id: str > permission.id
-      role?: role
-      permission?: permission 
+      
+      role?: role @role_id
+      permission?: permission @permission_id
 
   account:
     key: id
     autokey: true
     unique: [label]
     sort: [label asc]
-    sortable: [label]
+    sortable: [label]    
     properties:
       id: uuid
       label:
@@ -105,8 +112,8 @@ interfaces:
       name:
       category_id?: uuid > category.id
 
-      category?: category
-      items?: item[]
+      category?: category @category_id
+      items?: item[] @category_id
 
   company:
     key: id
@@ -150,10 +157,10 @@ interfaces:
       address?:
       contact?:
       currency_id?: str > currency.id
-      currency?: currency
+      currency?: currency @currency_id
       payment_term?: int
 
-      sales?: sale[]
+      sales?: sale[] @customer_id
 
   item:
     key: id
@@ -166,7 +173,7 @@ interfaces:
       name:
       category_id?: uuid > category.id
 
-      category?: category
+      category?: category @category_id
 
   sale:
     key: id
@@ -184,22 +191,22 @@ interfaces:
       company_id: uuid > company.id
       account_id: uuid > account.id
       customer_id: uuid > customer.id
+      currency_id: str > currency.id
       place?:
       number: int
-      date*: date # a * means disallow update
-      currency_id: str > currency.id
+      date*: date # a * means disallow update      
       total!*: float # a !* means disallow both create, update
       reference?:
       confirmed: bool
-
       reference_date?: date
       due_date?: date
 
-      currency?: currency
-      customer?: customer
-      account?: account
-      company?: company
-      items?: saleItem[]
+      currency?: currency @currency_id
+      customer?: customer @customer_id
+      account?: account @account_id
+      company?: company @company_id
+
+      items?: saleItem[] @sale_id
 
   saleItem:
     key: id
@@ -222,8 +229,8 @@ interfaces:
       quantity: int
       price: float
 
-      sale?: sale
-      item?: item
+      sale?: sale @sale_id
+      item?: item @item_id
 
 data:
   login:
