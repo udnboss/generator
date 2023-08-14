@@ -13,6 +13,17 @@ DEFAULT_REFERENTIAL_ON_UPDATE = 'd-cascade'
 PROPERTY_NAME_FLAGS = ['?', '*', '!', '$']
 FLAG_NOT_REQUIRED, FLAG_NO_UPDATE, FLAG_NO_CREATE, FLAG_NO_READ = PROPERTY_NAME_FLAGS
 
+TYPE_FILTER_OPERATORS = {
+    'str': 'like',
+    'uuid': 'in',
+    'bool': 'eq',
+    'int': 'bt',
+    'float': 'bt',
+    'date': 'bt',
+    'datetime': 'bt',
+    'time': 'bt',
+}
+
 def parseEntities(file:str):
     entities = {}
     with open(file, 'r', encoding='utf-8') as f:
@@ -41,7 +52,7 @@ def parseEntities(file:str):
                 typeReferenceViaProperty = None
                 isSubTypeReference = False
                 subTypeReferenceViaProperty = None
-                refEntity = None        
+                refEntity = None      
 
                 propertyNameFlag = propertyName[-1]
                 while propertyNameFlag in PROPERTY_NAME_FLAGS:    
@@ -94,7 +105,8 @@ def parseEntities(file:str):
                             refOnUpdateMatches = [o for o in REFERENTIAL_ON_UPDATE_OPTIONS if o in refArguments]
                             refOnUpdate = refOnUpdateMatches[-1] if len(refOnUpdateMatches) > 0 else DEFAULT_REFERENTIAL_ON_UPDATE
 
-                            refEntity, refEntityProperty = refEntity.split('.')                        
+                            refEntity, refEntityProperty = refEntity.split('.')       
+                            
                         else:
                             if '|' in metadata:
                                 propertyType, propertyFormat = metadata.split('|')
@@ -108,15 +120,23 @@ def parseEntities(file:str):
                                 raise Exception(msg)        
 
                             if isTypeReference:
-                                typeReferenceViaProperty = metadata.split('@')[1]                
+                                typeReferenceViaProperty = metadata.split('@')[1]            
+                                
 
                 else: #object #TODO: not implemented
                     raise Exception(f"Object value not supported for entity propery {property}")
                     # propertyType = metadata['type']
                     # if 'format' in metadata:
                     #     propertyFormat = metadata['format']
+
+                
+                
                 
                 prop = {'type': propertyType}
+
+                if propertyType != "array":
+                    if not isTypeReference:
+                        prop['filterOperator'] = TYPE_FILTER_OPERATORS[propertyType]
 
                 prop['typeReference'] = isTypeReference
 

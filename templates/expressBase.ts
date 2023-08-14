@@ -20,6 +20,7 @@ export enum Operator {
 }
 
 export enum ClientOperator {
+    Contains            = 'like',
     Equals              = 'e',
     NotEquals           = 'ne',
     IsIn                = 'in',
@@ -39,6 +40,21 @@ export enum ClientOperator {
 export enum SortDirection {
     Asc = 'asc',
     Desc = 'desc'
+}
+
+export enum ErrorCodes {
+    EntityNotFound, //404
+    EntityTypeMismatch, //400
+    PropertyTypeMismatch, //400
+    QueryValidationError, //405
+    DataValidationError, //405
+    DatabaseNotFound, //500
+    DatabaseLocked, //500
+    UnhandledException, //500
+    Unauthenticated, //401
+    Unauthorized, //403
+    RelationalConstraintViolation, //405
+    UniqueConstraintViolation, //405
 }
 
 export interface ISort {
@@ -115,7 +131,7 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
     createProperties: { id: { type: "string", required: true } };
     updateProperties: { id: { type: "string", required: true } };
     partialProperties: { id: { type: "string", required: false } };
-    queryProperties: { id: { type: "string", required: false } }; //TODO: populate it
+    queryProperties: { id: { type: "string", required: false } }; 
     sortableProperties:string[] = []; //TODO: populate it
     private db: IDBProvider;
     context: Context;
@@ -180,6 +196,7 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
 
     convertToDataQuery(query:IClientQuery):IDataQuery {
         const operatorMap = {
+            'like': Operator.Contains,
             'e': Operator.Equals,
             'ne': Operator.NotEquals,
             'in': Operator.IsIn,
@@ -196,7 +213,7 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
             'nbt': Operator.NotBetween,
         };
 
-        const arrayValueOperators = ['in', 'nin', 'bt', 'nbt'];
+        const arrayValueOperators = ['e', 'in', 'nin', 'bt', 'nbt'];
         
         if (query.$size && isNaN(query.$size as any)) { throw new Error(`${this.entityName} Entity query: Found invalid $size parameter ${query.$size}`); }
         if (query.$page && isNaN(query.$page as any)) { throw new Error(`${this.entityName} Entity query: Found invalid $page parameter ${query.$page}`); }
@@ -217,19 +234,26 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
 
         for (let prop in query) {
             if (ignoreProps.includes(prop)) { continue; }
+
+
             
             let v = (query as any)[prop];
             if (v === undefined && v === null && v === '') continue;    
                                     
             var propName = prop;
-            var op = 'e';
-            if (prop.includes('|')) [ propName, op ] = prop.split('|');  
+            var op = "e";
+            // if (prop.includes('|')) [ propName, op ] = prop.split('|');  
+            const validProps = (this.queryProperties as any);
 
-            if (!(propName in this.queryProperties)) { throw new Error(`${this.entityName} Entity query: Found unsupported property ${propName}`); }
+            if (!(propName in validProps)) { throw new Error(`${this.entityName} Entity query: Found unsupported property ${propName}`); }
             
+            if (!('operator' in validProps[propName])) { throw new Error(`${this.entityName} Entity query: Property ${propName} does not have a filter operator defined`); }
+            
+            op = validProps[propName].operator;
+
             if (!(op in operatorMap)) { throw new Error(`${this.entityName} Entity query: Found unsupported operator ${op} for property ${propName}`); }
                         
-            const propType = (this.queryProperties as any)[propName].type;
+            const propType = validProps[propName].type;
             if (arrayValueOperators.includes(op)) { 
                 const values = v.split(',');
                 if (propType === "number") { 

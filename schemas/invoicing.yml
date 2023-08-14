@@ -26,6 +26,7 @@ interfaces:
     unique: [email]
     sort: [email asc]
     sortable: [email]
+    repr: [email]
     # security: [default] #default, bearer, key, oauth, or empty array
     properties:
       id: uuid
@@ -37,6 +38,10 @@ interfaces:
     autokey: true
     sort: [name asc]
     sortable: [name, email]
+    repr: [name, email]
+    filters:
+      name: like
+      email: like      
     properties:
       id: uuid
       name: 
@@ -49,6 +54,9 @@ interfaces:
     unique: [name]
     sort: [name asc]
     sortable: [name]
+    repr: [email]
+    filters:
+      name: like
     properties:
       id: 
       name:
@@ -60,10 +68,15 @@ interfaces:
     unique: [name]
     sort: [name asc]
     sortable: [name]
+    repr: [name, id]
     constraints:
       - property: action
         op: in
         value: [READ, CREATE, UPDATE, DELETE, EXECUTE]
+    filters:
+      name: like
+      entity: in
+      action: in
     properties:
       id:
       name:
@@ -77,6 +90,7 @@ interfaces:
     unique: [role_id, permission_id]
     sort: [role.name asc, permission.name asc]
     sortable: [role.name, permission.name]
+    repr: [permission.name]
     properties:
       id: uuid
       role_id: str > role.id
@@ -90,7 +104,8 @@ interfaces:
     autokey: true
     unique: [label]
     sort: [label asc]
-    sortable: [label]    
+    sortable: [label]   
+    repr: [label] 
     properties:
       id: uuid
       label:
@@ -107,6 +122,7 @@ interfaces:
     sort: [name asc]
     sortable: [name, category.name]
     unique: [name]
+    repr: [name]
     properties:
       id: uuid
       name:
@@ -121,6 +137,7 @@ interfaces:
     sort: [name asc]
     sortable: [name]
     unique: [name]
+    repr: [name]
     properties:
       id: uuid
       name:
@@ -136,6 +153,7 @@ interfaces:
     sort: [name asc]
     sortable: [name]
     unique: [name]
+    repr: [name, symbol]
     properties:
       id:
       name:
@@ -151,6 +169,7 @@ interfaces:
       - property: payment_term
         op: bt
         value: [0, 90]
+    repr: [name]
     properties:
       id: uuid
       name:
@@ -168,6 +187,7 @@ interfaces:
     sort: [name asc]
     sortable: [name, category.name]
     unique: [name]
+    repr: [name]
     properties:
       id: uuid
       name:
@@ -186,6 +206,7 @@ interfaces:
       - property: due_date
         op: gte #operators: e, ne, gt, gte, lt, lte, in, nin, bt, nbt
         value: $date # $ means reference to another property in the same entity, $entity.prop can be used for referncing a different entity
+    repr: [number, customer.name, date] #props that are used to represent this entity in listings
     properties:
       id: uuid
       company_id: uuid > company.id
@@ -221,6 +242,7 @@ interfaces:
       - property: price
         op: gte
         value: 0
+    repr: [item.name, quantity, price, total]
     properties:
       id: uuid
       sale_id: uuid > sale.id

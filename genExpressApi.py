@@ -30,8 +30,19 @@ def pluralize(s:str) -> str:
         return s
 
 def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
+    TYPE_OPERATORS = { #str uuid bool int float date datetime time
+        'str': 'like',
+        'uuid': 'in',
+        'bool': 'in',
+        'int': 'bt',
+        'float': 'bt',
+        'date': 'bt',
+        'datetime': 'bt',
+        'time': 'bt',
+    }
 
     def getTypeProps(schemaName:str) -> str:
+        
         typeProps = {}
         for prop, attrs in schema[schemaName]['properties'].items():
             isRequired = 'required' in schema[schemaName] and prop in schema[schemaName]['required']
@@ -40,6 +51,8 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
                 'required': isRequired and not isAutoKey,
                 'type': attrs["type"] if 'type' in attrs else attrs["$ref"].split('/')[-1].replace('View', '')
             }
+            if 'filterOperator' in entity['properties'][prop]:
+                typeProp["operator"] = entity['properties'][prop]['filterOperator']
             typeProps[prop] = typeProp
 
         return json.dumps(typeProps, ensure_ascii=False, indent=2)

@@ -39,6 +39,8 @@ def genSchema(entities:dict):
         if 'sortable' in entity:
             clientQueryProps += [p for p in entity['sortable'] if '.' not in p]
 
+        clientQueryProps += [pn for pn, atrs in properties.items() if 'filterOperator' in atrs]
+
         schemas[entityNameQuery] = {'type': 'object', 'properties': {}}
         schemas[entityName] = {'type': 'object', 'properties': {}}
         schemas[entityNameCreate] = {'type': 'object', 'properties': {}}
