@@ -1,6 +1,11 @@
-import { IEntity } from "./base";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { IClientQuery, IEntity, IQuery, IQueryResult } from "./base";
 
 __EntityInterfaceImports__
+
+export interface I__EntityNameCapitalized__ClientQuery extends IClientQuery {
+    __EntityClientQueryInterface__
+}
 
 export interface I__EntityNameCapitalized__ extends IEntity {
     __EntityInterface__

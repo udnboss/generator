@@ -5,14 +5,35 @@ export enum Operator {
     Equals,
     NotEquals,
     GreaterThan,
+    GreaterThanOrEqual,
     LessThan,
+    LessThanOrEqual,
     IsNull,
     IsNotNull,
     IsIn,
     IsNotIn,
     StartsWith,
     EndsWith,
-    Contains
+    Contains,
+    Between,
+    NotBetween
+}
+
+export enum ClientOperator {
+    Equals              = 'e',
+    NotEquals           = 'ne',
+    IsIn                = 'in',
+    IsNotIn             = 'nin',
+    IsNull              = 'nul',
+    IsNotNull           = 'nnul',
+    GreaterThan         = 'gt',
+    GreaterThanOrEqual  = 'gte',
+    LessThan            = 'lt',
+    LessThanOrEqual     = 'lte',
+    StartsWith          = 'sw',
+    EndsWith            = 'ew',
+    Between             = 'bt',
+    NotBetween          = 'nbt',
 }
 
 export enum SortDirection {
@@ -31,12 +52,31 @@ export interface ICondition {
     value: string | number | boolean | string[] | number[];
 }
 
+export interface IClientCondition {
+    operator: string;
+    value:string;
+}
+
 export interface IQuery {
     sortby: string;
     sortdir: string;
     search: string;
     page: number;
-    pageSize: number;
+    pageSize: number;    
+}
+
+export interface IClientQuery {
+    $sort?: string;
+    $order?: string;
+    $page?: number;
+    $size?: number;
+}
+
+export interface IDataQuery {
+    sort?: ISort[];
+    where: ICondition[];
+    limit: number;
+    offset: number;
 }
 
 export interface IQueryResult<Q, T> {
@@ -59,8 +99,9 @@ export interface IBusiness<TOutput extends IEntity> {
     createProperties: any;
     updateProperties: any;
     partialProperties: any;
+    queryProperties: any;
     entityName: string;
-    getAll?: () => Promise<IQueryResult<IQuery, TOutput>>;
+    getAll?: (query?:IDataQuery) => Promise<IQueryResult<IQuery, TOutput>>;
     getById?: (id: string) => Promise<TOutput>;
     create?: <T extends IEntity>(entity: T) => Promise<TOutput>;
     update?: <T extends IEntity>(id: string, entity: T) => Promise<TOutput>;
@@ -74,6 +115,8 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
     createProperties: { id: { type: "string", required: true } };
     updateProperties: { id: { type: "string", required: true } };
     partialProperties: { id: { type: "string", required: false } };
+    queryProperties: { id: { type: "string", required: false } }; //TODO: populate it
+    sortableProperties:string[] = []; //TODO: populate it
     private db: IDBProvider;
     context: Context;
     entityName: string;
@@ -85,7 +128,7 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
     }
 
     /**
-     * Check if an object implments an interface based on its properties and values types
+     * Check if an object implements an interface based on its properties and values types
      * @param obj incoming object
      * @param interfaceProperites interface to check against
      * @returns true if it implements it, throws an error if not
@@ -133,6 +176,81 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
         }
 
         return true;
+    }    
+
+    convertToDataQuery(query:IClientQuery):IDataQuery {
+        const operatorMap = {
+            'e': Operator.Equals,
+            'ne': Operator.NotEquals,
+            'in': Operator.IsIn,
+            'nin': Operator.IsNotIn,
+            'nul': Operator.IsNull,
+            'nnul': Operator.IsNotNull,
+            'gt': Operator.GreaterThan,
+            'gte': Operator.GreaterThanOrEqual,
+            'lt': Operator.LessThan,
+            'lte': Operator.LessThanOrEqual,
+            'sw': Operator.StartsWith,
+            'ew': Operator.EndsWith,
+            'bt': Operator.Between,
+            'nbt': Operator.NotBetween,
+        };
+
+        const arrayValueOperators = ['in', 'nin', 'bt', 'nbt'];
+        
+        if (query.$size && isNaN(query.$size as any)) { throw new Error(`${this.entityName} Entity query: Found invalid $size parameter ${query.$size}`); }
+        if (query.$page && isNaN(query.$page as any)) { throw new Error(`${this.entityName} Entity query: Found invalid $page parameter ${query.$page}`); }
+        
+        if (query.$sort && !this.sortableProperties.includes(query.$sort)) {
+            throw new Error(`${this.entityName} Entity query: Found unsupported $sort parameter ${query.$sort}`);
+        }
+
+        const dataQuery:IDataQuery = {
+            // table: this.entityName,
+            limit: query.$size || 0,
+            offset: (query.$size || 0) / (query.$page || 1),
+            where: [],
+            sort: query.$sort ? [{ column: query.$sort, direction: query.$order ?? SortDirection.Asc } as ISort] : []
+        };
+
+        const ignoreProps = ['$sort', '$order', '$page', '$size'];
+
+        for (let prop in query) {
+            if (ignoreProps.includes(prop)) { continue; }
+            
+            let v = (query as any)[prop];
+            if (v === undefined && v === null && v === '') continue;    
+                                    
+            var propName = prop;
+            var op = 'e';
+            if (prop.includes('|')) [ propName, op ] = prop.split('|');  
+
+            if (!(propName in this.queryProperties)) { throw new Error(`${this.entityName} Entity query: Found unsupported property ${propName}`); }
+            
+            if (!(op in operatorMap)) { throw new Error(`${this.entityName} Entity query: Found unsupported operator ${op} for property ${propName}`); }
+                        
+            const propType = (this.queryProperties as any)[propName].type;
+            if (arrayValueOperators.includes(op)) { 
+                const values = v.split(',');
+                if (propType === "number") { 
+                    v = values.map( (x:any) => isNaN(x) ? 0 : Number(x)); 
+                } else if (propType === "boolean") { 
+                    v = values.map( (x:any) => Boolean(x)); 
+                }
+            } else {
+                if (propType === "number") { 
+                    v = isNaN(v) ? 0 : Number(v); 
+                } else if (propType === "boolean") { 
+                    v = Boolean(v); 
+                }
+            }
+
+            const condition = { column: prop, operator: (operatorMap as any)[op], value: v } as ICondition;
+            dataQuery.where.push(condition);
+
+        }
+
+        return dataQuery;
     }
 
     isCreate(obj: { [key: string]: any }): boolean {
@@ -147,11 +265,17 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
         return this.implementsInterface(obj, this.partialProperties);
     }
 
-    async getAll(where:ICondition[] = [], sort:ISort[] = []): Promise<IQueryResult<IQuery, TOutput>> {
-        return this.db.dbSelect(this.entityName, where, sort) as Promise<IQueryResult<IQuery, TOutput>>;
+    async getAll(query?:IDataQuery, maxDepth:number = 2): Promise<IQueryResult<IQuery, TOutput>> {
+        if (maxDepth < 1) {
+            return new Promise((resolve) => { resolve({ count: 0, result: [], total: 0, query: { page: 1 } } as IQueryResult<IQuery, TOutput>); });
+        }
+        return this.db.dbSelect(this.entityName, query?.where, query?.sort) as Promise<IQueryResult<IQuery, TOutput>>;
     }
 
-    async getById(id: string): Promise<TOutput> {
+    async getById(id: string, maxDepth:number = 2): Promise<TOutput> {
+        if (maxDepth < 1) {
+            return new Promise((resolve) => { resolve(null as any as TOutput); });
+        }
         const dbResult = await this.db.dbSelect(this.entityName,
             [{ column: this.idProperty, operator: Operator.Equals, value: id } as ICondition]);
         if (dbResult.count == 0) {
@@ -202,7 +326,7 @@ interface IDBProvider {
     dbConnect: () => {};
     clearCache: () => void;
     dbCount: (table: string, where?: ICondition[]) => Promise<Number>;
-    dbSelect: (table: string, where?: ICondition[], sort?: ISort[]) => Promise<IQueryResult<IQuery, IEntity>>;
+    dbSelect: (table: string, where?: ICondition[], sort?: ISort[], offset?:number, limit?: number) => Promise<IQueryResult<IQuery, IEntity>>;
     dbInsert: (table: string, idCol:string, record: IEntity) => Promise<IEntity>;
     dbUpdate: (table: string, idCol:string, id: string, record: IEntity) => Promise<IEntity>;
     dbDelete: (table: string, idCol:string, id: string) => Promise<boolean>;
@@ -291,7 +415,7 @@ class DBJSONProvider implements IDBProvider {
         }).length;
     };
 
-    dbSelect = async (table: string, where: ICondition[] = [], sort: ISort[] = []) => {
+    dbSelect = async (table: string, where: ICondition[] = [], sort: ISort[] = [], offset:number = 0, limit: number = 0) => {
         const db = await this.dbConnect();
 
         const results = (db[table] as any[]).filter((x) => {
@@ -366,7 +490,10 @@ class DBJSONProvider implements IDBProvider {
             });
         }
 
-        return { result: results, count: results.length, total: results.length } as IQueryResult<IQuery, IEntity>;
+        //TODO: offset and limit
+        const page = limit > 0 ? ((offset / limit) || 1) : 1;
+
+        return { result: results, count: results.length, total: results.length, query: { page: page, pageSize: limit } } as IQueryResult<IQuery, IEntity>;
     };
 
     dbInsert = async (table: string, idCol:string, record: IEntity) => {

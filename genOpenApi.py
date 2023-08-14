@@ -26,16 +26,26 @@ def genSchema(entities:dict):
     for entityName, entity in entities.items():
         properties = entity['properties']
 
+        entityNameQuery = f"{entityName}Query"
         entityNameCreate = f"{entityName}Create"
         entityNameUpdate = f"{entityName}Update"
         entityNamePartial = f"{entityName}Partial"
         entityNameView = f"{entityName}View"
 
+        clientQueryProps = []
+        if 'sort' in entity:
+            clientQueryProps = [p.split(' ')[0] for p in entity['sort']]
+        
+        if 'sortable' in entity:
+            clientQueryProps += [p for p in entity['sortable'] if '.' not in p]
+
+        schemas[entityNameQuery] = {'type': 'object', 'properties': {}}
         schemas[entityName] = {'type': 'object', 'properties': {}}
         schemas[entityNameCreate] = {'type': 'object', 'properties': {}}
         schemas[entityNameUpdate] = {'type': 'object', 'properties': {}}
         schemas[entityNamePartial] = {'type': 'object', 'properties': {}}
         schemas[entityNameView] = {'type': 'object', 'properties': {}}
+
         for propertyName, metadata in properties.items():
             prop = {}
 
@@ -62,8 +72,12 @@ def genSchema(entities:dict):
             if not '$ref' in prop and not 'items' in prop:
                 schemas[entityName]['properties'][propertyName] = prop
                 # print(entityName, propertyName, prop)
+                if metadata['allowRead'] and propertyName in clientQueryProps:
+                    schemas[entityNameQuery]['properties'][propertyName] = prop.copy()
+
                 if metadata['allowCreate']:
                     schemas[entityNameCreate]['properties'][propertyName] = prop.copy()
+
                 if metadata['allowUpdate']:
                     schemas[entityNameUpdate]['properties'][propertyName] = prop.copy()
                     schemas[entityNamePartial]['properties'][propertyName] = prop.copy()
@@ -105,6 +119,28 @@ def genPaths(prefix:str = "", entities:dict = {}):
             s += 's'
         return s
 
+    def getQueryParams(entityNameCapitalizedPlural:str, entity:dict):
+        params = []
+        clientQueryProps = []
+        if 'sort' in entity:
+            clientQueryProps = [p.split(' ')[0] for p in entity['sort']]
+        
+        if 'sortable' in entity:
+            clientQueryProps += [p for p in entity['sortable'] if '.' not in p]
+
+        for prop in set(clientQueryProps):
+            param = {
+                'name': prop,
+                'in': 'query',
+                'description': f'Filter {entityNameCapitalizedPlural} by {prop}',
+                'schema': {
+                    'type': 'string'
+                }
+            }
+            params.append(param)
+
+        return params
+
     paths = {}
     entityName:str
     properties:dict
@@ -114,12 +150,14 @@ def genPaths(prefix:str = "", entities:dict = {}):
         entityNamePlural = pluralize(entityName)
         entityNameCapitalized = entityName.capitalize()
         entityNameCapitalizedPlural = pluralize(entityNameCapitalized)
+        queryParams = getQueryParams(entityNameCapitalizedPlural, entity)
 
         getPath = {
             'tags': [entityName],
             'summary': f'get all {entityName} entities',
             'description': f'get all {entityName} entities',
             'operationId': f'get{entityNameCapitalizedPlural}',
+            'parameters': queryParams,
             'responses': {
                 '200': {
                     'description': 'successful operation',

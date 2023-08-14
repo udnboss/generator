@@ -48,22 +48,26 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
     createTypeProps = getTypeProps('create')
     updateTypeProps = getTypeProps('update')
     partialTypeProps = getTypeProps('partial')
+    queryTypeProps = getTypeProps('query')
     # viewTypeProps = getTypeProps('view')
     
     def getInterface(schemaName:str, asClass:bool = False):
+        prefix = "I" if not asClass else ""
         interface = []
         for prop, attrs in schema[schemaName]['properties'].items():
             if prop == "id":
                 continue
             optional = '?' if 'required' not in schema[schemaName] or prop not in schema[schemaName]['required'] else ''
-            print(schemaName, prop, attrs)
+            # if schemaName == 'view':
+                # print(asClass, schemaName, prop, attrs, prefix)
             root:str
             if '$ref' in attrs:                
                 root = attrs["$ref"].split('/')[-1].replace('View', '')
-                type = f"I{root.capitalize()}View" if not asClass else f"{root.capitalize()}View"
+                type = f"{prefix}{root.capitalize()}View"
             elif attrs['type'] == 'array':
                 root = attrs['items']["$ref"].split('/')[-1].replace('View', '')
-                type = f"I{root.capitalize()}View[]" if not asClass else f"{root.capitalize()}View[]"
+                # type = f"I{root.capitalize()}View[]" if not asClass else f"{root.capitalize()}View[]"
+                type = f"IQueryResult<IQuery, {prefix}{root.capitalize()}View>"
             else:
                 type = attrs["type"]  
             
@@ -73,6 +77,7 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
         return '\n    '.join(interface)
 
     storeInterface = getInterface('store')
+    queryInterface = getInterface('query')
     createInterface = getInterface('create')
     updateInterface = getInterface('update')
     partialInterface = getInterface('partial')
@@ -123,8 +128,8 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
 
         return '\n'.join(set(imports))
     
-    entityInterfaceImports = getImports('view', "I", "", "Interfaces")      
-    entityClassImports = getImports('view', "", "", "Classes")    
+    entityInterfaceImports = getImports('view', "I", "View", "Interfaces")      
+    entityClassImports = getImports('view', "", "View", "Classes")    
     entityBusinessImports = getImports('view', "", "Business", "Business")
 
     def getEntityReferencedEntitiesGets(schemaName:str):
@@ -132,12 +137,14 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
         
         entityReferencedEntitiesGets = []
 
+        newLineIndent = "\n        "
+
         refEntityName:str
         for propertyName, property in refProps.items():
             refEntityNameCapitalized = property['type'].capitalize()
             typeReferenceViaProperty = property['typeReferenceViaProperty']
             
-            getter = f"if ({entityName}.{propertyName}) {{ {entityName}.{propertyName} = await new {refEntityNameCapitalized}Business(this.context).getById({entityName}.{typeReferenceViaProperty}); }}"
+            getter = f"if ({entityName}.{typeReferenceViaProperty}) {{ {entityName}.{propertyName} = await new {refEntityNameCapitalized}Business(this.context).getById({entityName}.{typeReferenceViaProperty}); }}"
             entityReferencedEntitiesGets.append(getter)
         
         #TODO:collections having subTypeReferenceViaProperty
@@ -148,11 +155,14 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
         for propertyName, property in refCollectionProps.items():
             refEntityNameCapitalized = property['subtype'].capitalize()
             subTypeReferenceViaProperty = property['subTypeReferenceViaProperty']
-            getter = f"{entityName}.{propertyName} = (await new {refEntityNameCapitalized}Business(this.context).getAll([ {{ column: '{subTypeReferenceViaProperty}', operator: Operator.Equals, value: {entityName}.id }} as ICondition])).result;"
-            entityReferencedEntitiesCollectionGets.append(getter)
+            query = f"var query{refEntityNameCapitalized} = {{ where: [ {{ column: '{subTypeReferenceViaProperty}', operator: Operator.Equals, value: {entityName}.id }} as ICondition] }} as IDataQuery;"
+            getter = f"{entityName}.{propertyName} = (await new {refEntityNameCapitalized}Business(this.context).getAll(query{refEntityNameCapitalized}, maxDepth));"
+            entityReferencedEntitiesCollectionGets.append(f"{query}{newLineIndent}  {getter}")
 
-
-        return "\n\n        ".join(entityReferencedEntitiesGets) + "\n\n        " + "\n\n        ".join(entityReferencedEntitiesCollectionGets)
+        
+        refEntitiesGetsStr = newLineIndent.join(entityReferencedEntitiesGets)
+        refEntitiesCollectionGetsStr = f"{newLineIndent}  ".join(entityReferencedEntitiesCollectionGets)
+        return  f"{refEntitiesGetsStr}{newLineIndent*2}if (maxDepth) {{{newLineIndent}  {refEntitiesCollectionGetsStr}{newLineIndent*2}  maxDepth--;{newLineIndent}}}"
 
     entityReferencedEntitiesGets = getEntityReferencedEntitiesGets('view')
 
@@ -170,7 +180,9 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
         "__EntityCreateTypeProperties__": createTypeProps,
         "__EntityUpdateTypeProperties__": updateTypeProps,
         "__EntityPartialTypeProperties__": partialTypeProps,
+        "__EntityQueryTypeProperties__": queryTypeProps,
 
+        "__EntityClientQueryInterface__": queryInterface,
         "__EntityInterface__": storeInterface,
         "__EntityCreateInterface__": createInterface,
         "__EntityUpdateInterface__": updateInterface,
@@ -208,8 +220,9 @@ def _genCode(entities:dict, openApiSchemas:dict):
     routeImports = []
     routeUses = []
     for entityName, entity in entities.items():
-        schema = {
+        schema = {            
             'store': openApiSchemas[entityName],
+            'query': openApiSchemas[f'{entityName}Query'],
             'create': openApiSchemas[f'{entityName}Create'],
             'update': openApiSchemas[f'{entityName}Update'],
             'partial': openApiSchemas[f'{entityName}Partial'],
