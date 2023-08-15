@@ -53,6 +53,7 @@ def parseEntities(file:str):
                 isSubTypeReference = False
                 subTypeReferenceViaProperty = None
                 refEntity = None      
+                defaultValue = None
 
                 propertyNameFlag = propertyName[-1]
                 while propertyNameFlag in PROPERTY_NAME_FLAGS:    
@@ -108,6 +109,9 @@ def parseEntities(file:str):
                             refEntity, refEntityProperty = refEntity.split('.')       
                             
                         else:
+                            if '=' in metadata:
+                                metadata, defaultValue = [x.strip() for x in metadata.split('=')]
+                            
                             if '|' in metadata:
                                 propertyType, propertyFormat = metadata.split('|')
                             else:
@@ -132,7 +136,7 @@ def parseEntities(file:str):
                 
                 
                 
-                prop = {'type': propertyType}
+                prop = {'type': propertyType, 'default': defaultValue}
 
                 if propertyType != "array":
                     if not isTypeReference:

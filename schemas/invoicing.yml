@@ -216,7 +216,8 @@ interfaces:
       place?:
       number: int
       date*: date # a * means disallow update      
-      total!*: float # a !* means disallow both create, update
+      total!*?: float = 0 # a !* means disallow both create, update
+      totalItems!*?: int = 0
       reference?:
       confirmed: bool
       reference_date?: date
@@ -268,6 +269,7 @@ interfaces:
           target: sale
           properties:             
             total: $sum:$self.total:sale_id:id
+            totalItems: $count:$self.id:sale_id:id
           where:
             - property: id
               op: e

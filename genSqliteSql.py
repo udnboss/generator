@@ -34,6 +34,8 @@ CHECK_OP_MAP = {
     'nbt': 'not between',
 }
 
+AGGR_FUNCS = ['$sum', '$count', '$avg', '$max', '$min', '$total']
+
 def genFk(propertyName:str, property:str):    
     pkTable = property["constraintEntity"]
     pkTableCol = property["constraintEntityProperty"]
@@ -110,6 +112,12 @@ def genCreateTriggers(entityName:str, entity:dict) -> str:
     if not 'triggers' in entity:
         return ""
     
+    def isAggregation(expr:str) -> bool:
+        for fn in AGGR_FUNCS:
+            if expr.startswith(fn):
+                return True
+        return False
+    
     def parseTriggerActions(trigger:dict):
         sqls = []
         for action in trigger['actions']:
@@ -133,13 +141,13 @@ def genCreateTriggers(entityName:str, entity:dict) -> str:
             if actionType == "update":
                 propsSqls = []
                 for propName, expr in action["properties"].items():                        
-                    if expr.startswith('$sum'):
+                    if isAggregation(expr):
                         fn, p, fk, pk = expr.split(':')
                         fn = fn[1:]                        
                         f, p = p.split(".")
                         if f == "$self":
                             f = entityName
-                        expr = f"(select {fn}({p}) from [{f}] where [{fk}] = [{targetName}].[{pk}])"
+                        expr = f"(select ifnull({fn}({p}), 0) from [{f}] where [{fk}] = [{targetName}].[{pk}])"
                     
                     propSql = f"[{propName}] = {expr}"
                     propsSqls.append(propSql)
@@ -195,6 +203,9 @@ def genCreateCol(propertyName:str, property:dict) -> str:
 
     if property["required"]:
         tokens.append("not null")
+
+    if property['default'] is not None:
+        tokens.append('default ' + property['default'])
     
     sql = " ".join(tokens)
     return sql
