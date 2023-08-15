@@ -21,6 +21,19 @@ FK_ACTIONS = {
     'u-ignore': 'on update no action',
 }
 
+CHECK_OP_MAP = {
+    'e': '=',
+    'ne': '<>',
+    'gt': '>',
+    'gte': '>=',
+    'lt': '<',
+    'lte': '<=',
+    'in': 'in',
+    'nin': 'not in',
+    'bt': 'between',
+    'nbt': 'not between',
+}
+
 def genFk(propertyName:str, property:str):    
     pkTable = property["constraintEntity"]
     pkTableCol = property["constraintEntityProperty"]
@@ -93,19 +106,67 @@ def genCreateCheckConstraints(entityName:str, entity:dict) -> str:
     constraintsSql = ",\n  ".join(constraints)    
     return constraintsSql
 
+def genCreateTriggers(entityName:str, entity:dict) -> str:
+    if not 'triggers' in entity:
+        return ""
+    
+    def parseTriggerActions(trigger:dict):
+        sqls = []
+        for action in trigger['actions']:
+            targetName = action["target"]
+            actionType = action["type"]
+            where = "id = new.id"
+            if targetName == '$self' and 'where' not in action:
+                targetName = entityName
+            if targetName != "$self" and 'where' in action:
+                wheres = []
+                for w in action["where"]:
+                    p = w['property']
+                    op = CHECK_OP_MAP[w['op']]
+                    v = w["value"]
+                    wSql = f"[{p}] {op} {enclose(v)}"
+                    if v.startswith("$self"): #get prop value from current entity
+                        v = w["value"].split('.')[1]
+                        wSql = f"[{p}] {op} (select [{v}] from [{entityName}] where id = new.id)"  
+                    wheres.append(wSql)
+                where = " and ".join(wheres)                 
+            if actionType == "update":
+                propsSqls = []
+                for propName, expr in action["properties"].items():                        
+                    if expr.startswith('$sum'):
+                        fn, p, fk, pk = expr.split(':')
+                        fn = fn[1:]                        
+                        f, p = p.split(".")
+                        if f == "$self":
+                            f = entityName
+                        expr = f"(select {fn}({p}) from [{f}] where [{fk}] = [{targetName}].[{pk}])"
+                    
+                    propSql = f"[{propName}] = {expr}"
+                    propsSqls.append(propSql)
+                propsSqlsStr = ", ".join(propsSqls)
+                sql = f"    update [{targetName}] set {propsSqlsStr} where {where};" #TODO: fix to use new.rowid to get curent row
+                sqls.append(sql)
+        return "\n\n".join(sqls)
 
-CHECK_OP_MAP = {
-    'e': '=',
-    'ne': '<>',
-    'gt': '>',
-    'gte': '>=',
-    'lt': '<',
-    'lte': '<=',
-    'in': 'in',
-    'nin': 'not in',
-    'bt': 'between',
-    'nbt': 'not between',
-}
+    triggers = []
+    for trigger in entity['triggers']:
+        triggerName = trigger['name']
+        triggerDescription = trigger['description']
+        triggerType = trigger['type']
+        triggerActions = parseTriggerActions(trigger)
+        for triggerEvent in trigger['event']:            
+            sql = f"/* {triggerDescription} */"
+            sql += f"\ncreate trigger tr_{entityName}_{triggerType}_{triggerEvent}_{triggerName}"
+            sql += f"\n{triggerType} {triggerEvent} on [{entityName}]"
+            sql += f"\nbegin"
+            sql += f"\n{triggerActions}"
+            sql += f"\nend;"
+            triggers.append(sql)
+        # print(sql)
+        
+    return "\n\n".join(triggers)
+
+
 
 def genCreateCheckConstraint(entity:dict, constraint:dict) -> str:
     
@@ -183,7 +244,8 @@ def genCreateTable(entityName:str, entity:dict) -> str:
 def genSchema(entities:dict) -> str:
     tables = []
     indices = []
-    constraints = []
+    triggers = []
+
     for entityName, entity in entities.items():
         tableSql = genCreateTable(entityName, entity)
         tables.append(tableSql)        
@@ -192,9 +254,16 @@ def genSchema(entities:dict) -> str:
         if indicesSql != "":
             indices.append(indicesSql)
 
+        triggersSql = genCreateTriggers(entityName, entity)
+        if triggersSql != "":
+            triggers.append(triggersSql)
+
+
     sql = "\n\n".join(tables)
     sql += "\n\n/* INDEXES */\n"
     sql += "\n\n".join(indices)
+    sql += "\n\n/* TRIGGERS */\n"
+    sql += "\n\n".join(triggers)
     
     return sql
 

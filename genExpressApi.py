@@ -49,7 +49,7 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
             isAutoKey = 'autokey' in entity and entity['autokey'] and 'key' in entity and entity['key'] == prop
             typeProp = {
                 'required': isRequired and not isAutoKey,
-                'type': attrs["type"] if 'type' in attrs else attrs["$ref"].split('/')[-1].replace('View', '')
+                'type': TYPE_MAP[attrs["type"]] if 'type' in attrs else attrs["$ref"].split('/')[-1].replace('View', '')
             }
             if 'filterOperator' in entity['properties'][prop]:
                 typeProp["operator"] = entity['properties'][prop]['filterOperator']

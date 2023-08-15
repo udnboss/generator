@@ -250,9 +250,28 @@ interfaces:
       description?:
       quantity: int
       price: float
+      total!*?: float
 
       sale?: sale @sale_id
       item?: item @item_id
+    triggers:
+    - name: update_total
+      description: after create or update, set the saleItem.total then set sale.total to the sum
+      type: after
+      event: [insert, update]
+      actions:
+        - type: update
+          target: $self
+          properties:          
+            total: quantity * price
+        - type: update
+          target: sale
+          properties:             
+            total: $sum:$self.total:sale_id:id
+          where:
+            - property: id
+              op: e
+              value: $self.sale_id
 
 data:
   login:
@@ -314,6 +333,7 @@ data:
   item:
     id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
     name: ['Microsoft Office', 'Adobe Creative Cloud', 'Salesforce CRM', 'Slack']
+    category_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
 
   sale:
     id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
@@ -331,7 +351,7 @@ data:
 
   saleItem:
    id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
-   sale_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
+   sale_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
    item_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
    quantity: [1,2,3,2]
    price: [15.99, 534.95, 42.0, 67.8]

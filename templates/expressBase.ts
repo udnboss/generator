@@ -781,9 +781,9 @@ class DBSqliteProvider implements IDBProvider {
                 if (err) {
                     return reject(err.message);
                 }
-                if (!(db as any).changes) {
-                    return reject("Nothing inserted");
-                }
+                // if (!(db as any).changes) {
+                //     return reject("Nothing inserted");
+                // }
 
                 const newid = record.id as string;
                 const updatedResult = await this.dbSelect(table, [{ column: idCol, operator: Operator.Equals, value: newid } as ICondition], [], 1);
@@ -803,9 +803,9 @@ class DBSqliteProvider implements IDBProvider {
                 if (err) {
                     return reject(err.message);
                 }
-                if (!(db as any).changes) {
-                    return reject("Nothing deleted");
-                }
+                // if (!(db as any).changes) {
+                //     return reject("Nothing deleted");
+                // }
                 return resolve(true);
             });
         });
@@ -824,9 +824,9 @@ class DBSqliteProvider implements IDBProvider {
                     return reject(err.message);
                 }
 
-                if (!(db as any).changes) {
-                    return reject("Nothing Updated");
-                }
+                // if (!(db as any).changes) {
+                //     return reject("Nothing Updated");
+                // }
 
                 const newid = record.id || id as string;
                 const updatedResult = await this.dbSelect(table, [{ column: idCol, operator: Operator.Equals, value: newid } as ICondition], [], 1);
