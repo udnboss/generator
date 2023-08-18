@@ -62,7 +62,7 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
     updateTypeProps = getTypeProps('update')
     partialTypeProps = getTypeProps('partial')
     queryTypeProps = getTypeProps('query')
-    sortableProps = entity["sortable"] if 'sortable' in entity else []
+    sortableProps = ", ".join([f'"{s}"' for s in entity["sortable"]] if 'sortable' in entity else [])
     # viewTypeProps = getTypeProps('view')
 
     
@@ -162,7 +162,6 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
             getter = f"if ({entityName}.{typeReferenceViaProperty}) {{ {entityName}.{propertyName} = await new {refEntityNameCapitalized}Business(this.context).getById({entityName}.{typeReferenceViaProperty}); }}"
             entityReferencedEntitiesGets.append(getter)
         
-        #TODO:collections having subTypeReferenceViaProperty
         refCollectionProps = {pn: attrs for pn, attrs in entity['properties'].items() if 'subTypeReferenceViaProperty' in attrs}
         
         entityReferencedEntitiesCollectionGets = []

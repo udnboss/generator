@@ -98,8 +98,7 @@ def parseEntities(file:str):
                                 propertyType, propertyFormat = propertyType.split('|')
                             if propertyType not in BASE_DATATYPES:
                                 raise Exception(f"Found unsupported data type: {propertyType} for {property}.{propertyName}") 
-                            
-                            #TODO: set on delete and on update conditions 
+                                                        
                             refOnDeleteMatches = [o for o in REFERENTIAL_ON_DELETE_OPTIONS if o in refArguments]
                             refOnDelete = refOnDeleteMatches[-1] if len(refOnDeleteMatches) > 0 else DEFAULT_REFERENTIAL_ON_DELETE
 
@@ -127,7 +126,7 @@ def parseEntities(file:str):
                                 typeReferenceViaProperty = metadata.split('@')[1]            
                                 
 
-                else: #object #TODO: not implemented
+                else: #object #TODO: not implemented, for a future design
                     raise Exception(f"Object value not supported for entity propery {property}")
                     # propertyType = metadata['type']
                     # if 'format' in metadata:

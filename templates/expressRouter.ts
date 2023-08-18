@@ -63,14 +63,18 @@ __EntityName__Router.post<{}, MessageResponse | ErrorResponse>("/", async (req, 
         return;
     }
 
-    //TODO: check for error
-    const viewEntity = await business.getById(entity.id) as I__EntityNameCapitalized__View;
-    const message = {
-        success: true,
-        message: "successful",
-        data: viewEntity
-    };
-    res.json(message);
+    try {
+        const viewEntity = await business.getById(entity.id, 2) as I__EntityNameCapitalized__View;
+        const message = {
+            success: true,
+            message: "successful",
+            data: viewEntity
+        };
+        return res.json(message);
+    } catch (err) {
+        res.status(500).json({ success: false, message: "__EntityName__ entity could not be retrieved after being created" });
+        return;
+    }
 });
 
 __EntityName__Router.get<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
@@ -112,14 +116,18 @@ __EntityName__Router.put<{}, MessageResponse | ErrorResponse>("/:id", async (req
         return;
     }
 
-    //TODO: check for error
-    const viewEntity = await business.getById(entity.id) as I__EntityNameCapitalized__View;
-    const message = {
-        success: true,
-        message: "successful",
-        data: viewEntity
-    };
-    res.json(message);
+    try {
+        const viewEntity = await business.getById(entity.id, 2) as I__EntityNameCapitalized__View;
+        const message = {
+            success: true,
+            message: "successful",
+            data: viewEntity
+        };
+        return res.json(message);
+    } catch (err) {
+        res.status(500).json({ success: false, message: "__EntityName__ entity could not be retrieved after being created" });
+        return;
+    }
 });
 
 __EntityName__Router.patch<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {
@@ -147,14 +155,18 @@ __EntityName__Router.patch<{}, MessageResponse | ErrorResponse>("/:id", async (r
         return;
     }
     
-    //TODO: check for error
-    const viewEntity = await business.getById(entity.id) as I__EntityNameCapitalized__View;
-    const message = {
-        success: true,
-        message: "successful",
-        data: viewEntity
-    };
-    res.json(message);
+    try {
+        const viewEntity = await business.getById(entity.id, 2) as I__EntityNameCapitalized__View;
+        const message = {
+            success: true,
+            message: "successful",
+            data: viewEntity
+        };
+        return res.json(message);
+    } catch (err) {
+        res.status(500).json({ success: false, message: "__EntityName__ entity could not be retrieved after being created" });
+        return;
+    }
 });
 
 __EntityName__Router.delete<{}, MessageResponse | ErrorResponse>("/:id", async (req, res) => {

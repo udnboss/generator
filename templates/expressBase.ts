@@ -132,7 +132,7 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
     updateProperties: { id: { type: "string", required: true } };
     partialProperties: { id: { type: "string", required: false } };
     queryProperties: { id: { type: "string", required: false } }; 
-    sortableProperties:string[] = []; //TODO: populate it
+    sortableProperties:string[] = [];
     private db: IDBProvider;
     context: Context;
     entityName: string;

@@ -152,7 +152,7 @@ def genCreateTriggers(entityName:str, entity:dict) -> str:
                     propSql = f"[{propName}] = {expr}"
                     propsSqls.append(propSql)
                 propsSqlsStr = ", ".join(propsSqls)
-                sql = f"    update [{targetName}] set {propsSqlsStr} where {where};" #TODO: fix to use new.rowid to get curent row
+                sql = f"    update [{targetName}] set {propsSqlsStr} where {where};" 
                 sqls.append(sql)
         return "\n\n".join(sqls)
 

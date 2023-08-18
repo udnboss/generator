@@ -103,9 +103,53 @@ if gentype == 'docs':
                 },
                 'summary': 'Perform a login attempt'
             }
+        },
+        "/logout": {
+            "get": {
+                "description": "Logout",
+                "operationId": "logout",
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "summary": "Perform a logout"
+            }
+        },
+        "/refresh": {
+            "get": {
+                "description": "Request to Refresh current access token manually",
+                "operationId": "refreshToken",
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "summary": "Request to Refresh current access token manually"
+            }
         }
-        #"/logout" //TODO: logout route
-        #"/refresh" //TODO: refresh token route
     }
 
     api = {
