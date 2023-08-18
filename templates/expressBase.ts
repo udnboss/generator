@@ -514,7 +514,7 @@ class DBJSONProvider implements IDBProvider {
             });
         }
 
-        //TODO: offset and limit
+        //TODO: DBJSON offset and limit
         const page = limit > 0 ? ((offset / limit) || 1) : 1;
 
         return { result: results, count: results.length, total: results.length, query: { page: page, pageSize: limit } } as IQueryResult<IQuery, IEntity>;

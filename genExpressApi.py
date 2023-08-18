@@ -62,7 +62,9 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
     updateTypeProps = getTypeProps('update')
     partialTypeProps = getTypeProps('partial')
     queryTypeProps = getTypeProps('query')
+    sortableProps = entity["sortable"] if 'sortable' in entity else []
     # viewTypeProps = getTypeProps('view')
+
     
     def getInterface(schemaName:str, asClass:bool = False):
         prefix = "I" if not asClass else ""
@@ -194,6 +196,7 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
         "__EntityUpdateTypeProperties__": updateTypeProps,
         "__EntityPartialTypeProperties__": partialTypeProps,
         "__EntityQueryTypeProperties__": queryTypeProps,
+        "__EntitySortableProperties__": sortableProps,
 
         "__EntityClientQueryInterface__": queryInterface,
         "__EntityInterface__": storeInterface,

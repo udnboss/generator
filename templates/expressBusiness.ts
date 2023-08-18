@@ -17,6 +17,7 @@ export class __EntityNameCapitalized__Business extends Business<I__EntityNameCap
     override updateProperties: any = __EntityUpdateTypeProperties__;
     override partialProperties: any = __EntityPartialTypeProperties__;
     override queryProperties: any = __EntityQueryTypeProperties__;
+    override sortableProperties: any = [__EntitySortableProperties__];
     
     override async getAll(query:IDataQuery, maxDepth:number = 1):Promise<IQueryResult<IQuery, I__EntityNameCapitalized__View>> {
         return super.getAll(query, maxDepth) as Promise<IQueryResult<IQuery, I__EntityNameCapitalized__View>>;
