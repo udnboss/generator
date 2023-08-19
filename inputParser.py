@@ -53,6 +53,9 @@ def parseEntities(file:str):
                 isSubTypeReference = False
                 subTypeReferenceViaProperty = None
                 refEntity = None      
+                refEntityProperty = None
+                refOnDelete = None
+                refOnUpdate = None
                 defaultValue = None
 
                 propertyNameFlag = propertyName[-1]

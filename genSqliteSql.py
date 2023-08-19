@@ -36,7 +36,7 @@ CHECK_OP_MAP = {
 
 AGGR_FUNCS = ['$sum', '$count', '$avg', '$max', '$min', '$total']
 
-def genFk(propertyName:str, property:str):    
+def genFk(propertyName:str, property:dict):    
     pkTable = property["constraintEntity"]
     pkTableCol = property["constraintEntityProperty"]
     onDelete = FK_ACTIONS[property["constraintEntityOnDelete"]]
@@ -197,9 +197,12 @@ def genCreateCheckConstraint(entity:dict, constraint:dict) -> str:
     sql = f"check ([{colNameSql}] {opSql} {valueSql})"
     return sql
 
-def genCreateCol(propertyName:str, property:dict) -> str:
+def genCreateCol(propertyName:str, property:dict, entity:dict) -> str:
     type = TYPE_MAP[property["type"]]
     tokens = [propertyName, type]
+
+    if 'autonumber' in entity and entity['autonumber'] == propertyName:
+        tokens.append("IDENTITY(1,1)")
 
     if property["required"]:
         tokens.append("not null")
@@ -215,7 +218,7 @@ def genCreateTable(entityName:str, entity:dict) -> str:
     cols = []
     for propertyName, property in entity["properties"].items():
         if not property["typeReference"] and property['type'] != 'array':
-            col = genCreateCol(propertyName, property)
+            col = genCreateCol(propertyName, property, entity)
             cols.append(col)
         if "constraintEntity" in property:
             fk = genFk(propertyName, property)
@@ -317,7 +320,7 @@ def genSecurityData(entities:dict) -> str:
     requiredEntityNames:set = set(['role', 'permission', 'rolePermission'])    
     if not entityNames.issuperset(requiredEntityNames):
         return ""
-    noPermissionEntities:list = set('login user role permission rolePermission'.split(' '))
+    noPermissionEntities = set('login user role permission rolePermission'.split(' '))
     targetEntities = {k: v for k, v in entities.items() if k not in noPermissionEntities}
 
     # print(entities['permission'])

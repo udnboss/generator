@@ -8,6 +8,10 @@ from genOpenApi import genSchema, genInfo, genPaths, genTags
 from genExpressApi import createFiles as createExpressFiles
 from genSqliteSql import genSchema as genSqlSchema, genData as genSqlData, genSecurityData
 
+class NoAliasDumper(yaml.SafeDumper):
+    def ignore_aliases(self, data):
+        return True
+    
 gentype = sys.argv[1]
 gensource = sys.argv[2]
 genoutput = gensource.split('/')[-1].split('.')[0]
@@ -207,7 +211,7 @@ if gentype == 'docs':
     outputFile = inputProfile['api']['outputFile']
 
     with open(outputFile, 'w', encoding='utf-8') as f:
-        f.write(yaml.dump(api))
+        f.write(yaml.dump(api, Dumper=NoAliasDumper))
 
 if gentype == 'api':
     scriptsOutputDir = inputProfile['scripts']['outputDir']

@@ -308,31 +308,58 @@ export abstract class Business<TOutput extends IEntity> implements IBusiness<TOu
         return dbResult.result[0] as TOutput;
     }
 
-    async create(entity: IEntity): Promise<TOutput> {        
-        const dbResult = await this.db.dbInsert(this.entityName, this.idProperty, entity as IEntity) as TOutput;
-        return dbResult;
+    async create(entity: IEntity): Promise<TOutput> {       
+        await this.db.dbBegin(); 
+        try {
+            const dbResult = await this.db.dbInsert(this.entityName, this.idProperty, entity as IEntity) as TOutput;            
+            await this.db.dbCommit();
+            return dbResult;
+        } catch (err) {
+            await this.db.dbRollback();
+            throw err;
+        }        
     }
 
     async update(id: string, entity: IEntity): Promise<TOutput> {
-        const dbResult = await this.db.dbUpdate(this.entityName, this.idProperty, id, entity as IEntity) as TOutput;
-        return dbResult;
+        await this.db.dbBegin(); 
+        try {
+            const dbResult = await this.db.dbUpdate(this.entityName, this.idProperty, id, entity as IEntity) as TOutput;
+            await this.db.dbCommit();
+            return dbResult;
+        } catch (err) {
+            await this.db.dbRollback();
+            throw err;
+        } 
     }
 
     async modify(id: string, entity: IEntity): Promise<TOutput> {
-        const dbResult = await this.db.dbUpdate(this.entityName, this.idProperty, id, entity as IEntity) as TOutput;
-        return dbResult;
+        await this.db.dbBegin(); 
+        try {
+            const dbResult = await this.db.dbUpdate(this.entityName, this.idProperty, id, entity as IEntity) as TOutput;
+            await this.db.dbCommit();
+            return dbResult;
+        } catch (err) {
+            await this.db.dbRollback();
+            throw err;
+        }
     }
 
     async delete(id: string): Promise<TOutput> {
-        const entity = await this.getById(id) as TOutput;
-        const deleted = await this.db.dbDelete(this.entityName, this.idProperty, id);
-        if (!deleted) {
-            throw new Error("Could not Delete");
-        }
-        return entity;
+        await this.db.dbBegin(); 
+        try {
+            const entity = await this.getById(id) as TOutput;
+            const deleted = await this.db.dbDelete(this.entityName, this.idProperty, id);
+            if (!deleted) {
+                throw new Error("Could not Delete");
+            }
+            
+            await this.db.dbCommit();
+            return entity;
+        } catch (err) {
+            await this.db.dbRollback();
+            throw err;
+        }        
     }
-
-
 }
 
 export enum DBProviderType {

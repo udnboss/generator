@@ -3,6 +3,7 @@
 import { I__EntityNameCapitalized__Create, I__EntityNameCapitalized__Update, I__EntityNameCapitalized__Partial, I__EntityNameCapitalized__View } from "./__EntityName__Interfaces";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { IQueryResult, IQuery, Context, Business, IDataQuery, ICondition, Operator } from "./base";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { randomUUID } from "crypto";
 
 __EntityBusinessImports__
@@ -24,9 +25,9 @@ export class __EntityNameCapitalized__Business extends Business<I__EntityNameCap
     }
 
     override async create(__EntityName__:I__EntityNameCapitalized__Create):Promise<I__EntityNameCapitalized__View> {        
-        if (!__EntityName__.id) {
-            __EntityName__.id = randomUUID(); //TODO: autonumber case
-        }
+        
+        __EntityAutoCreateId__
+
         return super.create(__EntityName__) as Promise<I__EntityNameCapitalized__View>;
     }
 

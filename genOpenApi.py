@@ -1,7 +1,3 @@
-import yaml
-class entity:
-    pass
-
 TYPE_MAP = {
     'array': 'array',
     'str': 'string',
@@ -61,10 +57,20 @@ def genSchema(entities:dict):
                 prop['type'] = TYPE_MAP[metadataType]
                 if not 'format' in prop and metadataType in AUTO_TYPE_FORMATS:
                     prop['format'] = AUTO_TYPE_FORMATS[metadataType]
-
+                
             if 'subtype' in metadata:
                 if metadata['subtypeReference']:
-                    prop['items'] = {'$ref': f"#/components/schemas/{metadata['subtype']}View"}
+                    prop['type'] = 'object'
+                    prop['properties'] = {
+                        'count': {'type': 'integer'},
+                        'total': {'type': 'integer'},
+                        'result': {
+                            'type': 'array',
+                            'items':{'$ref': f"#/components/schemas/{metadata['subtype']}View"}
+                        }
+                    }
+
+                    # prop['items'] = {'$ref': f"#/components/schemas/{metadata['subtype']}View"}
                 else:
                     metadataSubType = metadata['subtype']
                     prop['items'] = {'type': TYPE_MAP[metadataSubType]}
@@ -143,6 +149,32 @@ def genPaths(prefix:str = "", entities:dict = {}):
 
         return params
 
+    ERROR_RESPONSE_SCHEMA = {
+        'schema': {
+            'type': 'object',
+            'properties': {
+                'success': {'type': 'boolean'},
+                'message': {'type': 'string'},
+                'data': {'type': 'string'},
+            }
+        }                            
+    }
+
+    def getSuccessSingleResponseSchema(entityName:str):
+        return {
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'success': {'type': 'boolean'},
+                    'message': {'type': 'string'},
+                    'data': {
+                        '$ref': f'#/components/schemas/{entityName}View'
+                    },
+                }
+            }                            
+        }
+
+
     paths = {}
     entityName:str
     properties:dict
@@ -165,13 +197,33 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'description': 'successful operation',
                     'content': {
                         'application/json': {
-                            'schema': {
-                                'type': 'array',
-                                'items': {
-                                    '$ref': f'#/components/schemas/{entityName}View'
+                            'schema':  {
+                                'type': 'object',
+                                'properties': {
+                                    'success': {'type': 'boolean'},
+                                    'message': {'type': 'string'},
+                                    'data': {
+                                        'type': 'object',
+                                        'properties': {
+                                            'count': {'type': 'integer'},
+                                            'total': {'type': 'integer'},
+                                            'result': {
+                                                'type': 'array',
+                                                'items': {
+                                                    '$ref': f'#/components/schemas/{entityName}View'
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
+                    }
+                },
+                '400': {
+                    'description': 'Invalid Request',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
                     }
                 }
             }
@@ -196,15 +248,14 @@ def genPaths(prefix:str = "", entities:dict = {}):
                 '200': {
                     'description': 'successful operation',
                     'content': {
-                        'application/json': {
-                            'schema': {
-                                '$ref': f'#/components/schemas/{entityName}View'
-                            }
-                        }
+                        'application/json': getSuccessSingleResponseSchema(entityName)
                     }
                 },
                 '405': {
-                    'description': 'invalid input'
+                    'description': 'invalid input',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
                 }
             }
         }
@@ -240,21 +291,26 @@ def genPaths(prefix:str = "", entities:dict = {}):
                 '200': {
                     'description': 'successful operation',
                     'content': {
-                        'application/json': {
-                            'schema': {
-                                '$ref': f'#/components/schemas/{entityName}View'
-                            }
-                        }
+                        'application/json': getSuccessSingleResponseSchema(entityName)
                     }
                 },
                 '400': {
-                    'description': 'Invalid ID'
+                    'description': 'Invalid ID',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
                 },
                 '404': {
-                    'description': f'{entityName} not found'
+                    'description': f'{entityName} not found',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
                 },
                 '405': {
-                    'description': 'Invalid input'
+                    'description': 'Invalid input',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
                 }
             }
         }
@@ -289,21 +345,26 @@ def genPaths(prefix:str = "", entities:dict = {}):
                 '200': {
                     'description': 'successful operation',
                     'content': {
-                        'application/json': {
-                            'schema': {
-                                '$ref': f'#/components/schemas/{entityName}View'
-                            }
-                        }
+                        'application/json': getSuccessSingleResponseSchema(entityName)
                     }
                 },
                 '400': {
-                    'description': 'Invalid ID'
+                    'description': 'Invalid ID',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
                 },
                 '404': {
-                    'description': f'{entityName} not found'
+                    'description': f'{entityName} not found',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
                 },
                 '405': {
-                    'description': 'Invalid input'
+                    'description': 'Invalid input',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
                 }
             }
         }        
@@ -327,18 +388,20 @@ def genPaths(prefix:str = "", entities:dict = {}):
                 '200': {
                     'description': 'successful operation',
                     'content': {
-                        'application/json': {
-                            'schema': {
-                                '$ref': f'#/components/schemas/{entityName}View'
-                            }
-                        }
+                        'application/json': getSuccessSingleResponseSchema(entityName)
                     }
                 },
                 '400': {
-                    'description': f'Invalid {entityName} id'
+                    'description': f'Invalid {entityName} id',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
                 },
                 '404': {
-                    'description': f'{entityName} not found'
+                    'description': f'{entityName} not found',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
                 }
             }
         }
@@ -362,18 +425,20 @@ def genPaths(prefix:str = "", entities:dict = {}):
                 '200': {
                     'description': 'successful operation',
                     'content': {
-                        'application/json': {
-                            'schema': {
-                                '$ref': f'#/components/schemas/{entityName}View'
-                            }
-                        }
+                        'application/json': getSuccessSingleResponseSchema(entityName)
                     }
                 },
                 '400': {
-                    'description': f'Invalid {entityName} id'
+                    'description': f'Invalid {entityName} id',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
                 },
                 '404': {
-                    'description': f'{entityName} not found'
+                    'description': f'{entityName} not found',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
                 }
             }
         }

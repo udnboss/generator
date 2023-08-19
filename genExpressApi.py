@@ -29,7 +29,7 @@ def pluralize(s:str) -> str:
             s += 's'
         return s
 
-def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
+def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str, str, str]:
     TYPE_OPERATORS = { #str uuid bool int float date datetime time
         'str': 'like',
         'uuid': 'in',
@@ -180,7 +180,15 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
 
     entityReferencedEntitiesGets = getEntityReferencedEntitiesGets('view')
 
-    
+    autoCreateId = ""
+    if 'autokey' in entity and entity['autokey']:
+        if not 'key' in entity:
+            raise Exception("missing entity key property for " + entityName)
+        key = entity["key"]
+        if 'autonumber' in entity and entity['autonumber'] == key:
+            autoCreateId = ""
+        else:
+            autoCreateId = f"{entityName}.{key} = randomUUID();"
 
     replacements = {
         "__EntityInterfaceImports__": entityInterfaceImports,
@@ -196,6 +204,8 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str]:
         "__EntityPartialTypeProperties__": partialTypeProps,
         "__EntityQueryTypeProperties__": queryTypeProps,
         "__EntitySortableProperties__": sortableProps,
+
+        "__EntityAutoCreateId__": autoCreateId,
 
         "__EntityClientQueryInterface__": queryInterface,
         "__EntityInterface__": storeInterface,
