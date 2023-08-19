@@ -225,6 +225,18 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'content': {
                         'application/json': ERROR_RESPONSE_SCHEMA
                     }
+                },
+                '401': {
+                    'description': f'User not logged in',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
+                },
+                '403': {
+                    'description': f'Forbidden/Access Denied',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
                 }
             }
         }
@@ -249,6 +261,18 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'description': 'successful operation',
                     'content': {
                         'application/json': getSuccessSingleResponseSchema(entityName)
+                    }
+                },
+                '401': {
+                    'description': f'User not logged in',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
+                },
+                '403': {
+                    'description': f'Forbidden/Access Denied',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
                     }
                 },
                 '405': {
@@ -292,6 +316,18 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'description': 'successful operation',
                     'content': {
                         'application/json': getSuccessSingleResponseSchema(entityName)
+                    }
+                },
+                '401': {
+                    'description': f'User not logged in',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
+                },
+                '403': {
+                    'description': f'Forbidden/Access Denied',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
                     }
                 },
                 '400': {
@@ -348,6 +384,18 @@ def genPaths(prefix:str = "", entities:dict = {}):
                         'application/json': getSuccessSingleResponseSchema(entityName)
                     }
                 },
+                '401': {
+                    'description': f'User not logged in',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
+                },
+                '403': {
+                    'description': f'Forbidden/Access Denied',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
+                },
                 '400': {
                     'description': 'Invalid ID',
                     'content': {
@@ -391,6 +439,18 @@ def genPaths(prefix:str = "", entities:dict = {}):
                         'application/json': getSuccessSingleResponseSchema(entityName)
                     }
                 },
+                '401': {
+                    'description': f'User not logged in',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
+                },
+                '403': {
+                    'description': f'Forbidden/Access Denied',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
+                },
                 '400': {
                     'description': f'Invalid {entityName} id',
                     'content': {
@@ -426,6 +486,18 @@ def genPaths(prefix:str = "", entities:dict = {}):
                     'description': 'successful operation',
                     'content': {
                         'application/json': getSuccessSingleResponseSchema(entityName)
+                    }
+                },
+                '401': {
+                    'description': f'User not logged in',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
+                    }
+                },
+                '403': {
+                    'description': f'Forbidden/Access Denied',
+                    'content': {
+                        'application/json': ERROR_RESPONSE_SCHEMA
                     }
                 },
                 '400': {

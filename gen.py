@@ -38,6 +38,16 @@ if gentype == 'docs':
     tags = genTags(entities=entities)
     schemas = genSchema(entities=entities)
 
+    RESPONSE_SCHEMA = {
+        'schema': {
+            'properties': {
+                'success': {'type': 'boolean'},
+                'data': {'type': 'string'},
+                'message': {'type': 'string'}
+            }
+        }
+    }
+
     basePaths = {
         "/": {
             "get": {
@@ -89,21 +99,25 @@ if gentype == 'docs':
                 "responses": {
                     '200': {
                         'content': {
-                            'application/json': {
-                                'schema': {
-                                    'properties': {
-                                        'username': {'type': 'string'},
-                                        'accessToken': {'type': 'string'},
-                                        'refreshToken': {'type': 'string'}
-                                    }
-                                }
-                            }
+                            'application/json': RESPONSE_SCHEMA
                         },
                         'description': 'successful operation'
                     },
-                    '400': {'description': 'bad request'},
-                    '403': {'description': 'invalid username or password'},
-                    '405': {'description': 'invalid input'}
+                    '400': {
+                        'content': {
+                            'application/json': RESPONSE_SCHEMA
+                        },'description': 'bad request'
+                    },
+                    '403': {
+                        'content': {
+                            'application/json': RESPONSE_SCHEMA
+                        },'description': 'invalid username or password'
+                    },
+                    '405': {
+                        'content': {
+                            'application/json': RESPONSE_SCHEMA
+                        },'description': 'invalid input'
+                    }
                 },
                 'summary': 'Perform a login attempt'
             }
@@ -114,18 +128,10 @@ if gentype == 'docs':
                 "operationId": "logout",
                 "responses": {
                     "200": {
-                        "description": "successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        'content': {
+                            'application/json': RESPONSE_SCHEMA
+                        },
+                        'description': 'successful operation'
                     }
                 },
                 "summary": "Perform a logout"
@@ -137,18 +143,15 @@ if gentype == 'docs':
                 "operationId": "refreshToken",
                 "responses": {
                     "200": {
-                        "description": "successful operation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        'content': {
+                            'application/json': RESPONSE_SCHEMA
+                        },
+                        'description': 'successful operation'
+                    },
+                    '403': {
+                        'content': {
+                            'application/json': RESPONSE_SCHEMA
+                        },'description': 'expired refresh token'
                     }
                 },
                 "summary": "Request to Refresh current access token manually"
