@@ -57,6 +57,8 @@ def parseEntities(file:str):
                 refOnDelete = None
                 refOnUpdate = None
                 defaultValue = None
+                minimum = None
+                maximum = None
 
                 propertyNameFlag = propertyName[-1]
                 while propertyNameFlag in PROPERTY_NAME_FLAGS:    
@@ -142,7 +144,35 @@ def parseEntities(file:str):
 
                 if propertyType != "array":
                     if not isTypeReference:
-                        prop['filterOperator'] = TYPE_FILTER_OPERATORS[propertyType]
+                        if 'filters' in entity and propertyName in entity['filters']:
+                            filterOperator = TYPE_FILTER_OPERATORS[propertyType]
+                            filterMin = None
+                            filterMax = None
+                            if entity['filters'][propertyName] is not None:
+                                metaParts = entity['filters'][propertyName].split(' ')                                
+                                filterOperator = metaParts[0]
+                                if len(metaParts) > 1:
+                                    filterMin = int(metaParts[1])
+                                if len(metaParts) > 2:
+                                    filterMax = int(metaParts[2])
+
+                            prop['filterOperator'] = filterOperator 
+                            prop['filterMin'] = filterMin 
+                            prop['filterMax'] = filterMax 
+
+                #min/max from constraints
+                if 'constraints' in entity:
+                    for constraint in entity['constraints']:
+                        if constraint['property'] == propertyName:
+                            if constraint['op'] == 'gt':
+                                prop['minimum'] = constraint['value'] + 1
+                            elif constraint['op'] == 'gte':
+                                prop['minimum'] = constraint['value']
+                            elif constraint['op'] == 'lt':
+                                prop['maximum'] = constraint['value'] + 1
+                            elif constraint['op'] == 'lte':
+                                prop['maximum'] = constraint['value']
+
 
                 prop['typeReference'] = isTypeReference
 
@@ -183,7 +213,16 @@ def parseEntities(file:str):
                 entities[entityName]['properties'][propertyName] = prop
                 # print(prop)
                 # exit()
-                
+
+            entities[entityName]['filters'] = {}   
+            if 'filters' in entity:
+                for filterProp, metadata in entity['filters'].items():
+                    if metadata is None:
+                        entities[entityName]['filters'][filterProp] = entities[entityName][filterProp]['filterOperator']
+                    else:
+                        metaParts = metadata.split(' ')
+                        entities[entityName]['filters'][filterProp] = metaParts[0]
+
         return entities
 
 def parseData(file:str):

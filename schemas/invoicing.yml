@@ -28,6 +28,8 @@ interfaces:
     sortable: [email]
     repr: [email]
     # security: [default] #default, bearer, key, oauth, or empty array
+    filters:
+      email: like 3 100
     properties:
       id: uuid
       email: str|email
@@ -40,8 +42,8 @@ interfaces:
     sortable: [name, email]
     repr: [name, email]
     filters:
-      name: like
-      email: like      
+      name: like 3 100
+      email: like 3 100     
     properties:
       id: uuid
       name: 
@@ -74,7 +76,7 @@ interfaces:
         op: in
         value: [READ, CREATE, UPDATE, DELETE, EXECUTE]
     filters:
-      name: like
+      name: like 3 100
       entity: in
       action: in
     properties:
@@ -106,6 +108,9 @@ interfaces:
     sort: [label asc]
     sortable: [label]   
     repr: [label] 
+    filters:
+      label: like 3 100
+      bank_name: like 3 100
     properties:
       id: uuid
       label:
@@ -123,6 +128,9 @@ interfaces:
     sortable: [name, category.name]
     unique: [name]
     repr: [name]
+    filters:
+      name: like 3 100
+      category_id: in
     properties:
       id: uuid
       name:
@@ -138,6 +146,8 @@ interfaces:
     sortable: [name]
     unique: [name]
     repr: [name]
+    filters:
+      name: like 3 100
     properties:
       id: uuid
       name:
@@ -170,6 +180,8 @@ interfaces:
         op: bt
         value: [0, 90]
     repr: [name]
+    filters:
+      name: like 3 100
     properties:
       id: uuid
       name:
@@ -188,6 +200,9 @@ interfaces:
     sortable: [name, category.name]
     unique: [name]
     repr: [name]
+    filters:
+      name: like 3 100
+      category_id: in
     properties:
       id: uuid
       name:
@@ -207,6 +222,13 @@ interfaces:
         op: gte #operators: e, ne, gt, gte, lt, lte, in, nin, bt, nbt
         value: $date # $ means reference to another property in the same entity, $entity.prop can be used for referncing a different entity
     repr: [number, customer.name, date] #props that are used to represent this entity in listings
+    filters:
+      customer_id: in
+      account_id: in
+      number: like      
+      date: bt
+      reference_date: bt
+
     properties:
       id: uuid
       company_id: uuid > company.id
@@ -216,7 +238,7 @@ interfaces:
       place?:
       number: int
       date*: date # a * means disallow update      
-      total!*?: float = 0 # a !* means disallow both create, update
+      total!*?: float = 0 # a !*? means disallow both create, update, and ? means it is optional
       totalItems!*?: int = 0
       reference?:
       confirmed: bool
