@@ -5,19 +5,34 @@ TYPE_MAP = {
     'boolean': 'bool',
     'number': 'decimal',
     'integer': 'int',
+    'date': 'datetime',
+    'datetime': 'datetime',
 }
 
-with open('templates/dotnetClass.ts', 'r', encoding='utf-8') as f:        
-    CLASSES_TEMPLATE = f.read()    
-with open('templates/dotnetRouter.ts', 'r', encoding='utf-8') as f:        
-    ROUTER_TEMPLATE = f.read()
-with open('templates/dotnetBusiness.ts', 'r', encoding='utf-8') as f:        
-    BUSINESS_TEMPLATE = f.read()    
-with open('templates/dotnetBase.ts', 'r', encoding='utf-8') as f: 
-    BASE_TEMPLATE = f.read()
+OP_MAP = {
+    'like': 'Contains',
+    'e': 'Equals',
+    'ne': 'NotEquals',
+    'gt': 'GreaterThan',
+    'gte': 'GreaterThanOrEqual',
+    'lt': 'LessThan',
+    'lte': 'LessThanOrEqual',
+    'nul': 'IsNull',
+    'nnul': 'IsNotNull',
+    'sw': 'StartsWith',
+    'ew': 'EndsWith',
+    'bt': 'Between',
+    'nbt': 'NotBetween',
+}
 
-# with open('templates/dotnetIndex.ts', 'r', encoding='utf-8') as f: 
-#     INDEX_TEMPLATE = f.read()
+with open('templates/dotnetClass.cs', 'r', encoding='utf-8') as f:        
+    CLASSES_TEMPLATE = f.read()    
+with open('templates/dotnetRouter.cs', 'r', encoding='utf-8') as f:        
+    ROUTER_TEMPLATE = f.read()
+with open('templates/dotnetBusiness.cs', 'r', encoding='utf-8') as f:        
+    BUSINESS_TEMPLATE = f.read()    
+with open('templates/dotnetBase.cs', 'r', encoding='utf-8') as f: 
+    BASE_TEMPLATE = f.read()
 
 def pluralize(s:str) -> str:
         if s.endswith('y'):
@@ -37,210 +52,200 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str, str
         'datetime': 'bt',
         'time': 'bt',
     }
-
-    def getTypeProps(schemaName:str) -> str:
-        
-        typeProps = {}
-        for prop, attrs in schema[schemaName]['properties'].items():
-            isRequired = 'required' in schema[schemaName] and prop in schema[schemaName]['required']
-            isAutoKey = 'autokey' in entity and entity['autokey'] and 'key' in entity and entity['key'] == prop
-            typeProp = {
-                'required': isRequired and not isAutoKey,
-                'type': TYPE_MAP[attrs["type"]] if 'type' in attrs else attrs["$ref"].split('/')[-1].replace('View', '')
-            }
-            if 'filterOperator' in entity['properties'][prop]:
-                typeProp["operator"] = entity['properties'][prop]['filterOperator']
-            typeProps[prop] = typeProp
-
-        return json.dumps(typeProps, ensure_ascii=False, indent=2)
     
-    #for validating entities received from client
-    createTypeProps = getTypeProps('create')
-    updateTypeProps = getTypeProps('update')
-    partialTypeProps = getTypeProps('partial')
-    queryTypeProps = getTypeProps('query')
-    sortableProps = ", ".join([f'"{s}"' for s in entity["sortable"]] if 'sortable' in entity else [])
-    # viewTypeProps = getTypeProps('view')
-
-    
-    def getInterface(schemaName:str, asClass:bool = False):
-        prefix = "I" if not asClass else ""
+    def getClass(schemaName:str):
+        prefix = ""
         interface = []
+        prop:str
         for prop, attrs in schema[schemaName]['properties'].items():
             if prop == "id":
                 continue
+            propName = prop.capitalize()
             optional = '?' if 'required' not in schema[schemaName] or prop not in schema[schemaName]['required'] else ''
-            # if schemaName == 'view':
-                # print(asClass, schemaName, prop, attrs, prefix)
             root:str
             if '$ref' in attrs:                
                 root = attrs["$ref"].split('/')[-1].replace('View', '')
                 type = f"{prefix}{root.capitalize()}View"
             elif attrs['type'] == 'array':
                 root = attrs['items']["$ref"].split('/')[-1].replace('View', '')
-                # type = f"I{root.capitalize()}View[]" if not asClass else f"{root.capitalize()}View[]"
-                type = f"IQueryResult<IQuery, {prefix}{root.capitalize()}View>"
+                type = f"QueryResult<{root.capitalize()}Query, {prefix}{root.capitalize()}View>"
             else:
                 type = attrs["type"]  
             
             tsType = TYPE_MAP[type] if type in TYPE_MAP else type
 
-            interface.append(f'{prop}{optional}:{tsType};')
+            interface.append(f'public {tsType}{optional} {propName} {{ get; set; }};')
         return '\n    '.join(interface)
-
-    storeInterface = getInterface('store')
-    queryInterface = getInterface('query')
-    createInterface = getInterface('create')
-    updateInterface = getInterface('update')
-    partialInterface = getInterface('partial')
-    viewInterface = getInterface('view')
-
-    def getClass(schemaName:str):
-        return getInterface(schemaName, True)
 
     storeClass = getClass('store')
     createClass = getClass('create')
     updateClass = getClass('update')
     partialClass = getClass('partial')
     viewClass = getClass('view')
+ 
+    def getQueryClass():
+        if 'filters' not in entity:
+            return ""
+        
+        props = []
 
-    def getRefEntities(schemaName:str):
-        refEntities = {}
-        refListEntities = {}
-        for propertyName, attrs in schema[schemaName]['properties'].items():
-            if '$ref' in attrs or 'items' in attrs:
-                if '$ref' in attrs:
-                    root = attrs["$ref"].split('/')[-1].replace('View', '')
-                    refEntities[propertyName] = root
-                elif 'items' in attrs:
-                    root = attrs['items']["$ref"].split('/')[-1].replace('View', '')
-                    refListEntities[propertyName] = root
-        return refEntities, refListEntities
+        for prop in entity['filters']:
+            name = prop.capitalize()
+            p = entity['properties'][prop]
+            type = TYPE_MAP[p['type']]
+            optional = '' if p['required'] else '?'
+            default = "" if p['default'] is None else p['default']
+            if type == 'string':
+                default = f'"{default}"'
+            requiredAttr = '[Required]' if p['required'] else ''
+            minLength = f"[MinLength({p['filterMin']}')]" if 'filterMin' in p else ''
+            maxLength = f"[MaxLength({p['filterMax']}')]" if 'filterMax' in p else ''
 
-    def getImports(schemaName:str, namePrefix:str = "I", nameSuffix:str = "", sourceSuffix:str = "Interfaces"):
-        refEntities, refListEntities = getRefEntities(schemaName)
-        refs = {**refEntities, **refListEntities}
+            props.append(f'{requiredAttr}{minLength}{maxLength} public {type}{optional} {name} {{ get; set; }} = {default}')
 
-        imports = []
-        refFiles = {}
-        for prop, root in refs.items():
-            if root == entityName:
-                continue
-            ref = root.capitalize()
-            refEntity = f'{namePrefix}{ref}{nameSuffix}'
-            refEntityFile = f"./{root}{sourceSuffix}"
-            if refEntityFile not in refFiles:
-                refFiles[refEntityFile] = []
-            refFiles[refEntityFile].append(refEntity)
-
-        for refEntityFile, interfaceImports in refFiles.items():
-            interfaceImportsStr = ', '.join(list(set(interfaceImports)))
-            importStmt = f'import {{ {interfaceImportsStr} }} from "{refEntityFile}";'
-            imports.append(importStmt)
-
-        return '\n'.join(set(imports))
+        return "\n    ".join(props)
     
-    entityInterfaceImports = getImports('view', "I", "View", "Interfaces")      
-    entityClassImports = getImports('view', "", "View", "Classes")    
-    entityBusinessImports = getImports('view', "", "Business", "Business")
-
-    def getEntityReferencedEntitiesGets(schemaName:str):
-        refProps = {pn: attrs for pn, attrs in entity['properties'].items() if 'typeReferenceViaProperty' in attrs}
+    def getDataQueryConditions():
+        if 'filters' not in entity:
+            return ""
         
-        entityReferencedEntitiesGets = []
+        conds = []
 
-        newLineIndent = "\n        "
-
-        refEntityName:str
-        for propertyName, property in refProps.items():
-            refEntityNameCapitalized = property['type'].capitalize()
-            typeReferenceViaProperty = property['typeReferenceViaProperty']
-            
-            getter = f"if ({entityName}.{typeReferenceViaProperty}) {{ {entityName}.{propertyName} = await new {refEntityNameCapitalized}Business(this.context).getById({entityName}.{typeReferenceViaProperty}); }}"
-            entityReferencedEntitiesGets.append(getter)
+        for prop in entity['filters']:
+            name = prop.capitalize()
+            p = entity['properties'][prop]
+            op = OP_MAP[p['filterOperator']]
+            cond = f"""
+            dataQuery.Where.Add(new Condition(column: "{name}", _operator: Operators.{op}, value: query.{name}));
+            """
+            conds.append(cond)
+        return "".join(conds)
+    
+    def getClientQueryConditions():
+        if 'filters' not in entity:
+            return ""
         
-        refCollectionProps = {pn: attrs for pn, attrs in entity['properties'].items() if 'subTypeReferenceViaProperty' in attrs}
+        conds = []
+
+        for prop in entity['filters']:
+            name = prop.capitalize()
+            # p = entity['properties'][prop]
+            # op = OP_MAP[p['filterOperator']]
+            cond = f"""
+            if(c.Column == "{name}") clientQuery.{name} = c.Value as string;
+            """
+            conds.append(cond)
+        return "".join(conds)
         
-        entityReferencedEntitiesCollectionGets = []
+        return ""
+    
+    def getViewProjection():
+        props = []
+        prop:str
+        for prop, attrs in entity['properties'].items():
+            if not attrs['allowRead'] or attrs['typeReference'] or attrs['type'] == 'array':
+                continue
+            propName = prop.capitalize()
+            props.append(f'{propName} = x.{propName}')
 
-        for propertyName, property in refCollectionProps.items():
-            refEntityNameCapitalized = property['subtype'].capitalize()
-            subTypeReferenceViaProperty = property['subTypeReferenceViaProperty']
-            query = f"var query{refEntityNameCapitalized} = {{ where: [ {{ column: '{subTypeReferenceViaProperty}', operator: Operator.Equals, value: {entityName}.id }} as ICondition] }} as IDataQuery;"
-            getter = f"{entityName}.{propertyName} = (await new {refEntityNameCapitalized}Business(this.context).getAll(query{refEntityNameCapitalized}, maxDepth));"
-            entityReferencedEntitiesCollectionGets.append(f"{query}{newLineIndent}  {getter}")
+        return ", ".join(props)
 
+    def getCreateProjection():
+        props = []
+        prop:str
+        for prop, attrs in entity['properties'].items():
+            if not attrs['allowCreate'] or attrs['typeReference'] or attrs['type'] == 'array' or prop == 'id':
+                continue
+            propName = prop.capitalize()
+            props.append(f'{propName} = entity.{propName}')
+
+        return ", ".join(props)
+    
+    def getWhereConditions():
+        if 'filters' not in entity:
+            return ""
         
-        refEntitiesGetsStr = newLineIndent.join(entityReferencedEntitiesGets)
-        refEntitiesCollectionGetsStr = f"{newLineIndent}  ".join(entityReferencedEntitiesCollectionGets)
-        return  f"{refEntitiesGetsStr}{newLineIndent*2}if (maxDepth) {{{newLineIndent}  {refEntitiesCollectionGetsStr}{newLineIndent*2}  maxDepth--;{newLineIndent}}}"
+        def getFilterSyntax(name, type, op):
+            cond = ""
+            if type == 'string':
+                cond = f"""
+                    if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
+                    {{
+                        var v = c.Value.ToString();
+                        if(!string.IsNullOrWhiteSpace(v))
+                            q = q.Where(x => x.{name} != null && x.{name}.Contains(v));
+                    }}"""
+            return cond
+               
+        conditions = []
 
-    entityReferencedEntitiesGets = getEntityReferencedEntitiesGets('view')
-
-    autoCreateId = ""
-    if 'autokey' in entity and entity['autokey']:
-        if not 'key' in entity:
-            raise Exception("missing entity key property for " + entityName)
-        key = entity["key"]
-        if 'autonumber' in entity and entity['autonumber'] == key:
-            autoCreateId = ""
-        else:
-            autoCreateId = f"{entityName}.{key} = randomUUID();"
-
+        for prop in entity['filters']:
+            name = prop.capitalize()
+            p = entity['properties'][prop]
+            type = TYPE_MAP[p['type']]
+            op = OP_MAP[p['filterOperator']]
+            cond = getFilterSyntax(name, type, op)
+            if cond != "":
+                conditions.append(cond)
+        
+        return "\n\n".join(conditions)
+    
+    def getSortConditions():
+        conds = []
+        prop:str
+        for prop in entity['sortable']:
+            name = prop.capitalize()
+            sortCond = f"""
+                if (s.Column == "{name}")
+                {{
+                    sortedQ = s.Direction == SortDirection.Asc ? 
+                        sortedQ is null ? q.OrderBy(x => x.{name}) : sortedQ.ThenBy(x => x.{name}) 
+                        : sortedQ is null ? q.OrderByDescending( x => x.{name}) : sortedQ.ThenByDescending(x => x.{name});
+                }}
+                """
+            conds.append(sortCond)
+        return "\n\n".join(conds)
+    
     replacements = {
-        "__EntityInterfaceImports__": entityInterfaceImports,
-        "__EntityClassImports__": entityClassImports,
-        "__EntityBusinessImports__": entityBusinessImports,
 
         "__EntityName__": entityName,
         "__EntityNameCapitalized__": entityName.capitalize(),
         "__EntityNameCapitalizedPlural__": pluralize(entityName.capitalize()),
 
-        "__EntityCreateTypeProperties__": createTypeProps,
-        "__EntityUpdateTypeProperties__": updateTypeProps,
-        "__EntityPartialTypeProperties__": partialTypeProps,
-        "__EntityQueryTypeProperties__": queryTypeProps,
-        "__EntitySortableProperties__": sortableProps,
+        "__EntityWhereProps__": getWhereConditions(),
+        "__EntitySortProps__": getSortConditions(),
 
-        "__EntityAutoCreateId__": autoCreateId,
-
-        "__EntityClientQueryInterface__": queryInterface,
-        "__EntityInterface__": storeInterface,
-        "__EntityCreateInterface__": createInterface,
-        "__EntityUpdateInterface__": updateInterface,
-        "__EntityPartialInterface__": partialInterface,
-        "__EntityViewInterface__": viewInterface,
+        "__EntityDataQueryConditions__": getDataQueryConditions(),
+        "__EntityClientQueryConditions__": getClientQueryConditions(),
 
         "__EntityClass__": storeClass,
         "__EntityCreateClass__": createClass,
         "__EntityUpdateClass__": updateClass,
         "__EntityPartialClass__": partialClass,
         "__EntityViewClass__": viewClass,
+        "__EntityQueryClass__": getQueryClass(), 
 
-        "__GetReferencedEntitiesById__": entityReferencedEntitiesGets
+        "__EntityGetViewProjection__": getViewProjection(),
+        "__EntityCreateProjection__": getCreateProjection(),
+
     }
     
-    interfacesScript = INTERFACES_TEMPLATE
     classesScript = CLASSES_TEMPLATE
     routerScript = ROUTER_TEMPLATE
     businessScript = BUSINESS_TEMPLATE
 
     for find, repl in replacements.items():
-        interfacesScript = interfacesScript.replace(find, repl)
         classesScript = classesScript.replace(find, repl)
         routerScript = routerScript.replace(find, repl)
         businessScript = businessScript.replace(find, repl)
 
-    
-    return routerScript, interfacesScript, businessScript, classesScript
+    return routerScript, businessScript, classesScript
 
 def _genCode(entities:dict, openApiSchemas:dict):
     routers = {}
-    interfaces = {}
     businesses = {}
     classes = {}
-    routeImports = []
-    routeUses = []
+
     for entityName, entity in entities.items():
         schema = {            
             'store': openApiSchemas[entityName],
@@ -251,38 +256,24 @@ def _genCode(entities:dict, openApiSchemas:dict):
             'view': openApiSchemas[f'{entityName}View'],
         }
 
-        routers[entityName], interfaces[entityName], businesses[entityName], classes[entityName] = genArtifacts(entityName, entity, schema)
+        routers[entityName], businesses[entityName], classes[entityName] = genArtifacts(entityName, entity, schema)
 
-        routeImports.append(f"import {{ {entityName}Router }} from './{entityName}Route';")
-        routeUses.append(f"indexRouter.use('/{pluralize(entityName)}', {entityName}Router);")
-    
-    index = INDEX_TEMPLATE
-    index = index.replace("__EntitiesRoutesImports__", "\n".join(routeImports))
-    index = index.replace("__EntitiesRoutesUses__", "\n".join(routeUses))
-
-    return routers, interfaces, businesses, classes, BASE_TEMPLATE, index
+    return routers, businesses, classes, BASE_TEMPLATE
 
 def createFiles(scriptsOutputDir:str, entities:dict, openApiSchemas:dict):
-    routers, interfaces, businesses, classes, base, index = _genCode(entities=entities, openApiSchemas=openApiSchemas)
-
-    for entity, script in interfaces.items():
-        with open(f'{scriptsOutputDir}/{entity}Interfaces.ts', 'w', encoding='utf-8') as f:
-            f.write(script)
+    routers, businesses, classes, base = _genCode(entities=entities, openApiSchemas=openApiSchemas)
 
     for entity, script in classes.items():
-        with open(f'{scriptsOutputDir}/{entity}Classes.ts', 'w', encoding='utf-8') as f:
+        with open(f'{scriptsOutputDir}/Models/{entity}Class.cs', 'w', encoding='utf-8') as f:
             f.write(script)
 
     for entity, script in routers.items():
-        with open(f'{scriptsOutputDir}/{entity}Route.ts', 'w', encoding='utf-8') as f:
+        with open(f'{scriptsOutputDir}/Controllers/{entity}Controller.cs', 'w', encoding='utf-8') as f:
             f.write(script)
     
     for entity, script in businesses.items():
-        with open(f'{scriptsOutputDir}/{entity}Business.ts', 'w', encoding='utf-8') as f:
+        with open(f'{scriptsOutputDir}/Business/{entity}Business.cs', 'w', encoding='utf-8') as f:
             f.write(script)
     
-    with open(f'{scriptsOutputDir}/base.ts', 'w', encoding='utf-8') as f:
+    with open(f'{scriptsOutputDir}/Business/Base.cs', 'w', encoding='utf-8') as f:
         f.write(base)
-
-    with open(f'{scriptsOutputDir}/index.ts', 'w', encoding='utf-8') as f:
-        f.write(index)

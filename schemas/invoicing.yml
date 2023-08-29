@@ -10,9 +10,10 @@ api:
   outputFile: I:/dev/express/sales-api/openapi/spec.yml
 
 scripts:
-  # outputDir: ./output/invoicing
-  outputDir: I:/dev/express/sales-api/src/api
-  framework: express #express|webapi|fastapi
+  outputDir: ./output/invoicing
+  framework: webapi
+  # outputDir: I:/dev/express/sales-api/src/api
+  # framework: express #express|webapi|fastapi
 
 sql:
   schemaOutputFile: I:/dev/express/sales-api/db/schema.sql

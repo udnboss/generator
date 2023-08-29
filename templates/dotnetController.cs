@@ -8,10 +8,10 @@ namespace __EntityNameCapitalized__sApi.Controllers
     [ApiController]
     public class __EntityNameCapitalized__Controller : ControllerBase
     {
-        private readonly SalesContext _context;
+        private readonly DbContext _context;
         private __EntityNameCapitalized__Business _business;
 
-        public __EntityNameCapitalized__Controller(SalesContext context)
+        public __EntityNameCapitalized__Controller(DbContext context)
         {
             _context = context;
             _business = new __EntityNameCapitalized__Business(_context);
@@ -36,20 +36,20 @@ namespace __EntityNameCapitalized__sApi.Controllers
                 return NotFound();
             }
 
-            var account = _business.GetById(id);
+            var __EntityName__ = _business.GetById(id);
 
-            if (account == null)
+            if (__EntityName__ == null)
             {
                 return NotFound();
             }
 
-            return account;
+            return __EntityName__;
         }
 
         // PUT: api/__EntityNameCapitalized__/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public ActionResult<__EntityNameCapitalized__View> Put__EntityNameCapitalized__(Guid id, __EntityNameCapitalized__Update account)
+        public ActionResult<__EntityNameCapitalized__View> Put__EntityNameCapitalized__(Guid id, __EntityNameCapitalized__Update __EntityName__)
         {
             try 
             {
@@ -62,7 +62,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
 
             try
             {
-                var updated = _business.Update(id, account);
+                var updated = _business.Update(id, __EntityName__);
                 return updated;
             }
             catch (DbUpdateConcurrencyException)
@@ -82,7 +82,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
         // PATCH: api/__EntityNameCapitalized__/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPatch("{id}")]
-        public ActionResult<__EntityNameCapitalized__View> Patch__EntityNameCapitalized__(Guid id, JsonElement account)
+        public ActionResult<__EntityNameCapitalized__View> Patch__EntityNameCapitalized__(Guid id, JsonElement __EntityName__)
         {
             try 
             {
@@ -95,7 +95,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
 
             try
             {
-                var updated = _business.Modify(id, account);
+                var updated = _business.Modify(id, __EntityName__);
                 return updated;
             }
             catch (DbUpdateConcurrencyException)
@@ -116,14 +116,9 @@ namespace __EntityNameCapitalized__sApi.Controllers
         // POST: api/__EntityNameCapitalized__
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public ActionResult<__EntityNameCapitalized__View> Post__EntityNameCapitalized__(__EntityNameCapitalized__Create account)
+        public ActionResult<__EntityNameCapitalized__View> Post__EntityNameCapitalized__(__EntityNameCapitalized__Create __EntityName__)
         {
-            if (_context.__EntityNameCapitalized__s == null)
-            {
-                return Problem("Entity set '__EntityNameCapitalized__sContext.__EntityNameCapitalized__s' is null.");
-            }
-
-            var created = _business.Create(account);
+            var created = _business.Create(__EntityName__);
 
             return created;
         }
@@ -148,7 +143,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
 
         private bool __EntityNameCapitalized__Exists(Guid id)
         {
-            return (_context.__EntityNameCapitalized__s?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Set<__EntityNameCapitalized__>().Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

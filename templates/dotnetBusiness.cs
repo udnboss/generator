@@ -151,7 +151,7 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         {
             foreach (var c in query.Where)
             {   
-                __EntityWhereProps__                   
+                __EntityWhereConditions__                   
             }
         }
 

@@ -6,6 +6,7 @@ import yaml
 from inputParser import parseEntities, parseData
 from genOpenApi import genSchema, genInfo, genPaths, genTags
 from genExpressApi import createFiles as createExpressFiles
+from genDotnetApi import createFiles as createDotnetFiles
 from genSqliteSql import genSchema as genSqlSchema, genData as genSqlData, genSecurityData
 
 class NoAliasDumper(yaml.SafeDumper):
@@ -225,7 +226,7 @@ if gentype == 'api':
     elif targetFramework == "fastapi":
         raise Exception("Not Implemented Yet!")
     elif targetFramework == "webapi":
-        raise Exception("Not Implemented Yet!")
+        createFiles = createDotnetFiles
     else:
         raise Exception("Unsupported framework")
 
