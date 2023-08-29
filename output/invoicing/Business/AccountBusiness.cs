@@ -4,38 +4,46 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 
-public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalized__, __EntityNameCapitalized__View, __EntityNameCapitalized__Update, __EntityNameCapitalized__Modify, __EntityNameCapitalized__Create, __EntityNameCapitalized__Query>
+public class AccountBusiness : Business<Account, AccountView, AccountUpdate, AccountModify, AccountCreate, AccountQuery>
 {
-    public __EntityNameCapitalized__Business(DbContext db) : base(db)
+    public AccountBusiness(DbContext db) : base(db)
     {
     }
 
-    public override DataQuery ConvertToDataQuery(__EntityNameCapitalized__Query query)
+    public override DataQuery ConvertToDataQuery(AccountQuery query)
     {
         var dataQuery = base.ConvertToDataQuery(query);
 
-        __EntityDataQueryConditions__
+        
+            dataQuery.Where.Add(new Condition(column: "Label", _operator: Operators.Contains, value: query.Label));
+            
+            dataQuery.Where.Add(new Condition(column: "BankName", _operator: Operators.Contains, value: query.BankName));
+            
 
         return dataQuery;
     }
 
-    public override __EntityNameCapitalized__Query ConvertToClientQuery(DataQuery query)
+    public override AccountQuery ConvertToClientQuery(DataQuery query)
     {
         var clientQuery = base.ConvertToClientQuery(query);
 
         foreach(var c in query.Where)
         {
-            __EntityClientQueryConditions__
+            
+            if(c.Column == "Label") clientQuery.Label = c.Value as string;
+            
+            if(c.Column == "BankName") clientQuery.BankName = c.Value as string;
+            
         }        
 
         return clientQuery;
     }
     
-    public override __EntityNameCapitalized__View GetById(Guid id, int maxDepth = 2)
+    public override AccountView GetById(Guid id, int maxDepth = 2)
     {
-        var query = Db.Set<__EntityNameCapitalized__>()
-            .Select(x => new __EntityNameCapitalized__View { 
-                __EntityViewProjection__  
+        var query = Db.Set<Account>()
+            .Select(x => new AccountView { 
+                Id = x.Id, Label = x.Label, BankName = x.BankName, BankAddress = x.BankAddress, BankSwift = x.BankSwift, AccountName = x.AccountName, AccountIban = x.AccountIban, AccountAddress = x.AccountAddress  
             })
             .AsQueryable();
 
@@ -48,16 +56,16 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return entity;
     }
 
-    public override __EntityNameCapitalized__View Create(__EntityNameCapitalized__Create entity)
+    public override AccountView Create(AccountCreate entity)
     {
-        var dbSet = Db.Set<__EntityNameCapitalized__>();
-        var dbEntity = new __EntityNameCapitalized__ {
+        var dbSet = Db.Set<Account>();
+        var dbEntity = new Account {
             Id = new Guid(),
-            __EntityCreateProjection__
+            Label = entity.Label, BankName = entity.BankName, BankAddress = entity.BankAddress, BankSwift = entity.BankSwift, AccountName = entity.AccountName, AccountIban = entity.AccountIban, AccountAddress = entity.AccountAddress
         };
         dbSet.Add(dbEntity);
         Db.SaveChanges();
-        var added = dbSet.Select(x => new __EntityNameCapitalized__View { 
+        var added = dbSet.Select(x => new AccountView { 
                 __EntityViewProjection__
             })
             .FirstOrDefault(x => x.Id == dbEntity.Id);
@@ -69,17 +77,17 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return added;
     }
 
-    public override __EntityNameCapitalized__View Update(Guid id, __EntityNameCapitalized__Update entity)
+    public override AccountView Update(Guid id, AccountUpdate entity)
     {
-        var dbSet = Db.Set<__EntityNameCapitalized__>();
+        var dbSet = Db.Set<Account>();
         var existing = dbSet.Find(id);
         if (existing is null)
         {
             throw new KeyNotFoundException($"Could not find an existing {entityName} entity with the given id.");
         }
 
-        var inputProps = typeof(__EntityNameCapitalized__Update).GetProperties();
-        var outputProps = typeof(__EntityNameCapitalized__).GetProperties();
+        var inputProps = typeof(AccountUpdate).GetProperties();
+        var outputProps = typeof(Account).GetProperties();
 
         foreach (var prop in inputProps)
         {
@@ -96,17 +104,17 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return updated;
     }
 
-    public override __EntityNameCapitalized__View Modify(Guid id, JsonElement entity)
+    public override AccountView Modify(Guid id, JsonElement entity)
     {
-        var dbSet = Db.Set<__EntityNameCapitalized__>();
+        var dbSet = Db.Set<Account>();
         var existing = dbSet.Find(id);
         if (existing is null)
         {
             throw new KeyNotFoundException($"Could not find an existing {entityName} entity with the given id.");
         }
       
-        var validProps = typeof(__EntityNameCapitalized__Modify).GetProperties();
-        var outputProps = typeof(__EntityNameCapitalized__).GetProperties();
+        var validProps = typeof(AccountModify).GetProperties();
+        var outputProps = typeof(Account).GetProperties();
 
         foreach (JsonProperty prop in entity.EnumerateObject())
         {
@@ -123,9 +131,9 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return updated;
     }
 
-    public override __EntityNameCapitalized__View Delete(Guid id)
+    public override AccountView Delete(Guid id)
     {
-        var dbSet = Db.Set<__EntityNameCapitalized__>();
+        var dbSet = Db.Set<Account>();
         var existing = dbSet.Find(id);
         if (existing is null)
         {
@@ -138,9 +146,9 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return beforeDelete;
     }
 
-    public override QueryResult<ClientQuery, __EntityNameCapitalized__View> GetAll(__EntityNameCapitalized__Query clientQuery, DataQuery query, int maxDepth = 2)
+    public override QueryResult<ClientQuery, AccountView> GetAll(AccountQuery clientQuery, DataQuery query, int maxDepth = 2)
     {
-        var q = Db.Set<__EntityNameCapitalized__>().Skip(query.Offset);
+        var q = Db.Set<Account>().Skip(query.Offset);
                            
         if ( query.Limit > 0) 
         {
@@ -155,20 +163,27 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
             }
         }
 
-        IOrderedQueryable<__EntityNameCapitalized__>? sortedQ = null;
+        IOrderedQueryable<Account>? sortedQ = null;
         if (query.Sort.Count > 0)
         {
             foreach (var s in query.Sort)
             {
-                __EntitySortConditions__
+                
+                if (s.Column == "Label")
+                {
+                    sortedQ = s.Direction == SortDirection.Asc ? 
+                        sortedQ is null ? q.OrderBy(x => x.Label) : sortedQ.ThenBy(x => x.Label) 
+                        : sortedQ is null ? q.OrderByDescending( x => x.Label) : sortedQ.ThenByDescending(x => x.Label);
+                }
+                
             }
         }
         
         var data = (sortedQ ?? q)
-            .Select(x => new __EntityNameCapitalized__View { __EntityViewProjection__ })
+            .Select(x => new AccountView { __EntityViewProjection__ })
             .ToList();
 
-        var result = new QueryResult<ClientQuery, __EntityNameCapitalized__View>(clientQuery)
+        var result = new QueryResult<ClientQuery, AccountView>(clientQuery)
         {
             Count = data.Count,
             Result = data,

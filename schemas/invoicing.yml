@@ -10,14 +10,18 @@ api:
   outputFile: I:/dev/express/sales-api/openapi/spec.yml
 
 scripts:
-  outputDir: ./output/invoicing
+  # outputDir: ./output/invoicing
+  outputDir: D:/Dev/dotnet6/NotesApi
   framework: webapi
   # outputDir: I:/dev/express/sales-api/src/api
   # framework: express #express|webapi|fastapi
 
 sql:
-  schemaOutputFile: I:/dev/express/sales-api/db/schema.sql
-  dataOutputFile: I:/dev/express/sales-api/db/data.sql
+  schemaOutputFile: D:/Dev/dotnet6/NotesApi/Data/schema.sql
+  dataOutputFile: D:/Dev/dotnet6/NotesApi/Data/data.sql
+
+  # schemaOutputFile: I:/dev/express/sales-api/db/schema.sql  
+  # dataOutputFile: I:/dev/express/sales-api/db/data.sql
   syntax: sqlite
 
 interfaces:
@@ -42,6 +46,10 @@ interfaces:
     sort: [name asc]
     sortable: [name, email]
     repr: [name, email]
+    constraints: #check constraints
+      - property: name
+        op: gte #operators: e, ne, gt, gte, lt, lte, in, nin, bt, nbt
+        value: 3
     filters:
       name: like 3 100
       email: like 3 100     
@@ -61,7 +69,8 @@ interfaces:
     filters:
       name: like
     properties:
-      id: 
+      id: uuid
+      code:
       name:
 
       rolePermissions?: rolePermission[] @role_id
@@ -81,7 +90,8 @@ interfaces:
       entity: in
       action: in
     properties:
-      id:
+      id: uuid
+      code:
       name:
       entity:
       action:
@@ -96,8 +106,8 @@ interfaces:
     repr: [permission.name]
     properties:
       id: uuid
-      role_id: str > role.id
-      permission_id: str > permission.id
+      role_id: uuid > role.id
+      permission_id: uuid > permission.id
       
       role?: role @role_id
       permission?: permission @permission_id
@@ -126,18 +136,17 @@ interfaces:
     key: id
     autokey: true
     sort: [name asc]
-    sortable: [name, category.name]
+    sortable: [name]
     unique: [name]
     repr: [name]
     filters:
       name: like 3 100
-      category_id: in
     properties:
       id: uuid
       name:
-      category_id?: uuid > category.id
+      # category_id?: uuid > category.id
 
-      category?: category @category_id
+      # category?: category @category_id
       items?: item[] @category_id
 
   company:
@@ -161,12 +170,13 @@ interfaces:
 
   currency:
     key: id
+    autokey: true
     sort: [name asc]
     sortable: [name]
     unique: [name]
     repr: [name, symbol]
     properties:
-      id:
+      id: uuid
       name:
       symbol:
 
@@ -188,7 +198,7 @@ interfaces:
       name:
       address?:
       contact?:
-      currency_id?: str > currency.id
+      currency_id?: uuid > currency.id
       currency?: currency @currency_id
       payment_term?: int
 
@@ -235,7 +245,7 @@ interfaces:
       company_id: uuid > company.id
       account_id: uuid > account.id
       customer_id: uuid > customer.id
-      currency_id: str > currency.id
+      currency_id: uuid > currency.id
       place?:
       number: int
       date*: date # a * means disallow update      
@@ -311,7 +321,8 @@ data:
     login_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
 
   role:
-    id: ['VIEW', 'CONTRIBUTE', 'ADMIN']
+    id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002']
+    code: ['VIEW', 'CONTRIBUTE', 'ADMIN']
     name: ['Viewer', 'Contributor', 'Administrator']
     
   account:
@@ -343,7 +354,7 @@ data:
     email: ['info@microsoft.com', 'press@google.com', 'media.help@apple.com', 'ecr-replies@amazon.com']
 
   currency:
-    id: ['USD', 'EUR', 'JPY', 'GBP']
+    id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
     name: ['United States Dollar', 'Euro', 'Japanese Yen', 'British Pound']
     symbol: ['$', '€', '¥', '£']
 
@@ -352,7 +363,7 @@ data:
     name: ['John Doe', 'Jane Smith', 'Bob Johnson', 'Alice Williams']
     address: ['123 Main St, Anytown USA', '456 Elm St, Anytown USA', '789 Oak St, Anytown USA', '321 Pine St, Anytown USA']
     contact: ['+1 (555) 555-5555', '+1 (555) 555-5556', '+1 (555) 555-5557', '+1 (555) 555-5558']
-    currency_id: ['USD', 'EUR', 'JPY', 'GBP']
+    currency_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
     payment_term: [30, 60, 90, 45]
 
   item:
@@ -368,7 +379,7 @@ data:
     place: ['New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX']
     number: [1, 2, 3, 4]
     date: ['2023-01-01', '2023-02-01', '2023-03-01', '2023-04-01']
-    currency_id: ['USD', 'EUR', 'JPY', 'GBP']
+    currency_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
     total: [0,0,0,0]
     due_date: ['2023-02-01', '2023-03-01', '2023-04-01', '2023-05-01']
     reference_date: ['2023-01-01', '2023-02-01', '2023-03-01', '2023-04-01']

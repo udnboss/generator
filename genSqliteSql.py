@@ -332,10 +332,10 @@ def genSecurityData(entities:dict) -> str:
     for entityName, entity in targetEntities.items():        
         entityNameSql = entityName.replace("'", "''")
         entityNameCapital = entityNameSql.upper()
-        entityStmts = [f"insert into [permission] select 'ENTITY:{entityNameCapital}:{p}', 'Entity {entityNameSql} {p}', '{entityNameSql}', '{p}';" for p in DEFAULT_PERMISSION_ACTIONS]
+        entityStmts = [f"insert into [permission] select uuid4(), 'ENTITY:{entityNameCapital}:{p}', 'Entity {entityNameSql} {p}', '{entityNameSql}', '{p}';" for p in DEFAULT_PERMISSION_ACTIONS]
         stmts += entityStmts
 
-    stmts.append(f"insert into [rolePermission] select uuid(), r.id, p.id from role r, permission p;")
+    stmts.append(f"insert into [rolePermission] select uuid4(), r.id, p.id from role r, permission p;")
     
     return "\n".join(stmts)
 

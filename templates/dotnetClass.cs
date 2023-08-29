@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#pragma warning disable CS8618
 
 [Table("__EntityName__")]
 public class __EntityNameCapitalized__ : Entity

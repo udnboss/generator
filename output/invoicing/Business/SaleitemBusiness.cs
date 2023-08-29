@@ -4,38 +4,38 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 
-public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalized__, __EntityNameCapitalized__View, __EntityNameCapitalized__Update, __EntityNameCapitalized__Modify, __EntityNameCapitalized__Create, __EntityNameCapitalized__Query>
+public class SaleitemBusiness : Business<Saleitem, SaleitemView, SaleitemUpdate, SaleitemModify, SaleitemCreate, SaleitemQuery>
 {
-    public __EntityNameCapitalized__Business(DbContext db) : base(db)
+    public SaleitemBusiness(DbContext db) : base(db)
     {
     }
 
-    public override DataQuery ConvertToDataQuery(__EntityNameCapitalized__Query query)
+    public override DataQuery ConvertToDataQuery(SaleitemQuery query)
     {
         var dataQuery = base.ConvertToDataQuery(query);
 
-        __EntityDataQueryConditions__
+        
 
         return dataQuery;
     }
 
-    public override __EntityNameCapitalized__Query ConvertToClientQuery(DataQuery query)
+    public override SaleitemQuery ConvertToClientQuery(DataQuery query)
     {
         var clientQuery = base.ConvertToClientQuery(query);
 
         foreach(var c in query.Where)
         {
-            __EntityClientQueryConditions__
+            
         }        
 
         return clientQuery;
     }
     
-    public override __EntityNameCapitalized__View GetById(Guid id, int maxDepth = 2)
+    public override SaleitemView GetById(Guid id, int maxDepth = 2)
     {
-        var query = Db.Set<__EntityNameCapitalized__>()
-            .Select(x => new __EntityNameCapitalized__View { 
-                __EntityViewProjection__  
+        var query = Db.Set<Saleitem>()
+            .Select(x => new SaleitemView { 
+                Id = x.Id, SaleId = x.SaleId, ItemId = x.ItemId, Description = x.Description, Quantity = x.Quantity, Price = x.Price, Total = x.Total  
             })
             .AsQueryable();
 
@@ -48,16 +48,16 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return entity;
     }
 
-    public override __EntityNameCapitalized__View Create(__EntityNameCapitalized__Create entity)
+    public override SaleitemView Create(SaleitemCreate entity)
     {
-        var dbSet = Db.Set<__EntityNameCapitalized__>();
-        var dbEntity = new __EntityNameCapitalized__ {
+        var dbSet = Db.Set<Saleitem>();
+        var dbEntity = new Saleitem {
             Id = new Guid(),
-            __EntityCreateProjection__
+            SaleId = entity.SaleId, ItemId = entity.ItemId, Description = entity.Description, Quantity = entity.Quantity, Price = entity.Price
         };
         dbSet.Add(dbEntity);
         Db.SaveChanges();
-        var added = dbSet.Select(x => new __EntityNameCapitalized__View { 
+        var added = dbSet.Select(x => new SaleitemView { 
                 __EntityViewProjection__
             })
             .FirstOrDefault(x => x.Id == dbEntity.Id);
@@ -69,17 +69,17 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return added;
     }
 
-    public override __EntityNameCapitalized__View Update(Guid id, __EntityNameCapitalized__Update entity)
+    public override SaleitemView Update(Guid id, SaleitemUpdate entity)
     {
-        var dbSet = Db.Set<__EntityNameCapitalized__>();
+        var dbSet = Db.Set<Saleitem>();
         var existing = dbSet.Find(id);
         if (existing is null)
         {
             throw new KeyNotFoundException($"Could not find an existing {entityName} entity with the given id.");
         }
 
-        var inputProps = typeof(__EntityNameCapitalized__Update).GetProperties();
-        var outputProps = typeof(__EntityNameCapitalized__).GetProperties();
+        var inputProps = typeof(SaleitemUpdate).GetProperties();
+        var outputProps = typeof(Saleitem).GetProperties();
 
         foreach (var prop in inputProps)
         {
@@ -96,17 +96,17 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return updated;
     }
 
-    public override __EntityNameCapitalized__View Modify(Guid id, JsonElement entity)
+    public override SaleitemView Modify(Guid id, JsonElement entity)
     {
-        var dbSet = Db.Set<__EntityNameCapitalized__>();
+        var dbSet = Db.Set<Saleitem>();
         var existing = dbSet.Find(id);
         if (existing is null)
         {
             throw new KeyNotFoundException($"Could not find an existing {entityName} entity with the given id.");
         }
       
-        var validProps = typeof(__EntityNameCapitalized__Modify).GetProperties();
-        var outputProps = typeof(__EntityNameCapitalized__).GetProperties();
+        var validProps = typeof(SaleitemModify).GetProperties();
+        var outputProps = typeof(Saleitem).GetProperties();
 
         foreach (JsonProperty prop in entity.EnumerateObject())
         {
@@ -123,9 +123,9 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return updated;
     }
 
-    public override __EntityNameCapitalized__View Delete(Guid id)
+    public override SaleitemView Delete(Guid id)
     {
-        var dbSet = Db.Set<__EntityNameCapitalized__>();
+        var dbSet = Db.Set<Saleitem>();
         var existing = dbSet.Find(id);
         if (existing is null)
         {
@@ -138,9 +138,9 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return beforeDelete;
     }
 
-    public override QueryResult<ClientQuery, __EntityNameCapitalized__View> GetAll(__EntityNameCapitalized__Query clientQuery, DataQuery query, int maxDepth = 2)
+    public override QueryResult<ClientQuery, SaleitemView> GetAll(SaleitemQuery clientQuery, DataQuery query, int maxDepth = 2)
     {
-        var q = Db.Set<__EntityNameCapitalized__>().Skip(query.Offset);
+        var q = Db.Set<Saleitem>().Skip(query.Offset);
                            
         if ( query.Limit > 0) 
         {
@@ -155,20 +155,27 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
             }
         }
 
-        IOrderedQueryable<__EntityNameCapitalized__>? sortedQ = null;
+        IOrderedQueryable<Saleitem>? sortedQ = null;
         if (query.Sort.Count > 0)
         {
             foreach (var s in query.Sort)
             {
-                __EntitySortConditions__
+                
+                if (s.Column == "Item.name")
+                {
+                    sortedQ = s.Direction == SortDirection.Asc ? 
+                        sortedQ is null ? q.OrderBy(x => x.Item.name) : sortedQ.ThenBy(x => x.Item.name) 
+                        : sortedQ is null ? q.OrderByDescending( x => x.Item.name) : sortedQ.ThenByDescending(x => x.Item.name);
+                }
+                
             }
         }
         
         var data = (sortedQ ?? q)
-            .Select(x => new __EntityNameCapitalized__View { __EntityViewProjection__ })
+            .Select(x => new SaleitemView { __EntityViewProjection__ })
             .ToList();
 
-        var result = new QueryResult<ClientQuery, __EntityNameCapitalized__View>(clientQuery)
+        var result = new QueryResult<ClientQuery, SaleitemView>(clientQuery)
         {
             Count = data.Count,
             Result = data,

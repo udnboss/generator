@@ -4,38 +4,46 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 
-public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalized__, __EntityNameCapitalized__View, __EntityNameCapitalized__Update, __EntityNameCapitalized__Modify, __EntityNameCapitalized__Create, __EntityNameCapitalized__Query>
+public class CategoryBusiness : Business<Category, CategoryView, CategoryUpdate, CategoryModify, CategoryCreate, CategoryQuery>
 {
-    public __EntityNameCapitalized__Business(DbContext db) : base(db)
+    public CategoryBusiness(DbContext db) : base(db)
     {
     }
 
-    public override DataQuery ConvertToDataQuery(__EntityNameCapitalized__Query query)
+    public override DataQuery ConvertToDataQuery(CategoryQuery query)
     {
         var dataQuery = base.ConvertToDataQuery(query);
 
-        __EntityDataQueryConditions__
+        
+            dataQuery.Where.Add(new Condition(column: "Name", _operator: Operators.Contains, value: query.Name));
+            
+            dataQuery.Where.Add(new Condition(column: "CategoryId", _operator: Operators.In, value: query.CategoryId));
+            
 
         return dataQuery;
     }
 
-    public override __EntityNameCapitalized__Query ConvertToClientQuery(DataQuery query)
+    public override CategoryQuery ConvertToClientQuery(DataQuery query)
     {
         var clientQuery = base.ConvertToClientQuery(query);
 
         foreach(var c in query.Where)
         {
-            __EntityClientQueryConditions__
+            
+            if(c.Column == "Name") clientQuery.Name = c.Value as string;
+            
+            if(c.Column == "CategoryId") clientQuery.CategoryId = c.Value as string;
+            
         }        
 
         return clientQuery;
     }
     
-    public override __EntityNameCapitalized__View GetById(Guid id, int maxDepth = 2)
+    public override CategoryView GetById(Guid id, int maxDepth = 2)
     {
-        var query = Db.Set<__EntityNameCapitalized__>()
-            .Select(x => new __EntityNameCapitalized__View { 
-                __EntityViewProjection__  
+        var query = Db.Set<Category>()
+            .Select(x => new CategoryView { 
+                Id = x.Id, Name = x.Name, CategoryId = x.CategoryId  
             })
             .AsQueryable();
 
@@ -48,16 +56,16 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return entity;
     }
 
-    public override __EntityNameCapitalized__View Create(__EntityNameCapitalized__Create entity)
+    public override CategoryView Create(CategoryCreate entity)
     {
-        var dbSet = Db.Set<__EntityNameCapitalized__>();
-        var dbEntity = new __EntityNameCapitalized__ {
+        var dbSet = Db.Set<Category>();
+        var dbEntity = new Category {
             Id = new Guid(),
-            __EntityCreateProjection__
+            Name = entity.Name, CategoryId = entity.CategoryId
         };
         dbSet.Add(dbEntity);
         Db.SaveChanges();
-        var added = dbSet.Select(x => new __EntityNameCapitalized__View { 
+        var added = dbSet.Select(x => new CategoryView { 
                 __EntityViewProjection__
             })
             .FirstOrDefault(x => x.Id == dbEntity.Id);
@@ -69,17 +77,17 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return added;
     }
 
-    public override __EntityNameCapitalized__View Update(Guid id, __EntityNameCapitalized__Update entity)
+    public override CategoryView Update(Guid id, CategoryUpdate entity)
     {
-        var dbSet = Db.Set<__EntityNameCapitalized__>();
+        var dbSet = Db.Set<Category>();
         var existing = dbSet.Find(id);
         if (existing is null)
         {
             throw new KeyNotFoundException($"Could not find an existing {entityName} entity with the given id.");
         }
 
-        var inputProps = typeof(__EntityNameCapitalized__Update).GetProperties();
-        var outputProps = typeof(__EntityNameCapitalized__).GetProperties();
+        var inputProps = typeof(CategoryUpdate).GetProperties();
+        var outputProps = typeof(Category).GetProperties();
 
         foreach (var prop in inputProps)
         {
@@ -96,17 +104,17 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return updated;
     }
 
-    public override __EntityNameCapitalized__View Modify(Guid id, JsonElement entity)
+    public override CategoryView Modify(Guid id, JsonElement entity)
     {
-        var dbSet = Db.Set<__EntityNameCapitalized__>();
+        var dbSet = Db.Set<Category>();
         var existing = dbSet.Find(id);
         if (existing is null)
         {
             throw new KeyNotFoundException($"Could not find an existing {entityName} entity with the given id.");
         }
       
-        var validProps = typeof(__EntityNameCapitalized__Modify).GetProperties();
-        var outputProps = typeof(__EntityNameCapitalized__).GetProperties();
+        var validProps = typeof(CategoryModify).GetProperties();
+        var outputProps = typeof(Category).GetProperties();
 
         foreach (JsonProperty prop in entity.EnumerateObject())
         {
@@ -123,9 +131,9 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return updated;
     }
 
-    public override __EntityNameCapitalized__View Delete(Guid id)
+    public override CategoryView Delete(Guid id)
     {
-        var dbSet = Db.Set<__EntityNameCapitalized__>();
+        var dbSet = Db.Set<Category>();
         var existing = dbSet.Find(id);
         if (existing is null)
         {
@@ -138,9 +146,9 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return beforeDelete;
     }
 
-    public override QueryResult<ClientQuery, __EntityNameCapitalized__View> GetAll(__EntityNameCapitalized__Query clientQuery, DataQuery query, int maxDepth = 2)
+    public override QueryResult<ClientQuery, CategoryView> GetAll(CategoryQuery clientQuery, DataQuery query, int maxDepth = 2)
     {
-        var q = Db.Set<__EntityNameCapitalized__>().Skip(query.Offset);
+        var q = Db.Set<Category>().Skip(query.Offset);
                            
         if ( query.Limit > 0) 
         {
@@ -155,20 +163,36 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
             }
         }
 
-        IOrderedQueryable<__EntityNameCapitalized__>? sortedQ = null;
+        IOrderedQueryable<Category>? sortedQ = null;
         if (query.Sort.Count > 0)
         {
             foreach (var s in query.Sort)
             {
-                __EntitySortConditions__
+                
+                if (s.Column == "Name")
+                {
+                    sortedQ = s.Direction == SortDirection.Asc ? 
+                        sortedQ is null ? q.OrderBy(x => x.Name) : sortedQ.ThenBy(x => x.Name) 
+                        : sortedQ is null ? q.OrderByDescending( x => x.Name) : sortedQ.ThenByDescending(x => x.Name);
+                }
+                
+
+
+                if (s.Column == "Category.name")
+                {
+                    sortedQ = s.Direction == SortDirection.Asc ? 
+                        sortedQ is null ? q.OrderBy(x => x.Category.name) : sortedQ.ThenBy(x => x.Category.name) 
+                        : sortedQ is null ? q.OrderByDescending( x => x.Category.name) : sortedQ.ThenByDescending(x => x.Category.name);
+                }
+                
             }
         }
         
         var data = (sortedQ ?? q)
-            .Select(x => new __EntityNameCapitalized__View { __EntityViewProjection__ })
+            .Select(x => new CategoryView { __EntityViewProjection__ })
             .ToList();
 
-        var result = new QueryResult<ClientQuery, __EntityNameCapitalized__View>(clientQuery)
+        var result = new QueryResult<ClientQuery, CategoryView>(clientQuery)
         {
             Count = data.Count,
             Result = data,

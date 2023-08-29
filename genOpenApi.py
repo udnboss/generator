@@ -76,9 +76,10 @@ def genSchema(entities:dict):
                     prop['items'] = {'type': TYPE_MAP[metadataSubType]}
                     if metadataSubType in AUTO_TYPE_FORMATS:
                         prop['items']['format'] = AUTO_TYPE_FORMATS[metadataSubType]
-
+            
+            schemas[entityName]['properties'][propertyName] = prop
             if not '$ref' in prop and not 'items' in prop:
-                schemas[entityName]['properties'][propertyName] = prop
+                
                 # print(entityName, propertyName, prop)
                 if metadata['allowRead'] and propertyName in clientQueryProps:
                     schemas[entityNameQuery]['properties'][propertyName] = prop.copy()

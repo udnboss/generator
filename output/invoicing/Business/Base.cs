@@ -227,11 +227,6 @@ public class DataQuery
     public int Offset { get; set; } = 0;
 }
 
-public record IRecord
-{
-    [Key]
-    public Guid Id { get; set; }
-}
 
 public class Entity
 {

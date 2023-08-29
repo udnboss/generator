@@ -8,10 +8,10 @@ namespace __EntityNameCapitalized__sApi.Controllers
     [ApiController]
     public class __EntityNameCapitalized__Controller : ControllerBase
     {
-        private readonly DbContext _context;
+        private readonly MyContext _context;
         private __EntityNameCapitalized__Business _business;
 
-        public __EntityNameCapitalized__Controller(DbContext context)
+        public __EntityNameCapitalized__Controller(MyContext context)
         {
             _context = context;
             _business = new __EntityNameCapitalized__Business(_context);
@@ -31,11 +31,6 @@ namespace __EntityNameCapitalized__sApi.Controllers
         [HttpGet("{id}")]
         public ActionResult<__EntityNameCapitalized__View> Get__EntityNameCapitalized__(Guid id)
         {
-            if (_context.__EntityNameCapitalized__s == null)
-            {
-                return NotFound();
-            }
-
             var __EntityName__ = _business.GetById(id);
 
             if (__EntityName__ == null)
@@ -143,7 +138,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
 
         private bool __EntityNameCapitalized__Exists(Guid id)
         {
-            return (_context.Set<__EntityNameCapitalized__>().Any(e => e.Id == id)).GetValueOrDefault();
+            return _context.Set<__EntityNameCapitalized__>().Any(e => e.Id == id);
         }
     }
 }
