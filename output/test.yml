@@ -1,0 +1,1105 @@
+account:
+  autokey: true
+  filters:
+    bank_name: like
+    label: like
+  key: id
+  properties:
+    account_address:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      maximum: 200
+      minimum: 3
+      required: true
+      type: str
+      typeReference: false
+    account_iban:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      maximum: 100
+      minimum: 3
+      required: true
+      type: str
+      typeReference: false
+    account_name:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      maximum: 100
+      minimum: 3
+      required: true
+      type: str
+      typeReference: false
+    bank_address:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      maximum: 100
+      minimum: 3
+      required: true
+      type: str
+      typeReference: false
+    bank_name:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: 100
+      filterMin: 3
+      filterOperator: like
+      maximum: 100
+      minimum: 3
+      required: true
+      type: str
+      typeReference: false
+    bank_swift:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      maximum: 100
+      minimum: 3
+      required: true
+      type: str
+      typeReference: false
+    id:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: null
+      required: false
+      type: uuid
+      typeReference: false
+    label:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: 100
+      filterMin: 3
+      filterOperator: like
+      maximum: 100
+      minimum: 3
+      required: true
+      type: str
+      typeReference: false
+  repr:
+  - label
+  sort:
+  - label asc
+  sortable:
+  - label
+  unique:
+  - label
+category:
+  autokey: true
+  filters:
+    name: like
+  key: id
+  properties:
+    id:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: null
+      required: false
+      type: uuid
+      typeReference: false
+    items:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      subTypeReferenceViaProperty: category_id
+      subtype: item
+      subtypeReference: true
+      type: array
+      typeReference: false
+    name:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: 100
+      filterMin: 3
+      filterOperator: like
+      required: true
+      type: str
+      typeReference: false
+  repr:
+  - name
+  sort:
+  - name asc
+  sortable:
+  - name
+  unique:
+  - name
+company:
+  autokey: true
+  filters:
+    name: like
+  key: id
+  properties:
+    address:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: true
+      type: str
+      typeReference: false
+    contact:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: true
+      type: str
+      typeReference: false
+    crn:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: true
+      type: str
+      typeReference: false
+    email:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      format: email
+      required: true
+      type: str
+      typeReference: false
+    id:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: null
+      required: false
+      type: uuid
+      typeReference: false
+    mobile:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: true
+      type: str
+      typeReference: false
+    name:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: 100
+      filterMin: 3
+      filterOperator: like
+      required: true
+      type: str
+      typeReference: false
+    trn:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: true
+      type: str
+      typeReference: false
+  repr:
+  - name
+  sort:
+  - name asc
+  sortable:
+  - name
+  unique:
+  - name
+currency:
+  autokey: true
+  filters: {}
+  key: id
+  properties:
+    id:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: null
+      required: false
+      type: uuid
+      typeReference: false
+    name:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: true
+      type: str
+      typeReference: false
+    symbol:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: true
+      type: str
+      typeReference: false
+  repr:
+  - name
+  - symbol
+  sort:
+  - name asc
+  sortable:
+  - name
+  unique:
+  - name
+customer:
+  autokey: true
+  constraints:
+  - op: bt
+    property: payment_term
+    value:
+    - 0
+    - 90
+  filters:
+    name: like
+  key: id
+  properties:
+    address:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: str
+      typeReference: false
+    contact:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: str
+      typeReference: false
+    currency:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: currency
+      typeReference: true
+      typeReferenceViaProperty: currency_id
+    currency_id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      constraintEntity: currency
+      constraintEntityOnDelete: d-cascade
+      constraintEntityOnUpdate: d-cascade
+      constraintEntityProperty: id
+      default: null
+      required: false
+      type: uuid
+      typeReference: false
+    id:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: null
+      required: false
+      type: uuid
+      typeReference: false
+    name:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: 100
+      filterMin: 3
+      filterOperator: like
+      required: true
+      type: str
+      typeReference: false
+    payment_term:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: int
+      typeReference: false
+    sales:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      subTypeReferenceViaProperty: customer_id
+      subtype: sale
+      subtypeReference: true
+      type: array
+      typeReference: false
+  repr:
+  - name
+  sort:
+  - name asc
+  sortable:
+  - name
+  unique:
+  - name
+item:
+  autokey: true
+  filters:
+    category_id: in
+    name: like
+  key: id
+  properties:
+    category:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: category
+      typeReference: true
+      typeReferenceViaProperty: category_id
+    category_id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      constraintEntity: category
+      constraintEntityOnDelete: d-cascade
+      constraintEntityOnUpdate: d-cascade
+      constraintEntityProperty: id
+      default: null
+      filterMax: null
+      filterMin: null
+      filterOperator: in
+      required: false
+      type: uuid
+      typeReference: false
+    id:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: null
+      required: false
+      type: uuid
+      typeReference: false
+    name:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: 100
+      filterMin: 3
+      filterOperator: like
+      required: true
+      type: str
+      typeReference: false
+  repr:
+  - name
+  sort:
+  - name asc
+  sortable:
+  - name
+  - category.name
+  unique:
+  - name
+login:
+  autokey: true
+  filters:
+    email: like
+  key: id
+  properties:
+    email:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: 100
+      filterMin: 3
+      filterOperator: like
+      format: email
+      required: true
+      type: str
+      typeReference: false
+    id:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: null
+      required: false
+      type: uuid
+      typeReference: false
+    password:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      format: password
+      required: true
+      type: str
+      typeReference: false
+  repr:
+  - email
+  sort:
+  - email asc
+  sortable:
+  - email
+  unique:
+  - email
+permission:
+  constraints:
+  - op: in
+    property: action
+    value:
+    - READ
+    - CREATE
+    - UPDATE
+    - DELETE
+    - EXECUTE
+  filters:
+    action: in
+    code: like
+    entity: in
+    name: like
+  key: id
+  properties:
+    action:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: null
+      filterMin: null
+      filterOperator: in
+      required: true
+      type: str
+      typeReference: false
+    code:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: 100
+      filterMin: 3
+      filterOperator: like
+      required: true
+      type: str
+      typeReference: false
+    entity:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: null
+      filterMin: null
+      filterOperator: in
+      required: true
+      type: str
+      typeReference: false
+    id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: true
+      type: uuid
+      typeReference: false
+    name:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: 100
+      filterMin: 3
+      filterOperator: like
+      required: true
+      type: str
+      typeReference: false
+    roles:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      subTypeReferenceViaProperty: permission_id
+      subtype: rolePermission
+      subtypeReference: true
+      type: array
+      typeReference: false
+  repr:
+  - name
+  - id
+  sort:
+  - name asc
+  sortable:
+  - name
+  unique:
+  - name
+role:
+  filters:
+    code: like
+    name: like
+  key: id
+  properties:
+    code:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: 100
+      filterMin: 3
+      filterOperator: like
+      required: true
+      type: str
+      typeReference: false
+    id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: true
+      type: uuid
+      typeReference: false
+    name:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: 100
+      filterMin: 3
+      filterOperator: like
+      required: true
+      type: str
+      typeReference: false
+    rolePermissions:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      subTypeReferenceViaProperty: role_id
+      subtype: rolePermission
+      subtypeReference: true
+      type: array
+      typeReference: false
+  repr:
+  - email
+  sort:
+  - name asc
+  sortable:
+  - name
+  unique:
+  - name
+rolePermission:
+  filters:
+    permission_id: in
+    role_id: in
+  key: id
+  properties:
+    id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: true
+      type: uuid
+      typeReference: false
+    permission:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: permission
+      typeReference: true
+      typeReferenceViaProperty: permission_id
+    permission_id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      constraintEntity: permission
+      constraintEntityOnDelete: d-cascade
+      constraintEntityOnUpdate: d-cascade
+      constraintEntityProperty: id
+      default: null
+      filterMax: null
+      filterMin: null
+      filterOperator: in
+      required: true
+      type: uuid
+      typeReference: false
+    role:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: role
+      typeReference: true
+      typeReferenceViaProperty: role_id
+    role_id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      constraintEntity: role
+      constraintEntityOnDelete: d-cascade
+      constraintEntityOnUpdate: d-cascade
+      constraintEntityProperty: id
+      default: null
+      filterMax: null
+      filterMin: null
+      filterOperator: in
+      required: true
+      type: uuid
+      typeReference: false
+  repr:
+  - permission.name
+  sort:
+  - role.name asc
+  - permission.name asc
+  sortable:
+  - role.name
+  - permission.name
+  unique:
+  - role_id
+  - permission_id
+sale:
+  autokey: true
+  autonumber: number
+  constraints:
+  - op: gte
+    property: due_date
+    value: $date
+  filters:
+    account_id: in
+    customer_id: in
+    date: bt
+    number: like
+    reference_date: bt
+  key: id
+  properties:
+    account:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: account
+      typeReference: true
+      typeReferenceViaProperty: account_id
+    account_id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      constraintEntity: account
+      constraintEntityOnDelete: d-cascade
+      constraintEntityOnUpdate: d-cascade
+      constraintEntityProperty: id
+      default: null
+      filterMax: null
+      filterMin: null
+      filterOperator: in
+      required: true
+      type: uuid
+      typeReference: false
+    company:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: company
+      typeReference: true
+      typeReferenceViaProperty: company_id
+    company_id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      constraintEntity: company
+      constraintEntityOnDelete: d-cascade
+      constraintEntityOnUpdate: d-cascade
+      constraintEntityProperty: id
+      default: null
+      required: true
+      type: uuid
+      typeReference: false
+    confirmed:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: true
+      type: bool
+      typeReference: false
+    currency:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: currency
+      typeReference: true
+      typeReferenceViaProperty: currency_id
+    currency_id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      constraintEntity: currency
+      constraintEntityOnDelete: d-cascade
+      constraintEntityOnUpdate: d-cascade
+      constraintEntityProperty: id
+      default: null
+      required: true
+      type: uuid
+      typeReference: false
+    customer:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: customer
+      typeReference: true
+      typeReferenceViaProperty: customer_id
+    customer_id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      constraintEntity: customer
+      constraintEntityOnDelete: d-cascade
+      constraintEntityOnUpdate: d-cascade
+      constraintEntityProperty: id
+      default: null
+      filterMax: null
+      filterMin: null
+      filterOperator: in
+      required: true
+      type: uuid
+      typeReference: false
+    date:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: false
+      default: null
+      filterMax: null
+      filterMin: null
+      filterOperator: bt
+      required: true
+      type: date
+      typeReference: false
+    due_date:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      minimum: $date
+      required: false
+      type: date
+      typeReference: false
+    id:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: null
+      required: false
+      type: uuid
+      typeReference: false
+    items:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      subTypeReferenceViaProperty: sale_id
+      subtype: saleItem
+      subtypeReference: true
+      type: array
+      typeReference: false
+    number:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: null
+      filterMax: null
+      filterMin: null
+      filterOperator: like
+      required: false
+      type: int
+      typeReference: false
+    place:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: str
+      typeReference: false
+    reference:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: str
+      typeReference: false
+    reference_date:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: null
+      filterMin: null
+      filterOperator: bt
+      required: false
+      type: date
+      typeReference: false
+    total:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: '0'
+      required: false
+      type: float
+      typeReference: false
+    totalItems:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: '0'
+      required: false
+      type: int
+      typeReference: false
+  repr:
+  - number
+  - customer.name
+  - date
+  sort:
+  - number desc
+  sortable:
+  - number
+  - date
+  - customer.name
+  unique:
+  - number
+saleItem:
+  autokey: true
+  constraints:
+  - op: gt
+    property: quantity
+    value: 0
+  - op: gte
+    property: price
+    value: 0
+  filters:
+    item_id: in
+    sale_id: in
+  key: id
+  properties:
+    description:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: str
+      typeReference: false
+    id:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: null
+      required: false
+      type: uuid
+      typeReference: false
+    item:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: item
+      typeReference: true
+      typeReferenceViaProperty: item_id
+    item_id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      constraintEntity: item
+      constraintEntityOnDelete: d-cascade
+      constraintEntityOnUpdate: d-cascade
+      constraintEntityProperty: id
+      default: null
+      filterMax: null
+      filterMin: null
+      filterOperator: in
+      required: true
+      type: uuid
+      typeReference: false
+    price:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      minimum: 0
+      required: true
+      type: float
+      typeReference: false
+    quantity:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      minimum: 1
+      required: true
+      type: int
+      typeReference: false
+    sale:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: sale
+      typeReference: true
+      typeReferenceViaProperty: sale_id
+    sale_id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      constraintEntity: sale
+      constraintEntityOnDelete: d-cascade
+      constraintEntityOnUpdate: d-cascade
+      constraintEntityProperty: id
+      default: null
+      filterMax: null
+      filterMin: null
+      filterOperator: in
+      required: true
+      type: uuid
+      typeReference: false
+    total:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: null
+      required: false
+      type: float
+      typeReference: false
+  repr:
+  - item.name
+  - quantity
+  - price
+  - total
+  sort:
+  - item.name
+  sortable:
+  - item.name
+  triggers:
+  - actions:
+    - properties:
+        total: quantity * price
+      target: $self
+      type: update
+    - properties:
+        total: $sum:$self.total:sale_id:id
+        totalItems: $count:$self.id:sale_id:id
+      target: sale
+      type: update
+      where:
+      - op: e
+        property: id
+        value: $self.sale_id
+    description: after create or update, set the saleItem.total then set sale.total
+      to the sum
+    event:
+    - insert
+    - update
+    name: update_total
+    type: after
+  unique:
+  - sale_id
+  - item_id
+user:
+  autokey: true
+  constraints:
+  - op: gte
+    property: name
+    value: 3
+  filters:
+    email: like
+    name: like
+  key: id
+  properties:
+    email:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: 100
+      filterMin: 3
+      filterOperator: like
+      format: email
+      required: true
+      type: str
+      typeReference: false
+    id:
+      allowCreate: false
+      allowRead: true
+      allowUpdate: false
+      default: null
+      required: false
+      type: uuid
+      typeReference: false
+    login:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      required: false
+      type: login
+      typeReference: true
+      typeReferenceViaProperty: login_id
+    login_id:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      constraintEntity: login
+      constraintEntityOnDelete: d-cascade
+      constraintEntityOnUpdate: d-cascade
+      constraintEntityProperty: id
+      default: null
+      required: true
+      type: uuid
+      typeReference: false
+    name:
+      allowCreate: true
+      allowRead: true
+      allowUpdate: true
+      default: null
+      filterMax: 100
+      filterMin: 3
+      filterOperator: like
+      minimum: 3
+      required: true
+      type: str
+      typeReference: false
+  repr:
+  - name
+  - email
+  sort:
+  - name asc
+  sortable:
+  - name
+  - email

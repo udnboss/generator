@@ -67,7 +67,8 @@ interfaces:
     sortable: [name]
     repr: [email]
     filters:
-      name: like
+      name: like 3 100
+      code: like 3 100
     properties:
       id: uuid
       code:
@@ -87,6 +88,7 @@ interfaces:
         value: [READ, CREATE, UPDATE, DELETE, EXECUTE]
     filters:
       name: like 3 100
+      code: like 3 100
       entity: in
       action: in
     properties:
@@ -104,6 +106,9 @@ interfaces:
     sort: [role.name asc, permission.name asc]
     sortable: [role.name, permission.name]
     repr: [permission.name]
+    filters:
+      role_id: in
+      permission_id: in
     properties:
       id: uuid
       role_id: uuid > role.id
@@ -121,16 +126,16 @@ interfaces:
     repr: [label] 
     filters:
       label: like 3 100
-      bank_name: like 3 100
+      bank_name: like 3 100     
     properties:
       id: uuid
-      label:
-      bank_name:
-      bank_address:
-      bank_swift:
-      account_name:
-      account_iban:
-      account_address:
+      label: str(3,100)
+      bank_name: str(3,100)
+      bank_address: str(3,100)
+      bank_swift: str(3,100)
+      account_name: str(3,100)
+      account_iban: str(3,100)
+      account_address: str(3,200)
 
   category:
     key: id
@@ -277,13 +282,16 @@ interfaces:
         op: gte
         value: 0
     repr: [item.name, quantity, price, total]
+    filters:
+      sale_id: in
+      item_id: in
     properties:
       id: uuid
       sale_id: uuid > sale.id
       item_id: uuid > item.id
       description?:
-      quantity: int
-      price: float
+      quantity: int(1)
+      price: float(0)
       total!*?: float
 
       sale?: sale @sale_id

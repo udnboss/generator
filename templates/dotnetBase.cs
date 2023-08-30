@@ -254,7 +254,7 @@ public class QueryResult<Q, T>
     public int Total { get; set; }
     public Q Query { get; set; }
 
-    public List<T> Result { get; set; }
+    public IEnumerable<T> Result { get; set; }
 }
 
 #pragma warning disable CS8604

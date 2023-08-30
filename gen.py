@@ -22,7 +22,8 @@ with open(gensource, 'r', encoding='utf-8') as f:
 
 if gentype == 'test':
     entities = parseEntities(gensource)
-    print(yaml.dump(entities))
+    with open('output/test.yml', 'w', encoding='utf-8') as f:
+        f.write(yaml.dump(entities))
 
 if gentype == 'docs':
     entities = parseEntities(gensource)

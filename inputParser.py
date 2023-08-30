@@ -1,4 +1,5 @@
 
+import re
 import yaml
 
 BASE_DATATYPES = 'str uuid bool int float date datetime time'.split(' ')
@@ -79,7 +80,7 @@ def parseEntities(file:str):
                     
                 if metadata is None:
                     propertyType = DEFAULT_DATATYPE
-                    print(property, propertyName, metadata)
+                    # print(property, propertyName, metadata)
                 elif isinstance(metadata, str):                  
                     if metadata.split('@')[0].strip().endswith('[]'):
                         propertyType = 'array'
@@ -120,6 +121,14 @@ def parseEntities(file:str):
                                 propertyType, propertyFormat = metadata.split('|')
                             else:
                                 propertyType = metadata.split('@')[0].strip()
+
+                            if propertyType.endswith(")"):
+                                parts = re.findall(r'\d+', propertyType)
+                                if len(parts) > 0:
+                                    minimum = int(parts[0])
+                                if len(parts) > 1:
+                                    maximum = int(parts[1])
+                                propertyType = propertyType.split('(')[0]
                             
                             isTypeReference = propertyType in VALID_ENTITIY_TYPES
 
@@ -165,13 +174,13 @@ def parseEntities(file:str):
                     for constraint in entity['constraints']:
                         if constraint['property'] == propertyName:
                             if constraint['op'] == 'gt':
-                                prop['minimum'] = constraint['value'] + 1
+                                minimum = constraint['value'] + 1
                             elif constraint['op'] == 'gte':
-                                prop['minimum'] = constraint['value']
+                                minimum = constraint['value']
                             elif constraint['op'] == 'lt':
-                                prop['maximum'] = constraint['value'] + 1
+                                maximum = constraint['value'] + 1
                             elif constraint['op'] == 'lte':
-                                prop['maximum'] = constraint['value']
+                                maximum = constraint['value']
 
 
                 prop['typeReference'] = isTypeReference
@@ -209,6 +218,11 @@ def parseEntities(file:str):
                 prop['allowRead'] = allowRead
                 prop['allowCreate'] = allowCreate
                 prop['allowUpdate'] = allowUpdate
+
+                if minimum is not None:
+                    prop['minimum'] = minimum
+                if maximum is not None:
+                    prop['maximum'] = maximum
 
                 entities[entityName]['properties'][propertyName] = prop
                 # print(prop)

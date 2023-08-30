@@ -65,7 +65,7 @@ def toPascalCase(s: str) -> str:
 
 
 
-def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str, str, str]:
+def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tuple[str,str, str, str]:
     TYPE_OPERATORS = { #str uuid bool int float date datetime time
         'str': 'like',
         'uuid': 'in',
@@ -78,6 +78,7 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str, str
     }
     
     def getClass(schemaName:str):
+        includeRefProps = schemaName in ['store', 'view']
         suffix = 'View' if schemaName == 'view' else ''
         prefix = ""
         interface = []
@@ -101,6 +102,12 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str, str
             tsType = OPENAPI_TYPE_MAP[type] if type in OPENAPI_TYPE_MAP else type
 
             p = entity['properties'][prop]   
+
+            minimum = None
+            maximum = None
+
+            if not includeRefProps and (p['typeReference'] or p['type'] == 'array'):
+                continue
 
             if p['type'] == 'uuid':
                 tsType = 'Guid'
@@ -127,15 +134,45 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str, str
             if p['typeReference']:
                 viaPropertyName = toPascalCase(p['typeReferenceViaProperty'])
                 propAttrs.append(f'[ForeignKey("{viaPropertyName}")]')
-            if 'format' in p and p['format'] == 'email':
-                propAttrs.append("[EmailAddress]")
 
-            if p['type'] == 'array':
+            if 'format' in p and p['format'] == 'email' and schemaName != 'view':
+                propAttrs.append("[EmailAddress]")
+           
+            if 'minimum' in p:
+                minimum = p['minimum']                
+
+            if 'maximum' in p:
+                maximum = p['maximum']
+
+            if schemaName != 'view':
+                if p['type'] == 'str':
+                    if minimum is not None:
+                        propAttrs.append(f'[MinLength({minimum})]')
+                    if maximum is not None:
+                        propAttrs.append(f'[MaxLength({maximum})]')
+
+                if p['type'] == 'int':
+                    if minimum is None:
+                        minimum = 'int.MinValue' 
+                    if maximum is None:
+                        maximum = 'int.MaxValue' 
+                    propAttrs.append(f'[Range({minimum}, {maximum})]')
+
+                if p['type'] == 'float':
+                    if minimum is None:
+                        minimum = 'double.MinValue' 
+                    if maximum is None:
+                        maximum = 'double.MaxValue' 
+                    propAttrs.append(f'[Range({minimum}, {maximum})]')
+
+            if  p['type'] == 'array':
                 subtype = p['subtype'] 
                 if p['subtypeReference']:
                     subtype = toPascalCase(subtype)
                     propAttrs.append(f'[InverseProperty("{toPascalCase(entityName)}")]')
-                tsType = f"ICollection<{subtype}>"
+                tsType = f"IEnumerable<{subtype}{suffix}>"
+                if schemaName == 'view':
+                    tsType = f"QueryResult<{subtype}Query, {subtype}{suffix}>"
 
             if setDefault:
                 default = f" = {default};"
@@ -211,16 +248,39 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str, str
         
         return ""
     
-    def getViewProjection():
+    def getViewProjection(entity:dict, varName:str = 'x', prefix:str = "", maxDepth:int = 2, indent = 14):
+        indent += 4
+        maxDepth = maxDepth - 1
         props = []
         prop:str
         for prop, attrs in entity['properties'].items():
-            if not attrs['allowRead'] or attrs['typeReference'] or attrs['type'] == 'array':
+            if not attrs['allowRead']:
                 continue
             propName = toPascalCase(prop)
-            props.append(f'{propName} = x.{propName}')
+            propStr = f'{propName} = {varName}{prefix}.{propName}'
+            if maxDepth > 0:
+                if attrs['typeReference']:
+                    subPrefix = f".{propName}!"
+                    subType = attrs['type']
+                    subEntity = entities[subType]
+                    subViewProps = getViewProjection(subEntity, varName, subPrefix, maxDepth, indent)
+                    propStr = f'{propName} = new {propName}View {{ {subViewProps} }}'
+                elif attrs['type'] == 'array' and attrs['subtypeReference']:
+                    subType = attrs['subtype']
+                    subEntity = entities[subType]
+                    subTypeName = toPascalCase(subType)
+                    subPrefix = "" #f".{subTypeName}!"
+                    subVarName = f'y{maxDepth}'
+                    subViewProps = getViewProjection(subEntity, subVarName, subPrefix, maxDepth, indent)
+                    subTypeReferenceViaProperty = attrs['subTypeReferenceViaProperty']
+                    subTypeReferenceViaPropertyName = toPascalCase(subTypeReferenceViaProperty)
+                    propStr = f'{propName} = new QueryResult<{subTypeName}Query, {subTypeName}View>(new {subTypeName}Query() {{ _Size = 10, _Page = 1, {subTypeReferenceViaPropertyName} = {varName}.Id }}) {{ Result = {varName}.{propName}!.Select({subVarName} => new {subTypeName}View {{ {subViewProps} }}).Take(10) }}'
+            elif attrs['typeReference'] or attrs['type'] == 'array':
+                continue
 
-        return ", ".join(props)
+            props.append(propStr)
+
+        return f",\n{' '*indent}".join(props)
 
     def getCreateProjection():
         props = []
@@ -301,7 +361,7 @@ def genArtifacts(entityName:str, entity:dict, schema:dict) -> tuple[str,str, str
         "__EntityViewClass__": viewClass,
         "__EntityQueryClass__": getQueryClass(), 
 
-        "__EntityViewProjection__": getViewProjection(),
+        "__EntityViewProjection__": getViewProjection(entity),
         "__EntityCreateProjection__": getCreateProjection(),
         
 
@@ -335,7 +395,7 @@ def _genCode(entities:dict, openApiSchemas:dict):
             'view': openApiSchemas[f'{entityName}View'],
         }
 
-        routers[entityName], businesses[entityName], classes[entityName] = genArtifacts(entityName, entity, schema)
+        routers[entityName], businesses[entityName], classes[entityName] = genArtifacts(entityName, entity, schema, entities)
 
     def getContextEntities():
         contextEntities = []
@@ -362,15 +422,15 @@ def createFiles(scriptsOutputDir:str, entities:dict, openApiSchemas:dict):
         os.mkdir(f'{scriptsOutputDir}/Business')
 
     for entity, script in classes.items():
-        with open(f'{scriptsOutputDir}/Models/{entity.capitalize()}Class.cs', 'w', encoding='utf-8') as f:
+        with open(f'{scriptsOutputDir}/Models/{toPascalCase(entity)}Class.cs', 'w', encoding='utf-8') as f:
             f.write(script)
 
     for entity, script in routers.items():
-        with open(f'{scriptsOutputDir}/Controllers/{entity.capitalize()}Controller.cs', 'w', encoding='utf-8') as f:
+        with open(f'{scriptsOutputDir}/Controllers/{toPascalCase(entity)}Controller.cs', 'w', encoding='utf-8') as f:
             f.write(script)
     
     for entity, script in businesses.items():
-        with open(f'{scriptsOutputDir}/Business/{entity.capitalize()}Business.cs', 'w', encoding='utf-8') as f:
+        with open(f'{scriptsOutputDir}/Business/{toPascalCase(entity)}Business.cs', 'w', encoding='utf-8') as f:
             f.write(script)
     
     with open(f'{scriptsOutputDir}/Business/Base.cs', 'w', encoding='utf-8') as f:
