@@ -9,6 +9,20 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
+public class MinLengthIfNotNullAttribute : MinLengthAttribute
+{
+    public MinLengthIfNotNullAttribute(int length) : base(length) { }
+
+    public override bool IsValid(object? value)
+    {
+        // If the value is null, return true (valid)
+        if (string.IsNullOrWhiteSpace(value as string)) return true;
+
+        // Otherwise, use the base class logic
+        return base.IsValid(value);
+    }
+}
+
 public enum ErrorCodes
 {
     EntityNotFound,
