@@ -321,23 +321,34 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
                     if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Values != null) 
                     {{
                         var v = c.Values.Cast<Guid?>().ToList();
-                        q = q.Where(x => x.{name} != null && v.Contains(x.{name}));
+                        q = q.Where(x => v.Contains(x.{name}));
                     }}"""
             elif type == 'int':
                 cond = f"""
                     if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
                     {{
                         var v = (int)c.Value;
-                        var v2 = (int)c.Value2;
                         q = q.Where(x => x.{name} >= v && x.{name} <= v2);
+                        
+                        if (c.Value2 is not null)
+                        {{
+                            var v2 = (int)c.Value2;
+                            q = q.Where(x => x.{name} <= v2);
+                        }}
+                                                
                     }}"""
             elif type == 'decimal':
                 cond = f"""
                     if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
                     {{
                         var v = (decimal)c.Value;
-                        var v2 = (decimal)c.Value2;
                         q = q.Where(x => x.{name} >= v && x.{name} <= v2);
+                        
+                        if (c.Value2 is not null)
+                        {{
+                            var v2 = (decimal)c.Value2;
+                            q = q.Where(x => x.{name} <= v2);
+                        }}
                     }}"""
             elif type == 'bool':
                 cond = f"""
@@ -351,8 +362,14 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
                     if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
                     {{
                         var v = (DateTime)c.Value;
-                        var v2 = (DateTime)c.Value2;
                         q = q.Where(x => x.{name} >= v && x.{name} <= v2);
+                                                
+                        if (c.Value2 is not null)
+                        {{
+                            var v2 = (DateTime)c.Value2;
+                            q = q.Where(x => x.{name} <= v2);
+                        }}
+                        
                     }}"""
             return cond
                
