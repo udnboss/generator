@@ -65,7 +65,7 @@ def toPascalCase(s: str) -> str:
 
 
 
-def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tuple[str,str, str, str]:
+def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tuple[str,str, str]:
     TYPE_OPERATORS = { #str uuid bool int float date datetime time
         'str': 'like',
         'uuid': 'in',
@@ -282,7 +282,7 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
                     subViewProps = getViewProjection(subEntity, subVarName, subPrefix, maxDepth, indent)
                     subTypeReferenceViaProperty = attrs['subTypeReferenceViaProperty']
                     subTypeReferenceViaPropertyName = toPascalCase(subTypeReferenceViaProperty)
-                    propStr = f'{propName} = new QueryResult<{subTypeName}Query, {subTypeName}View>(new {subTypeName}Query() {{ _Size = 10, _Page = 1, {subTypeReferenceViaPropertyName} = {varName}.Id }}) {{ Result = {varName}.{propName}!.Select({subVarName} => new {subTypeName}View {{ {subViewProps} }}).Take(10) }}'
+                    propStr = f'{propName} = new QueryResult<{subTypeName}Query, {subTypeName}View>(new {subTypeName}Query() {{ _Size = 10, _Page = 1, {subTypeReferenceViaPropertyName} = new List<Guid?>() {{ {varName}.Id }} }}) {{ Result = {varName}.{propName}!.Select({subVarName} => new {subTypeName}View {{ {subViewProps} }}).Take(10) }}'
             elif attrs['typeReference'] or attrs['type'] == 'array':
                 continue
 
@@ -389,6 +389,39 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
             conds.append(sortCond)
         return "\n\n".join(conds)
     
+    def getModifyConditions():
+        METHOD_MAP = {
+            'string': 'GetString',
+            'bool': 'GetBoolean',
+            'decimal': 'GetDecimal',
+            'int': 'GetInt32',
+            'Guid': 'GetGuid',
+            'DateTime': 'GetDateTime'
+        }
+        conds = []
+        for prop, metadata in entity["properties"].items():
+            if prop == 'id':
+                continue
+            if not metadata['allowUpdate'] or metadata['type'] not in TYPE_MAP:
+                continue            
+            propName = toPascalCase(prop)
+            method = METHOD_MAP[TYPE_MAP[metadata['type']]]
+            conds.append(f'else if (propName == "{prop}") existing.{propName} = prop.Value.{method}()!;')
+        
+        return "\n            ".join(conds)
+    
+    def getUpdateConditions():
+        conds = []
+        for prop, metadata in entity["properties"].items():
+            if prop == 'id':
+                continue
+            if not metadata['allowUpdate'] or metadata['type'] not in TYPE_MAP:
+                continue
+            propName = toPascalCase(prop)
+            conds.append(f'existing.{propName} = entity.{propName};')
+        
+        return "\n        ".join(conds)
+
     replacements = {
 
         "__EntityName__": entityName,
@@ -400,6 +433,8 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
 
         "__EntityDataQueryConditions__": getDataQueryConditions(),
         "__EntityClientQueryConditions__": getClientQueryConditions(),
+        "__EntityModifyConditions__": getModifyConditions(),
+        "__EntityUpdateConditions__": getUpdateConditions(),
 
         "__EntityClass__": storeClass,
         "__EntityCreateClass__": createClass,
@@ -411,19 +446,20 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
         "__EntityViewProjection__": getViewProjection(entity),
         "__EntityCreateProjection__": getCreateProjection(),
         
+        
 
     }
     
     classesScript = CLASSES_TEMPLATE
     routerScript = ROUTER_TEMPLATE
     businessScript = BUSINESS_TEMPLATE
-    contextScript = CONTEXT_TEMPLATE
+
 
     for find, repl in replacements.items():
         classesScript = classesScript.replace(find, repl)
         routerScript = routerScript.replace(find, repl)
         businessScript = businessScript.replace(find, repl)
-        contextScript = contextScript.replace(find, repl)
+        
 
     return routerScript, businessScript, classesScript
 

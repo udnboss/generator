@@ -78,18 +78,7 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
             throw new KeyNotFoundException($"Could not find an existing {entityName} entity with the given id.");
         }
 
-        var inputProps = typeof(__EntityNameCapitalized__Update).GetProperties();
-        var outputProps = typeof(__EntityNameCapitalized__).GetProperties();
-
-        foreach (var prop in inputProps)
-        {
-            if (prop.Name == "Id") continue;
-            var match = outputProps.FirstOrDefault(p => p.Name == prop.Name);
-            if (match is not null)
-            {
-                match.SetValue(existing, prop.GetValue(entity));
-            }
-        }
+        __EntityUpdateConditions__
 
         Db.SaveChanges();
         var updated = GetById(id);
@@ -104,18 +93,12 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         {
             throw new KeyNotFoundException($"Could not find an existing {entityName} entity with the given id.");
         }
-      
-        var validProps = typeof(__EntityNameCapitalized__Modify).GetProperties();
-        var outputProps = typeof(__EntityNameCapitalized__).GetProperties();
 
         foreach (JsonProperty prop in entity.EnumerateObject())
         {
-            if (prop.Name.ToLower() == "id") continue;
-            var match = outputProps.FirstOrDefault(p => p.Name.ToLower() == prop.Name.ToLower());
-            if (match is not null)
-            {
-                match.SetValue(existing, prop.Value.GetString());//TODO: proper mapping of type
-            }
+            var propName = prop.Name.ToLower();
+            if (propName == "id") continue;
+            __EntityModifyConditions__
         }
 
         Db.SaveChanges();
