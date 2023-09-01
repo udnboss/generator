@@ -308,69 +308,60 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
         def getFilterSyntax(name, type, op):
             cond = ""
             if type == 'string':
-                cond = f"""
-                    if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
-                    {{
-                        var v = c.Value.ToString();
-                        if(!string.IsNullOrWhiteSpace(v))
-                            q = q.Where(x => x.{name} != null && x.{name}.ToLower().Contains(v.ToLower()));
-                    }}"""
-            #TODO: other types int decimal bool DateTime
+                cond = f"""if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
+                {{
+                    var v = c.Value.ToString();
+                    if(!string.IsNullOrWhiteSpace(v))
+                        q = q.Where(x => x.{name} != null && x.{name}.ToLower().Contains(v.ToLower()));
+                }}"""
             elif type == 'Guid':
-                cond = f"""
-                    if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Values != null) 
-                    {{
-                        var v = c.Values.Cast<Guid?>().ToList();
-                        q = q.Where(x => v.Contains(x.{name}));
-                    }}"""
+                cond = f"""if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Values != null) 
+                {{
+                    var v = c.Values.Cast<Guid?>().ToList();
+                    q = q.Where(x => v.Contains(x.{name}));
+                }}"""
             elif type == 'int':
-                cond = f"""
-                    if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
+                cond = f"""if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
+                {{
+                    var v = (int)c.Value;
+                    q = q.Where(x => x.{name} >= v);
+                    
+                    if (c.Value2 is not null)
                     {{
-                        var v = (int)c.Value;
-                        q = q.Where(x => x.{name} >= v && x.{name} <= v2);
-                        
-                        if (c.Value2 is not null)
-                        {{
-                            var v2 = (int)c.Value2;
-                            q = q.Where(x => x.{name} <= v2);
-                        }}
-                                                
-                    }}"""
+                        var v2 = (int)c.Value2;
+                        q = q.Where(x => x.{name} <= v2);
+                    }}                                            
+                }}"""
             elif type == 'decimal':
-                cond = f"""
-                    if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
+                cond = f"""if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
+                {{
+                    var v = (decimal)c.Value;
+                    q = q.Where(x => x.{name} >= v);
+                    
+                    if (c.Value2 is not null)
                     {{
-                        var v = (decimal)c.Value;
-                        q = q.Where(x => x.{name} >= v && x.{name} <= v2);
-                        
-                        if (c.Value2 is not null)
-                        {{
-                            var v2 = (decimal)c.Value2;
-                            q = q.Where(x => x.{name} <= v2);
-                        }}
-                    }}"""
+                        var v2 = (decimal)c.Value2;
+                        q = q.Where(x => x.{name} <= v2);
+                    }}
+                }}"""
             elif type == 'bool':
-                cond = f"""
-                    if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
-                    {{
-                        var v = (bool)c.Value;
-                        q = q.Where(x => x.{name} == v);
-                    }}"""
+                cond = f"""if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
+                {{
+                    var v = (bool)c.Value;
+                    q = q.Where(x => x.{name} == v);
+                }}"""
             elif type == 'DateTime':
-                cond = f"""
-                    if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
+                cond = f"""if (c.Column == "{name}" && c.Operator == Operators.{op} && c.Value != null) 
+                {{
+                    var v = (DateTime)c.Value;
+                    q = q.Where(x => x.{name} >= v);
+                                            
+                    if (c.Value2 is not null)
                     {{
-                        var v = (DateTime)c.Value;
-                        q = q.Where(x => x.{name} >= v && x.{name} <= v2);
-                                                
-                        if (c.Value2 is not null)
-                        {{
-                            var v2 = (DateTime)c.Value2;
-                            q = q.Where(x => x.{name} <= v2);
-                        }}
-                        
-                    }}"""
+                        var v2 = (DateTime)c.Value2;
+                        q = q.Where(x => x.{name} <= v2);
+                    }}                    
+                }}"""
             return cond
                
         conditions = []
@@ -384,7 +375,8 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
             if cond != "":
                 conditions.append(cond)
         
-        return "\n\n".join(conditions)
+        indent = " "*16
+        return f"\n{indent}else ".join(conditions)
     
     def getSortConditions():
         conds = []
