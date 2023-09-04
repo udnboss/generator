@@ -84,11 +84,17 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
         interface = []
         prop:str
         for prop, attrs in schema[schemaName]['properties'].items():
-            if prop == "id":
+
+            if prop == 'id' and schemaName != 'store':
                 continue
+            
             propName = toPascalCase(prop)
             required = 'required' in entity and entity['required']
             optional = '?' if 'required' not in schema[schemaName] or prop not in schema[schemaName]['required'] else ''
+
+            if prop == 'id':
+                optional = ''
+
             root:str
             if '$ref' in attrs:                
                 root = attrs["$ref"].split('/')[-1].replace('View', '')
@@ -181,7 +187,20 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
             else:
                 default = ""
 
-            interface.append(f'{"".join(propAttrs)} public {tsType}{optional} {propName} {{ get; set; }}{default}')
+            override = ""
+            if schemaName == 'store' and entityName == 'login':
+                override = "override "
+            
+            # if schemaName != 'store' and prop == 'id':
+            #     override = "override "
+
+            if prop == 'id':
+                propAttrs = ['[Key]','[Column("id")]','[JsonPropertyName("id")]','[DatabaseGenerated(DatabaseGeneratedOption.Identity)]']
+
+            if prop == 'lockoutEnd':
+                tsType = 'DateTimeOffset'
+
+            interface.append(f'{"".join(propAttrs)} public {override}{tsType}{optional} {propName} {{ get; set; }}{default}')
         return '\n    '.join(interface)
 
     storeClass = getClass('store')
@@ -415,6 +434,8 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
                 continue            
             propName = toPascalCase(prop)
             method = METHOD_MAP[TYPE_MAP[metadata['type']]]
+            if prop == 'lockoutEnd': 
+                method = 'GetDateTimeOffset'
             conds.append(f'else if (propName == "{prop}") existing.{propName} = prop.Value.{method}()!;')
         
         return "\n            ".join(conds)
@@ -436,6 +457,8 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
         "__EntityName__": entityName,
         "__EntityNameCapitalized__": toPascalCase(entityName),
         "__EntityNameCapitalizedPlural__": pluralize(toPascalCase(entityName)),
+
+        "__EntityExtends__": "IdentityUser<Guid>," if entityName == 'login' else '',
 
         "__EntityWhereConditions__": getWhereConditions(),
         "__EntitySortConditions__": getSortConditions(),
@@ -513,7 +536,7 @@ def _genCode(entities:dict, openApiSchemas:dict):
             entityName = toPascalCase(e)
             entityNameUpper = e.upper()
             for o in OPERATIONS:
-                perms.append(f'case AppPermission.{entityName}{o}: return "{entityNameUpper}:{o.upper()}";')
+                perms.append(f'case AppPermission.{entityName}{o}: return "ENTITY:{entityNameUpper}:{o.upper()}";')
         return '\n            '.join(perms)
     
     context = CONTEXT_TEMPLATE

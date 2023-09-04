@@ -247,14 +247,14 @@ public record IRecord
     public Guid Id { get; set; }
 }
 
-public class Entity
+public interface IEntity
 {
     [Key]
     [Column("id")]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 
-    public Entity() { }
+    // public Entity() { }
 }
 
 public class QueryResult<Q, T>
@@ -274,7 +274,7 @@ public class QueryResult<Q, T>
 #pragma warning disable CS8604
 
 public abstract class Business<TEntity, TEntityView, TEntityUpdate, TEntityModify, TEntityCreate, TEntityClientQuery>
-    where TEntity : Entity, new()
+    where TEntity : IEntity, new()
     where TEntityView : IRecord, new()
     where TEntityUpdate : IRecord
     where TEntityModify : IRecord
@@ -344,185 +344,18 @@ public abstract class Business<TEntity, TEntityView, TEntityUpdate, TEntityModif
         return clientQuery;
     }
 
-    public virtual TEntityView GetById(Guid id, int maxDepth = 2)
-    {
-        var query = Db.Set<TEntity>().AsQueryable();
-        var props = typeof(TEntity).GetProperties();
-        var entityType = Db.Model.FindEntityType(typeof(TEntity));
-        if (entityType is null)
-        {
-            throw new Exception($"Not entity type found matching {typeof(TEntity)}");
-        }
+    public abstract TEntityView GetById(Guid id, int maxDepth = 2);
 
-        if (maxDepth > 0)
-        {
-            foreach (var prop in props)
-            {
-                // Check if the property is a navigation property
-                var navigation = entityType.FindNavigation(prop.Name);
-                if (navigation != null)
-                {
-                    // Include the navigation property in the query
-                    query = query.Include(prop.Name);
+    public abstract TEntityView Create(TEntityCreate entity);
+    public abstract TEntityView Update(Guid id, TEntityUpdate entity);
 
-                    if (maxDepth > 1)
-                    {
-                        // Check if the navigation property is an entity type
-                        var relatedEntityType = navigation.ForeignKey.PrincipalEntityType;
-                        if (relatedEntityType != null)
-                        {
-                            // Iterate over the navigation properties of the related entity type
-                            foreach (var relatedNavigation in relatedEntityType.GetNavigations())
-                            {
-                                // Include the related navigation property in the query
-                                query = query.Include($"{prop.Name}.{relatedNavigation.Name}");
-                            }
-                        }
-                    }
-                }
+    public abstract TEntityView Modify(Guid id, JsonElement entity);
 
-                // Check if the property is a collection navigation property
-                if (typeof(IEnumerable).IsAssignableFrom(prop.PropertyType) &&
-                    prop.PropertyType.IsGenericType &&
-                    Db.Model.FindEntityType(prop.PropertyType.GetGenericArguments()[0]) != null)
-                {
-                    // Include the navigation property in the query
-                    query = query.Include(prop.Name);
-                }
-            }
-        }
+    public abstract TEntityView Delete(Guid id);
 
-        var PropsStr = string.Join(", ", props.Select(p => p.Name).ToList());
+    public abstract QueryResult<ClientQuery, TEntityView> GetAll(int maxDepth = 2);
 
-        var entity = query.Select(x => new TEntityView { }).FirstOrDefault(x => x.Id == id);
-        if (entity == null)
-        {
-            throw new KeyNotFoundException($"No {entityName} entity found for given {id}");
-        }
-
-        return entity;
-    }
-
-    public virtual TEntityView Create(TEntityCreate entity)
-    {
-        var dbSet = Db.Set<TEntity>();
-        var dbEntity = new TEntity
-        {
-            Id = new Guid()
-        };
-        dbSet.Add(dbEntity);
-        Db.SaveChanges();
-
-        return GetById(dbEntity.Id);
-    }
-
-    public virtual TEntityView Update(Guid id, TEntityUpdate entity)
-    {
-        var dbSet = Db.Set<TEntity>();
-        var existing = dbSet.Find(id);
-        if (existing is null)
-        {
-            throw new KeyNotFoundException($"Could not find an existing {entityName} entity with the given id.");
-        }
-
-        var inputProps = typeof(TEntityUpdate).GetProperties();
-        var outputProps = typeof(TEntity).GetProperties();
-
-        foreach (var prop in inputProps)
-        {
-            if (prop.Name == "Id") continue;
-            var match = outputProps.FirstOrDefault(p => p.Name == prop.Name);
-            if (match is not null)
-            {
-                match.SetValue(existing, prop.GetValue(entity));
-            }
-        }
-
-        Db.SaveChanges();
-        var updated = GetById(id);
-        return updated;
-    }
-
-    public virtual TEntityView Modify(Guid id, JsonElement entity)
-    {
-        var dbSet = Db.Set<TEntity>();
-        var existing = dbSet.Find(id);
-        if (existing is null)
-        {
-            throw new KeyNotFoundException($"Could not find an existing {entityName} entity with the given id.");
-        }
-
-        var validProps = typeof(TEntityModify).GetProperties();
-        var outputProps = typeof(TEntity).GetProperties();
-
-        foreach (JsonProperty prop in entity.EnumerateObject())
-        {
-            if (prop.Name.ToLower() == "id") continue;
-            var match = outputProps.FirstOrDefault(p => p.Name.ToLower() == prop.Name.ToLower());
-            if (match is not null)
-            {
-                match.SetValue(existing, prop.Value.GetString());//TODO: proper mapping of type
-            }
-        }
-
-        Db.SaveChanges();
-        var updated = GetById(id);
-        return updated;
-    }
-
-    public virtual TEntityView Delete(Guid id)
-    {
-        var dbSet = Db.Set<TEntity>();
-        var existing = dbSet.Find(id);
-        if (existing is null)
-        {
-            throw new KeyNotFoundException($"Could not find an existing {entityName} entity with the given id.");
-        }
-        var beforeDelete = GetById(id);
-        dbSet.Remove(existing);
-        Db.SaveChanges();
-
-        return beforeDelete;
-    }
-
-    public virtual QueryResult<ClientQuery, TEntityView> GetAll(int maxDepth = 2)
-    {
-        return GetAll(new TEntityClientQuery(), new DataQuery(), maxDepth);
-    }
-
-    public virtual QueryResult<ClientQuery, TEntityView> GetAll(TEntityClientQuery clientQuery, DataQuery query, int maxDepth = 2)
-    {
-        var q = Db.Set<TEntity>().AsQueryable();
-
-        if (query.Offset > 0)
-        {
-            q = q.Skip(query.Offset);
-        }
-
-        if (query.Limit > 0)
-        {
-            q = q.Take(query.Limit);
-        }
-
-        if (query.Where.Count > 0)
-        {
-            var whereExpression = BuildWhereExpression<TEntity>(query.Where);
-            q = q.Where(whereExpression);
-        }
-
-        var sortedQ = OrderByProperties(q, query.Sort);
-        var data = sortedQ != null ? sortedQ.ToList() : q.ToList();
-        var dataView = data.Select(x => new TEntityView { }).ToList();
-
-        var result = new QueryResult<ClientQuery, TEntityView>(clientQuery)
-        {
-            Count = data.Count,
-            Result = dataView,
-            Total = data.Count
-        };
-
-        return result;
-    }
+    public abstract QueryResult<ClientQuery, TEntityView> GetAll(TEntityClientQuery clientQuery, DataQuery query, int maxDepth = 2);
 
     private IOrderedQueryable<TEntity>? OrderByProperties(IQueryable<TEntity> query, List<Sort> propertyNames)
     {

@@ -11,8 +11,8 @@ api:
 
 scripts:
   # outputDir: ./output/invoicing
-  # outputDir: D:/Dev/dotnet6/NotesApi
-  outputDir: I:/dev/dotnet6/NotesApi
+  outputDir: D:/Dev/dotnet6/NotesApi
+  # outputDir: I:/dev/dotnet6/NotesApi
   framework: webapi
   # outputDir: I:/dev/express/sales-api/src/api
   # framework: express #express|webapi|fastapi
@@ -29,10 +29,10 @@ interfaces:
   login:
     key: id
     autokey: true
-    unique: [email]
-    sort: [email asc]
-    sortable: [email]
-    repr: [email]
+    unique: [userName]
+    sort: [userName asc]
+    sortable: [userName]
+    repr: [userName]
     # security: [default] #default, bearer, key, oauth, or empty array
     filters:
       userName: like 3 100
@@ -41,7 +41,25 @@ interfaces:
       userName: str(3,100)|email
       normalizedUserName: str(3,256)
       passwordHash: str(8,512)|password
-      securityStamp: str(0,256)
+      securityStamp?: str(0,256)
+
+      accessFailedCount: int
+      concurrencyStamp?: str
+      email?: str
+      emailConfirmed: bool
+      # id:
+      lockoutEnabled: bool
+      lockoutEnd?: str
+      normalizedEmail?: str
+      # normalizedUserName:
+      # passwordHash:
+      phoneNumber?: str
+      phoneNumberConfirmed: bool
+      # securityStamp:
+      twoFactorEnabled: bool
+      # userName:
+
+
 
   user:
     key: id
@@ -49,19 +67,17 @@ interfaces:
     sort: [name asc]
     sortable: [name, email]
     repr: [name, email]
-    constraints: #check constraints
-      - property: name
-        op: gte #operators: e, ne, gt, gte, lt, lte, in, nin, bt, nbt
-        value: 3
+    unique: [login_id]
     filters:
       name: like 3 100
       email: like 3 100     
     properties:
       id: uuid
-      name: 
-      email: str|email
+      name: str(3,100)
+      email: str(3,100)|email
       login_id: uuid > login.id
       login?: login @login_id
+      userRoles?: userRole[] @user_id
 
   role:
     key: id
@@ -78,6 +94,24 @@ interfaces:
       name:
 
       rolePermissions?: rolePermission[] @role_id
+      roleUsers?: userRole[] @role_id
+
+  userRole:
+    key: id
+    unique: [user_id, role_id]
+    sort: [role.name asc]
+    sortable: [user.name, role.name]
+    repr: [role.name]
+    filters:
+      user_id: in
+      role_id: in
+    properties:
+      id: uuid
+      user_id: uuid > user.id
+      role_id: uuid > role.id
+
+      user?: user @user_id
+      role?: role @role_id
 
   permission:
     key: id
@@ -322,8 +356,9 @@ interfaces:
 data:
   login:
     id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
-    email: ['john@example.com','jane@example.com','mike@example.com','amy@example.com']
-    password: ['f515c100dc23c786bcc6ff791fb1c813b38ddcacd0f9546f1e1db0705f4f56e1','f515c100dc23c786bcc6ff791fb1c813b38ddcacd0f9546f1e1db0705f4f56e1','f515c100dc23c786bcc6ff791fb1c813b38ddcacd0f9546f1e1db0705f4f56e1','f515c100dc23c786bcc6ff791fb1c813b38ddcacd0f9546f1e1db0705f4f56e1'] #kjshgslkg
+    userName: ['john@example.com','jane@example.com','mike@example.com','amy@example.com']
+    normalizedUserName: ['john@example.com','jane@example.com','mike@example.com','amy@example.com']
+    passwordHash: ['f515c100dc23c786bcc6ff791fb1c813b38ddcacd0f9546f1e1db0705f4f56e1','f515c100dc23c786bcc6ff791fb1c813b38ddcacd0f9546f1e1db0705f4f56e1','f515c100dc23c786bcc6ff791fb1c813b38ddcacd0f9546f1e1db0705f4f56e1','f515c100dc23c786bcc6ff791fb1c813b38ddcacd0f9546f1e1db0705f4f56e1'] #kjshgslkg
 
   user:
     id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']
@@ -335,6 +370,11 @@ data:
     id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002']
     code: ['VIEW', 'CONTRIBUTE', 'ADMIN']
     name: ['Viewer', 'Contributor', 'Administrator']
+
+  userRole:
+    id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002']
+    user_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002']
+    role_id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002']
     
   account:
     id: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440003']

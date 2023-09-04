@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
@@ -64,4 +65,31 @@ public static class AppPermissionExtensions
                 throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
         }
     }
+}
+
+public enum AppRole
+{
+    Admin,
+    Contribute,
+    View
+}
+
+public static class AppRoleExtensions
+{
+    public static string GetCode(this AppRole appRole)
+    {
+        switch (appRole)
+        {    
+            case AppRole.Admin: return "ADMIN";         
+            case AppRole.Contribute: return "CONTRIBUTE";         
+            case AppRole.View: return "VIEW";         
+            default:
+                throw new ArgumentOutOfRangeException(nameof(appRole), appRole, null);
+        }
+    }
+}
+
+public class MyRole : IdentityRole<Guid> 
+{
+
 }

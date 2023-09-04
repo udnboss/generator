@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Identity;
 
 #pragma warning disable CS8618
 
 [Table("__EntityName__")]
-public class __EntityNameCapitalized__ : Entity
+public class __EntityNameCapitalized__ : __EntityExtends__ IEntity
 {
     __EntityClass__
 }

@@ -118,6 +118,11 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return beforeDelete;
     }
 
+    public override QueryResult<ClientQuery, __EntityNameCapitalized__View> GetAll(int maxDepth = 2)
+    {
+        return GetAll(new __EntityNameCapitalized__Query(), new DataQuery(), maxDepth);
+    }
+
     public override QueryResult<ClientQuery, __EntityNameCapitalized__View> GetAll(__EntityNameCapitalized__Query clientQuery, DataQuery query, int maxDepth = 2)
     {
         var q = Db.Set<__EntityNameCapitalized__>().Skip(query.Offset);
