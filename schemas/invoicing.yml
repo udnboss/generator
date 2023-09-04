@@ -11,7 +11,8 @@ api:
 
 scripts:
   # outputDir: ./output/invoicing
-  outputDir: D:/Dev/dotnet6/NotesApi
+  # outputDir: D:/Dev/dotnet6/NotesApi
+  outputDir: I:/dev/dotnet6/NotesApi
   framework: webapi
   # outputDir: I:/dev/express/sales-api/src/api
   # framework: express #express|webapi|fastapi
