@@ -34,11 +34,13 @@ interfaces:
     repr: [email]
     # security: [default] #default, bearer, key, oauth, or empty array
     filters:
-      email: like 3 100
+      userName: like 3 100
     properties:
       id: uuid
-      email: str|email
-      password: str|password
+      userName: str(3,100)|email
+      normalizedUserName: str(3,256)
+      passwordHash: str(8,512)|password
+      securityStamp: str(0,256)
 
   user:
     key: id

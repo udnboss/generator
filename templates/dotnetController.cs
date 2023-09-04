@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,6 +7,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class __EntityNameCapitalized__Controller : ControllerBase
     {
         private readonly MyContext _context;
@@ -19,6 +21,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
 
         // GET: api/__EntityNameCapitalized__
         [HttpGet]
+        [RequiredPermissions(AppPermission.__EntityNameCapitalized__Read)]
         public ActionResult<QueryResult<ClientQuery, __EntityNameCapitalized__View>> Get__EntityNameCapitalized__s([FromQuery] __EntityNameCapitalized__Query query)
         {
             var dataQuery = _business.ConvertToDataQuery(query);
@@ -29,6 +32,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
 
         // GET: api/__EntityNameCapitalized__/5
         [HttpGet("{id}")]
+        [RequiredPermissions(AppPermission.__EntityNameCapitalized__Read)]
         public ActionResult<__EntityNameCapitalized__View> Get__EntityNameCapitalized__(Guid id)
         {
             var __EntityName__ = _business.GetById(id);
@@ -44,6 +48,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
         // PUT: api/__EntityNameCapitalized__/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [RequiredPermissions(AppPermission.__EntityNameCapitalized__Update)]
         public ActionResult<__EntityNameCapitalized__View> Put__EntityNameCapitalized__(Guid id, __EntityNameCapitalized__Update __EntityName__)
         {
             try 
@@ -77,6 +82,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
         // PATCH: api/__EntityNameCapitalized__/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPatch("{id}")]
+        [RequiredPermissions(AppPermission.__EntityNameCapitalized__Update)]
         public ActionResult<__EntityNameCapitalized__View> Patch__EntityNameCapitalized__(Guid id, JsonElement __EntityName__)
         {
             try 
@@ -111,6 +117,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
         // POST: api/__EntityNameCapitalized__
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [RequiredPermissions(AppPermission.__EntityNameCapitalized__Create)]
         public ActionResult<__EntityNameCapitalized__View> Post__EntityNameCapitalized__(__EntityNameCapitalized__Create __EntityName__)
         {
             var created = _business.Create(__EntityName__);
@@ -120,6 +127,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
 
         // DELETE: api/__EntityNameCapitalized__/5
         [HttpDelete("{id}")]
+        [RequiredPermissions(AppPermission.__EntityNameCapitalized__Delete)]
         public ActionResult<__EntityNameCapitalized__View> Delete__EntityNameCapitalized__(Guid id)
         {
             try 

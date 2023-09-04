@@ -389,6 +389,8 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
             conds.append(sortCond)
         return "\n\n".join(conds)
     
+    
+
     replacements = {
 
         "__EntityName__": entityName,
@@ -417,13 +419,13 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
     classesScript = CLASSES_TEMPLATE
     routerScript = ROUTER_TEMPLATE
     businessScript = BUSINESS_TEMPLATE
-    contextScript = CONTEXT_TEMPLATE
+    # contextScript = CONTEXT_TEMPLATE
 
     for find, repl in replacements.items():
         classesScript = classesScript.replace(find, repl)
         routerScript = routerScript.replace(find, repl)
         businessScript = businessScript.replace(find, repl)
-        contextScript = contextScript.replace(find, repl)
+        # contextScript = contextScript.replace(find, repl)
 
     return routerScript, businessScript, classesScript
 
@@ -452,7 +454,29 @@ def _genCode(entities:dict, openApiSchemas:dict):
             contextEntities.append(f"public DbSet<{entityName}> {entityNamePlural} {{ get; set; }}")
         return "\n    ".join(contextEntities)
 
-    context = CONTEXT_TEMPLATE.replace("__ContextEntities__", getContextEntities())
+    OPERATIONS = ['Read', 'Create', 'Update', 'Delete', 'Execute']
+
+    def getAppPermissions():
+        perms = []
+        for e in entities:
+            for o in OPERATIONS:
+                perms.append(f"{toPascalCase(e)}{o}")
+        return ',\n    '.join(perms)
+
+    def getAppPermissionsCodes():
+        perms = []
+        e:str
+        for e in entities:
+            entityName = toPascalCase(e)
+            entityNameUpper = e.upper()
+            for o in OPERATIONS:
+                perms.append(f'case AppPermission.{entityName}{o}: return "{entityNameUpper}:{o.upper()}";')
+        return '\n            '.join(perms)
+    
+    context = CONTEXT_TEMPLATE
+    context = context.replace("__ContextEntities__", getContextEntities())
+    context = context.replace("__AppPermissions__", getAppPermissions())
+    context = context.replace("__AppPermissionsCodes__", getAppPermissionsCodes())
 
     return routers, businesses, classes, BASE_TEMPLATE, context
 

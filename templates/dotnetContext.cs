@@ -48,3 +48,20 @@ public class MyContext : DbContext
     }
 }
 
+public enum AppPermission
+{
+    __AppPermissions__
+}
+
+public static class AppPermissionExtensions
+{
+    public static string GetCode(this AppPermission permission)
+    {
+        switch (permission)
+        {    
+            __AppPermissionsCodes__            
+            default:
+                throw new ArgumentOutOfRangeException(nameof(permission), permission, null);
+        }
+    }
+}
