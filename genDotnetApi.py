@@ -301,7 +301,7 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
                     subViewProps = getViewProjection(subEntity, subVarName, subPrefix, maxDepth, indent)
                     subTypeReferenceViaProperty = attrs['subTypeReferenceViaProperty']
                     subTypeReferenceViaPropertyName = toPascalCase(subTypeReferenceViaProperty)
-                    propStr = f'{propName} = new QueryResult<{subTypeName}Query, {subTypeName}View>(new {subTypeName}Query() {{ _Size = 10, _Page = 1, {subTypeReferenceViaPropertyName} = new List<Guid?>() {{ {varName}.Id }} }}) {{ Result = {varName}.{propName}!.Select({subVarName} => new {subTypeName}View {{ {subViewProps} }}).Take(10) }}'
+                    propStr = f'{propName} = new QueryResult<{subTypeName}Query, {subTypeName}View>(new {subTypeName}Query() {{ _Size = 10, _Page = 1, {subTypeReferenceViaPropertyName} = new List<string?>() {{ {varName}.Id }} }}) {{ Result = {varName}.{propName}!.Select({subVarName} => new {subTypeName}View {{ {subViewProps} }}).Take(10) }}'
             elif attrs['typeReference'] or attrs['type'] == 'array':
                 continue
 
@@ -458,7 +458,7 @@ def genArtifacts(entityName:str, entity:dict, schema:dict, entities:dict) -> tup
         "__EntityNameCapitalized__": toPascalCase(entityName),
         "__EntityNameCapitalizedPlural__": pluralize(toPascalCase(entityName)),
 
-        "__EntityExtends__": "IdentityUser<Guid>," if entityName == 'login' else '',
+        "__EntityExtends__": "IdentityUser," if entityName == 'login' else '',
 
         "__EntityWhereConditions__": getWhereConditions(),
         "__EntitySortConditions__": getSortConditions(),

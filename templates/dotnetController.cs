@@ -33,7 +33,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
         // GET: api/__EntityNameCapitalized__/5
         [HttpGet("{id}")]
         [RequiredPermissions(AppPermission.__EntityNameCapitalized__Read)]
-        public ActionResult<__EntityNameCapitalized__View> Get__EntityNameCapitalized__(Guid id)
+        public ActionResult<__EntityNameCapitalized__View> Get__EntityNameCapitalized__(string id)
         {
             var __EntityName__ = _business.GetById(id);
 
@@ -49,7 +49,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [RequiredPermissions(AppPermission.__EntityNameCapitalized__Update)]
-        public ActionResult<__EntityNameCapitalized__View> Put__EntityNameCapitalized__(Guid id, __EntityNameCapitalized__Update __EntityName__)
+        public ActionResult<__EntityNameCapitalized__View> Put__EntityNameCapitalized__(string id, __EntityNameCapitalized__Update __EntityName__)
         {
             try 
             {
@@ -83,7 +83,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPatch("{id}")]
         [RequiredPermissions(AppPermission.__EntityNameCapitalized__Update)]
-        public ActionResult<__EntityNameCapitalized__View> Patch__EntityNameCapitalized__(Guid id, JsonElement __EntityName__)
+        public ActionResult<__EntityNameCapitalized__View> Patch__EntityNameCapitalized__(string id, JsonElement __EntityName__)
         {
             try 
             {
@@ -128,7 +128,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
         // DELETE: api/__EntityNameCapitalized__/5
         [HttpDelete("{id}")]
         [RequiredPermissions(AppPermission.__EntityNameCapitalized__Delete)]
-        public ActionResult<__EntityNameCapitalized__View> Delete__EntityNameCapitalized__(Guid id)
+        public ActionResult<__EntityNameCapitalized__View> Delete__EntityNameCapitalized__(string id)
         {
             try 
             {
@@ -144,7 +144,7 @@ namespace __EntityNameCapitalized__sApi.Controllers
             return deleted;
         }
 
-        private bool __EntityNameCapitalized__Exists(Guid id)
+        private bool __EntityNameCapitalized__Exists(string id)
         {
             return _context.Set<__EntityNameCapitalized__>().Any(e => e.Id == id);
         }

@@ -37,7 +37,7 @@ interfaces:
     filters:
       userName: like 3 100
     properties:
-      id: uuid
+      id: str
       userName: str(3,100)|email
       normalizedUserName: str(3,256)
       passwordHash: str(8,512)|password
@@ -59,8 +59,6 @@ interfaces:
       twoFactorEnabled: bool
       # userName:
 
-
-
   user:
     key: id
     autokey: true
@@ -72,10 +70,10 @@ interfaces:
       name: like 3 100
       email: like 3 100     
     properties:
-      id: uuid
+      id: str|uuid
       name: str(3,100)
       email: str(3,100)|email
-      login_id: uuid > login.id
+      login_id: str > login.id
       login?: login @login_id
       userRoles?: userRole[] @user_id
 
@@ -89,7 +87,7 @@ interfaces:
       name: like 3 100
       code: like 3 100
     properties:
-      id: uuid
+      id: str|uuid
       code:
       name:
 
@@ -106,9 +104,9 @@ interfaces:
       user_id: in
       role_id: in
     properties:
-      id: uuid
-      user_id: uuid > user.id
-      role_id: uuid > role.id
+      id: str|uuid
+      user_id: str|uuid > user.id
+      role_id: str|uuid > role.id
 
       user?: user @user_id
       role?: role @role_id
@@ -129,7 +127,7 @@ interfaces:
       entity: in
       action: in
     properties:
-      id: uuid
+      id: str|uuid
       code:
       name:
       entity:
@@ -147,9 +145,9 @@ interfaces:
       role_id: in
       permission_id: in
     properties:
-      id: uuid
-      role_id: uuid > role.id
-      permission_id: uuid > permission.id
+      id: str|uuid
+      role_id: str|uuid > role.id
+      permission_id: str|uuid > permission.id
       
       role?: role @role_id
       permission?: permission @permission_id
@@ -165,7 +163,7 @@ interfaces:
       label: like 3 100
       bank_name: like 3 100     
     properties:
-      id: uuid
+      id: str|uuid
       label: str(3,100)
       bank_name: str(3,100)
       bank_address: str(3,100)
@@ -184,9 +182,9 @@ interfaces:
     filters:
       name: like 3 100
     properties:
-      id: uuid
+      id: str|uuid
       name:
-      # category_id?: uuid > category.id
+      # category_id?: str|uuid > category.id
 
       # category?: category @category_id
       items?: item[] @category_id
@@ -201,7 +199,7 @@ interfaces:
     filters:
       name: like 3 100
     properties:
-      id: uuid
+      id: str|uuid
       name:
       address:
       crn:
@@ -218,7 +216,7 @@ interfaces:
     unique: [name]
     repr: [name, symbol]
     properties:
-      id: uuid
+      id: str|uuid
       name:
       symbol:
 
@@ -236,11 +234,11 @@ interfaces:
     filters:
       name: like 3 100
     properties:
-      id: uuid
+      id: str|uuid
       name:
       address?:
       contact?:
-      currency_id?: uuid > currency.id
+      currency_id?: str|uuid > currency.id
       currency?: currency @currency_id
       payment_term?: int
 
@@ -257,9 +255,9 @@ interfaces:
       name: like 3 100
       category_id: in
     properties:
-      id: uuid
+      id: str|uuid
       name:
-      category_id?: uuid > category.id
+      category_id?: str|uuid > category.id
 
       category?: category @category_id
 
@@ -283,11 +281,11 @@ interfaces:
       reference_date: bt
 
     properties:
-      id: uuid
-      company_id: uuid > company.id
-      account_id: uuid > account.id
-      customer_id: uuid > customer.id
-      currency_id: uuid > currency.id
+      id: str|uuid
+      company_id: str|uuid > company.id
+      account_id: str|uuid > account.id
+      customer_id: str|uuid > customer.id
+      currency_id: str|uuid > currency.id
       place?:
       number: int
       date*: date # a * means disallow update      
@@ -323,9 +321,9 @@ interfaces:
       sale_id: in
       item_id: in
     properties:
-      id: uuid
-      sale_id: uuid > sale.id
-      item_id: uuid > item.id
+      id: str|uuid
+      sale_id: str|uuid > sale.id
+      item_id: str|uuid > item.id
       description?:
       quantity: int(1)
       price: float(0)

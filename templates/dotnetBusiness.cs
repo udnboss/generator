@@ -28,7 +28,7 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return clientQuery;
     }
     
-    public override __EntityNameCapitalized__View GetById(Guid id, int maxDepth = 2)
+    public override __EntityNameCapitalized__View GetById(string id, int maxDepth = 2)
     {
         var query = Db.Set<__EntityNameCapitalized__>()
             .Select(x => new __EntityNameCapitalized__View { 
@@ -49,7 +49,7 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
     {
         var dbSet = Db.Set<__EntityNameCapitalized__>();
         var dbEntity = new __EntityNameCapitalized__ {
-            Id = new Guid(),
+            Id = new Guid().ToString(),
             __EntityCreateProjection__
         };
         dbSet.Add(dbEntity);
@@ -66,7 +66,7 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return added;
     }
 
-    public override __EntityNameCapitalized__View Update(Guid id, __EntityNameCapitalized__Update entity)
+    public override __EntityNameCapitalized__View Update(string id, __EntityNameCapitalized__Update entity)
     {
         var dbSet = Db.Set<__EntityNameCapitalized__>();
         var existing = dbSet.Find(id);
@@ -82,7 +82,7 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return updated;
     }
 
-    public override __EntityNameCapitalized__View Modify(Guid id, JsonElement entity)
+    public override __EntityNameCapitalized__View Modify(string id, JsonElement entity)
     {
         var dbSet = Db.Set<__EntityNameCapitalized__>();
         var existing = dbSet.Find(id);
@@ -103,7 +103,7 @@ public class __EntityNameCapitalized__Business : Business<__EntityNameCapitalize
         return updated;
     }
 
-    public override __EntityNameCapitalized__View Delete(Guid id)
+    public override __EntityNameCapitalized__View Delete(string id)
     {
         var dbSet = Db.Set<__EntityNameCapitalized__>();
         var existing = dbSet.Find(id);

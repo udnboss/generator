@@ -244,7 +244,7 @@ public class DataQuery
 public record IRecord
 {
     [Key]
-    public Guid Id { get; set; }
+    public string Id { get; set; }
 }
 
 public interface IEntity
@@ -252,7 +252,7 @@ public interface IEntity
     [Key]
     [Column("id")]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public Guid Id { get; set; }
+    public string Id { get; set; }
 
     // public Entity() { }
 }
@@ -344,14 +344,14 @@ public abstract class Business<TEntity, TEntityView, TEntityUpdate, TEntityModif
         return clientQuery;
     }
 
-    public abstract TEntityView GetById(Guid id, int maxDepth = 2);
+    public abstract TEntityView GetById(string id, int maxDepth = 2);
 
     public abstract TEntityView Create(TEntityCreate entity);
-    public abstract TEntityView Update(Guid id, TEntityUpdate entity);
+    public abstract TEntityView Update(string id, TEntityUpdate entity);
 
-    public abstract TEntityView Modify(Guid id, JsonElement entity);
+    public abstract TEntityView Modify(string id, JsonElement entity);
 
-    public abstract TEntityView Delete(Guid id);
+    public abstract TEntityView Delete(string id);
 
     public abstract QueryResult<ClientQuery, TEntityView> GetAll(int maxDepth = 2);
 

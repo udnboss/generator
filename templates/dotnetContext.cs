@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 
 public class MyContext : IdentityDbContext<Login>
@@ -26,27 +26,27 @@ public class MyContext : IdentityDbContext<Login>
         => options.UseSqlite($"Data Source={DbPath}"); 
 
     //For Sqlite, convert Guid to string and vice versa
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        var guidToStringConverter = new ValueConverter<Guid, string>(
-            guid => guid.ToString(),
-            str => Guid.Parse(str));
+    // protected override void OnModelCreating(ModelBuilder modelBuilder)
+    // {
+    //     var guidToStringConverter = new ValueConverter<Guid, string>(
+    //         guid => guid.ToString(),
+    //         str => Guid.Parse(str));
 
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-        {
-            foreach (var property in entityType.GetProperties())
-            {
-                if (property.ClrType == typeof(Guid))
-                {
-                    property.SetValueConverter(guidToStringConverter);
-                }
-                else if (property.ClrType == typeof(string))
-                {
-                    property.SetCollation("NOCASE");
-                }
-            }
-        }
-    }
+    //     foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+    //     {
+    //         foreach (var property in entityType.GetProperties())
+    //         {
+    //             if (property.ClrType == typeof(Guid))
+    //             {
+    //                 property.SetValueConverter(guidToStringConverter);
+    //             }
+    //             else if (property.ClrType == typeof(string))
+    //             {
+    //                 property.SetCollation("NOCASE");
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 public enum AppPermission
@@ -89,7 +89,7 @@ public static class AppRoleExtensions
     }
 }
 
-public class MyRole : IdentityRole<Guid> 
+public class MyRole : IdentityRole
 {
 
 }
